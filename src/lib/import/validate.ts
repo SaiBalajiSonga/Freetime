@@ -39,7 +39,7 @@ export function validateQuestion(q: ImportQuestion): ValidationResult {
   if (result.success) {
     return { valid: true, errors: [], question: q }
   } else {
-    const zodIssues = result.error?.issues || result.error?.errors || []
+    const zodIssues = result.error?.issues || []
     const errors = zodIssues.map((e: any) => `${e.path?.join('.')}: ${e.message}`)
     return { valid: false, errors, question: q }
   }

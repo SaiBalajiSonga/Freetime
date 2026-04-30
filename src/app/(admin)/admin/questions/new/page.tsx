@@ -55,7 +55,7 @@ export default function NewQuestionPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Subject</Label>
-                <Select value={selectedSubject} onValueChange={setSelectedSubject} required>
+                <Select value={selectedSubject} onValueChange={(v) => setSelectedSubject(v ?? '')} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Subject" />
                   </SelectTrigger>
@@ -85,7 +85,7 @@ export default function NewQuestionPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Type</Label>
-                <Select name="type" value={type} onValueChange={setType}>
+                <Select name="type" value={type} onValueChange={(v) => setType(v ?? 'mcq')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

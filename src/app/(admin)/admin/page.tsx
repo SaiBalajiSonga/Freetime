@@ -86,6 +86,7 @@ export default async function AdminDashboardPage({
                       {/* @ts-ignore */}
                       {q.chapters?.subjects?.name || '—'}
                     </td>
+                    {/* @ts-ignore */}
                     <td className="py-3.5 px-5 text-gray-600">{q.chapters?.name || '—'}</td>
                     <td className="py-3.5 px-5 text-gray-600 max-w-[280px] truncate">{q.statement}</td>
                     <td className="py-3.5 px-5">

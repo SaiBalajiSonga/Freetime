@@ -39,7 +39,7 @@ export async function createQuestion(formData: FormData) {
     .single()
 
   if (qError || !question) {
-    return { error: 'Failed to create question: ' + qError?.message }
+    throw new Error('Failed to create question: ' + qError?.message)
   }
 
   if (type === 'mcq') {
@@ -60,7 +60,7 @@ export async function createQuestion(formData: FormData) {
     if (options.length > 0) {
       const { error: optError } = await supabase.from('question_options').insert(options)
       if (optError) {
-        return { error: 'Question created but failed to save options: ' + optError.message }
+        throw new Error('Question created but failed to save options: ' + optError.message)
       }
       
       // Update correct_answer on question for easier matching
