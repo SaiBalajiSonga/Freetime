@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { updateQuestion } from './actions'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -10,12 +10,17 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { useRouter } from 'next/navigation'
 
 export default function EditQuestionClient({ questionId, initialData }: { questionId: string, initialData: any }) {
+  const router = useRouter()
   const [subjects, setSubjects] = useState<any[]>([])
   const [chapters, setChapters] = useState<any[]>([])
   const [selectedSubject, setSelectedSubject] = useState<string>(initialData.subjectId || '')
   const [type, setType] = useState(initialData.type || 'mcq')
+  const [isPending, startTransition] = useTransition()
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  
   const supabase = createClient()
 
   // Calculate correct option index from initial options
@@ -45,8 +50,17 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
     loadChapters()
   }, [selectedSubject, supabase])
 
-  // Bind the question id to the action using .bind
-  const updateQuestionWithId = updateQuestion.bind(null, questionId)
+  async function handleSubmit(formData: FormData) {
+    setErrorMsg(null)
+    startTransition(async () => {
+      const res = await updateQuestion(questionId, formData)
+      if (res?.error) {
+        setErrorMsg(res.error)
+      } else if (res?.success) {
+        router.push('/admin')
+      }
+    })
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -56,12 +70,18 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
       </div>
 
       <Card>
-        <form action={updateQuestionWithId}>
+        <form action={handleSubmit}>
           <CardHeader>
             <CardTitle>Question Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             
+            {errorMsg && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm font-medium">
+                {errorMsg}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Subject</Label>
@@ -130,11 +150,12 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
                 <Label>Options & Correct Answer</Label>
                 <RadioGroup name="correctOptionIndex" defaultValue={initCorrectIndex}>
                   {[0, 1, 2, 3].map((index) => {
-                    const optText = initialData.options?.[index]?.text || ''
+                    const opt = initialData.options?.[index]
                     return (
                       <div key={index} className="flex items-center space-x-2">
+                        {opt?.id && <input type="hidden" name={`option_id_${index}`} value={opt.id} />}
                         <RadioGroupItem value={index.toString()} id={`opt_${index}`} />
-                        <Input name={`option_${index}`} defaultValue={optText} placeholder={`Option ${index + 1}`} required />
+                        <Input name={`option_${index}`} defaultValue={opt?.text || ''} placeholder={`Option ${index + 1}`} required />
                       </div>
                     )
                   })}
@@ -159,7 +180,9 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
 
           </CardContent>
           <CardFooter>
-            <Button type="submit">Update Question</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Updating...' : 'Update Question'}
+            </Button>
           </CardFooter>
         </form>
       </Card>
