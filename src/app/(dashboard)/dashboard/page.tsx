@@ -59,10 +59,10 @@ export default async function DashboardPage() {
   }
   const maxBar = Math.max(...weekDays.map(d => d.count), 1)
 
-  // Heatmap 12 weeks
+  // Heatmap 12 weeks (ending on Saturday of current week)
   const startDate = new Date(today); 
-  startDate.setUTCDate(startDate.getUTCDate() - 83); 
-  startDate.setUTCDate(startDate.getUTCDate() - startDate.getUTCDay())
+  startDate.setUTCDate(startDate.getUTCDate() - startDate.getUTCDay()); // Sunday of this week
+  startDate.setUTCDate(startDate.getUTCDate() - 77); // 11 weeks ago Sunday (12 weeks total)
   
   const weeks: { key: string; count: number; future: boolean }[][] = []
   const cur = new Date(startDate)
