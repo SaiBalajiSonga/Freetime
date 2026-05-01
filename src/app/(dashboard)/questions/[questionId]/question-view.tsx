@@ -30,7 +30,8 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
   // If we are not in practice mode, the question is effectively "solved" (or at least attempted)
   const isSolved = !practiceMode && (result?.isCorrect || latestAttempt?.is_correct)
-  const showSolution = !practiceMode || result
+  // Only show explanation if they actually got it right
+  const showSolution = !practiceMode && (result?.isCorrect || latestAttempt?.is_correct)
 
   useEffect(() => {
     if (!practiceMode) return
@@ -161,17 +162,22 @@ export default function QuestionView({ question, options, attempts: initialAttem
                 {options.map((opt, idx) => {
                   const isSelected = practiceMode ? selectedOption === opt.id : latestAttempt?.answer === opt.id
                   const showCorrectness = !practiceMode
+                  const isCorrectSubmission = latestAttempt?.is_correct || result?.isCorrect
 
                   let border = 'border-gray-150 hover:border-indigo-200 hover:bg-indigo-50/30'
                   if (isSelected && !showCorrectness) border = 'border-indigo-400 bg-indigo-50 ring-2 ring-indigo-100'
-                  if (showCorrectness && opt.is_correct) border = 'border-emerald-400 bg-emerald-50'
+                  
+                  // Only highlight the correct answer in green if they actually got the question right
+                  if (showCorrectness && opt.is_correct && isCorrectSubmission) border = 'border-emerald-400 bg-emerald-50'
+                  
+                  // If they got it wrong, highlight their wrong choice in red
                   if (showCorrectness && isSelected && !opt.is_correct) border = 'border-red-300 bg-red-50'
 
                   return (
                     <div key={opt.id} className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all cursor-pointer ${border}`}>
                       <RadioGroupItem value={opt.id} id={opt.id} className="shrink-0" />
                       <Label htmlFor={opt.id} className="flex-1 cursor-pointer text-sm text-gray-700 font-medium"><Latex>{opt.text}</Latex></Label>
-                      {showCorrectness && opt.is_correct && <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />}
+                      {showCorrectness && opt.is_correct && isCorrectSubmission && <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />}
                       {showCorrectness && isSelected && !opt.is_correct && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
                     </div>
                   )
@@ -218,7 +224,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
                 <p className={`text-[11px] mt-0.5 ${
                   latestAttempt?.is_correct ? 'text-emerald-500' : 'text-red-400'
                 }`}>
-                  {latestAttempt?.is_correct ? 'Great job!' : 'Review the solution below.'}
+                  {latestAttempt?.is_correct ? 'Great job!' : 'Don\'t give up, try again!'}
                 </p>
               </div>
             </div>
@@ -230,7 +236,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
               className="w-full mt-4 h-11 rounded-xl border-2 border-indigo-100 bg-white text-indigo-600 font-bold text-sm hover:bg-indigo-50 hover:border-indigo-200 transition-all flex items-center justify-center gap-2"
             >
               <RotateCcw className="h-4 w-4" />
-              Practice Again
+              {latestAttempt?.is_correct ? 'Practice Again' : 'Try Again'}
             </button>
           )}
         </div>

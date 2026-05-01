@@ -27,35 +27,51 @@ export default async function DashboardPage() {
   const userName = (authUser.user?.email?.split('@')[0] || 'student')
   const display = userName.charAt(0).toUpperCase() + userName.slice(1)
 
+  const attemptedIds = new Set(userAttempts.map(a => a.question_id))
+  const totalAttempted = attemptedIds.size
+  const inProgress = totalAttempted - totalSolved
+
   // Streak + heatmap
   const today = new Date()
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+  today.setUTCHours(0,0,0,0) // Normalize to midnight UTC
+  const todayKey = today.toISOString().split('T')[0]
+  
   const dcm: Record<string, number> = {}
-  userAttempts.forEach(a => { const d = new Date(a.created_at); const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; dcm[k] = (dcm[k]||0)+1 })
+  userAttempts.forEach(a => { 
+    const k = new Date(a.created_at).toISOString().split('T')[0]
+    dcm[k] = (dcm[k]||0) + 1 
+  })
 
-  let streak = 0; const cd = new Date(today)
-  if (dcm[todayKey]) { streak = 1; cd.setDate(cd.getDate()-1) }
-  while (true) { const k = `${cd.getFullYear()}-${String(cd.getMonth()+1).padStart(2,'0')}-${String(cd.getDate()).padStart(2,'0')}`; if (dcm[k]) { streak++; cd.setDate(cd.getDate()-1) } else break }
+  let streak = 0; 
+  const cd = new Date(today)
+  if (dcm[todayKey]) { streak = 1; cd.setUTCDate(cd.getUTCDate()-1) }
+  while (true) { 
+    const k = cd.toISOString().split('T')[0]
+    if (dcm[k]) { streak++; cd.setUTCDate(cd.getUTCDate()-1) } else break 
+  }
 
   // Week days for bar chart
   const weekDays: { label: string; date: string; count: number; isToday: boolean }[] = []
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(today); d.setDate(d.getDate() - i)
-    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    weekDays.push({ label: d.toLocaleDateString('en', { weekday: 'short' }).charAt(0), date: String(d.getDate()), count: dcm[k]||0, isToday: i===0 })
+    const d = new Date(today); d.setUTCDate(d.getUTCDate() - i)
+    const k = d.toISOString().split('T')[0]
+    weekDays.push({ label: d.toLocaleDateString('en', { weekday: 'short', timeZone: 'UTC' }).charAt(0), date: String(d.getUTCDate()), count: dcm[k]||0, isToday: i===0 })
   }
   const maxBar = Math.max(...weekDays.map(d => d.count), 1)
 
   // Heatmap 12 weeks
-  const startDate = new Date(today); startDate.setDate(startDate.getDate() - 83); startDate.setDate(startDate.getDate() - startDate.getDay())
+  const startDate = new Date(today); 
+  startDate.setUTCDate(startDate.getUTCDate() - 83); 
+  startDate.setUTCDate(startDate.getUTCDate() - startDate.getUTCDay())
+  
   const weeks: { key: string; count: number; future: boolean }[][] = []
   const cur = new Date(startDate)
   while (weeks.length < 12) {
     const wk: { key: string; count: number; future: boolean }[] = []
     for (let d = 0; d < 7; d++) {
-      const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`
+      const k = cur.toISOString().split('T')[0]
       wk.push({ key: k, count: dcm[k]||0, future: cur > today })
-      cur.setDate(cur.getDate()+1)
+      cur.setUTCDate(cur.getUTCDate()+1)
     }
     weeks.push(wk)
   }
@@ -114,6 +130,7 @@ export default async function DashboardPage() {
           <div className="flex justify-center gap-3">
             {[
               { emoji: '✅', val: totalSolved, label: 'Solved' },
+              { emoji: '⏳', val: inProgress, label: 'In Progress' },
               { emoji: '🎯', val: `${accuracy}%`, label: 'Accuracy' },
               { emoji: '📚', val: totalQ, label: 'Total' },
               { emoji: '⏱️', val: hrs > 0 ? `${hrs}h ${mns}m` : `${mns}m`, label: 'Time' },
