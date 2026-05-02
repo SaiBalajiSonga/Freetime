@@ -27,6 +27,14 @@ export default async function EditQuestionPage({
     .eq('question_id', questionId)
     .order('id', { ascending: true })
 
+  // Fetch subjects and chapters on the server using admin client to bypass RLS
+  const { data: subjects } = await supabase.from('subjects').select('*').order('name')
+  let initialChapters: any[] = []
+  if (question.chapters?.subject_id) {
+    const { data: chapters } = await supabase.from('chapters').select('*').eq('subject_id', question.chapters.subject_id).order('name')
+    if (chapters) initialChapters = chapters
+  }
+
   // Transform data for the client component
   const initialData = {
     id: question.id,
@@ -38,7 +46,9 @@ export default async function EditQuestionPage({
     solution: question.solution || '',
     hint: question.hint || '',
     numericalAnswer: question.correct_answer || '',
-    options: options || []
+    options: options || [],
+    subjects: subjects || [],
+    initialChapters
   }
 
   return <EditQuestionClient questionId={questionId} initialData={initialData} />

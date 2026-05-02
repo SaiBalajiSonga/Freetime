@@ -54,7 +54,10 @@ export async function submitAttempt(questionId: string, answer: string, timeTake
     })
 
   if (insertError) {
-    return { error: 'Failed to record attempt' }
+    console.error(`[Submit] DB Insert Error: ${insertError.message} (Code: ${insertError.code})`)
+    // Still return success and isCorrect so the UI shows the right feedback, 
+    // even if the database blocks saving the attempt history (e.g. 409 Conflict)
+    return { error: 'Failed to record attempt in history: ' + insertError.message, isCorrect, success: true }
   }
 
   revalidatePath(`/questions/${questionId}`)

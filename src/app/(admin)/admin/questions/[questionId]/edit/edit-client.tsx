@@ -14,8 +14,8 @@ import { useRouter } from 'next/navigation'
 
 export default function EditQuestionClient({ questionId, initialData }: { questionId: string, initialData: any }) {
   const router = useRouter()
-  const [subjects, setSubjects] = useState<any[]>([])
-  const [chapters, setChapters] = useState<any[]>([])
+  const [subjects, setSubjects] = useState<any[]>(initialData.subjects || [])
+  const [chapters, setChapters] = useState<any[]>(initialData.initialChapters || [])
   const [selectedSubject, setSelectedSubject] = useState<string>(initialData.subjectId || '')
   const [type, setType] = useState(initialData.type || 'mcq')
   const [isPending, startTransition] = useTransition()
@@ -33,24 +33,21 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
   const [correctOptionState, setCorrectOptionState] = useState(initCorrectIndex)
 
   useEffect(() => {
-    async function loadSubjects() {
-      const { data } = await supabase.from('subjects').select('*').order('name')
-      if (data) setSubjects(data)
-    }
-    loadSubjects()
-  }, [supabase])
-
-  useEffect(() => {
     async function loadChapters() {
       if (!selectedSubject) {
         setChapters([])
+        return
+      }
+      // If the selected subject is the initial one, we already have the chapters
+      if (selectedSubject === initialData.subjectId && initialData.initialChapters?.length > 0) {
+        setChapters(initialData.initialChapters)
         return
       }
       const { data } = await supabase.from('chapters').select('*').eq('subject_id', selectedSubject).order('name')
       if (data) setChapters(data)
     }
     loadChapters()
-  }, [selectedSubject, supabase])
+  }, [selectedSubject, supabase, initialData])
 
   async function handleSubmit(formData: FormData) {
     setErrorMsg(null)
