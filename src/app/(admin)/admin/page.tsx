@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { DeleteQuestionButton, DeleteAllQuestionsButton } from './questions/delete-buttons'
+import { AdminNav } from './admin-nav'
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -33,6 +33,8 @@ export default async function AdminDashboardPage({
 
   return (
     <div className="space-y-6">
+      <AdminNav />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
