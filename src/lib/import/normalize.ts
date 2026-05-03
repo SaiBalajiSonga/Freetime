@@ -28,9 +28,22 @@ export function normalizeImportData(data: RawImportData[]): ImportQuestion[] {
   return data.map(item => {
     const options = []
 
+    const correctRaw = findValue(item, 'correct_answer', 'correct answer', 'correctanswer', 'answer', 'correct_option_index', 'correct option')
+    const correctStr = (correctRaw || '').toLowerCase().trim()
+
     // Check if options are already structured (JSON)
     if (Array.isArray(item.options)) {
-      options.push(...item.options)
+      if (item.options.length > 0 && typeof item.options[0] === 'string') {
+        // Map string array to object array using the correct answer indicator
+        options.push(...item.options.map((opt: any, i: number) => {
+          const index = String(i + 1)
+          const letter = ['a', 'b', 'c', 'd'][i]
+          let is_correct = (correctStr === index || correctStr === letter || correctStr === String(opt).toLowerCase())
+          return { text: String(opt), is_correct }
+        }))
+      } else {
+        options.push(...item.options)
+      }
     } else {
       // Try to find option columns with flexible naming
       const optionKeys = [
@@ -39,9 +52,6 @@ export function normalizeImportData(data: RawImportData[]): ImportQuestion[] {
         ['option_3', 'option 3', 'option3', 'option c', 'optionc', 'option_c'],
         ['option_4', 'option 4', 'option4', 'option d', 'optiond', 'option_d'],
       ]
-
-      const correctRaw = findValue(item, 'correct_answer', 'correct answer', 'correctanswer', 'answer', 'correct_option_index', 'correct option')
-      const correctStr = (correctRaw || '').toLowerCase().trim()
 
       for (let i = 0; i < 4; i++) {
         const optVal = findValue(item, ...optionKeys[i])
@@ -67,16 +77,20 @@ export function normalizeImportData(data: RawImportData[]): ImportQuestion[] {
       ? 'numerical'
       : 'mcq'
 
-    const correctAnswerRaw = findValue(item, 'correct_answer', 'correct answer', 'correctanswer', 'answer')
+    let statement = findValue(item, 'statement', 'question', 'question_text', 'questiontext') || ''
+    const reactionLatex = findValue(item, 'reaction_latex', 'reactionlatex')
+    if (reactionLatex) {
+      statement += (statement ? '\n\n' : '') + `$$ ${reactionLatex} $$`
+    }
 
     return {
       subject: findValue(item, 'subject') || '',
       chapter: findValue(item, 'chapter') || '',
       type: type,
-      statement: findValue(item, 'statement', 'question') || '',
+      statement: statement,
       difficulty: (findValue(item, 'difficulty') || 'medium').toLowerCase() as 'easy' | 'medium' | 'hard',
       options: options.length > 0 ? options : undefined,
-      correct_answer: type === 'numerical' ? (correctAnswerRaw || '') : undefined,
+      correct_answer: type === 'numerical' ? (correctRaw || '') : undefined,
       hint: findValue(item, 'hint') || undefined,
       solution: findValue(item, 'solution') || undefined,
       tags: (() => {
