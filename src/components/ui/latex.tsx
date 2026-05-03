@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import katex from 'katex'
-import 'katex/dist/contrib/mhchem.js'
+import 'katex/contrib/mhchem'
 import 'katex/dist/katex.min.css'
 
 type LatexProps = {
