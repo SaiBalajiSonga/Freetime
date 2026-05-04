@@ -84,6 +84,38 @@ export default function LandingPage() {
                 <Spline scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode" className="w-full h-full scale-[1.02]" />
               </div>
             </div>
+
+            {/* Floating stat cards */}
+            <motion.div
+              initial={{ opacity: 0, x: 20, y: 10 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute -right-8 top-[18%] surface-glass-strong rounded-2xl p-4 flex items-center gap-3 shadow-[0_20px_48px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(96,165,250,0.15)] min-w-[160px] animate-float-slow"
+            >
+              <div className="size-9 rounded-xl icon-3d-blue border border-accent-electric/25 grid place-items-center shrink-0">
+                <Trophy className="h-4 w-4 text-accent-electric" />
+              </div>
+              <div>
+                <p className="text-lg font-extrabold text-foreground leading-none">1,200+</p>
+                <p className="text-[10px] text-muted-2 font-medium mt-0.5">Practice Questions</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20, y: -10 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute -left-8 bottom-[22%] surface-glass-strong rounded-2xl p-4 flex items-center gap-3 shadow-[0_20px_48px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(96,165,250,0.15)] min-w-[155px] animate-float-slower"
+            >
+              <div className="size-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 grid place-items-center shrink-0">
+                <Activity className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-lg font-extrabold text-foreground leading-none">98%</p>
+                <p className="text-[10px] text-muted-2 font-medium mt-0.5">Accuracy Rate</p>
+              </div>
+            </motion.div>
+
             <div
               className="pointer-events-none absolute -bottom-6 -right-4 h-28 w-28 rounded-full blur-2xl opacity-70"
               style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.45), transparent 70%)' }}

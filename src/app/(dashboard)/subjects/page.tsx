@@ -10,7 +10,7 @@ export default async function SubjectsPage() {
 
   const subjectCounts: Record<string, number> = {}
   allQuestions?.forEach(q => {
-    // @ts-ignore
+    // @ts-expect-error Supabase joined type doesn't include subject_id
     const sid = q.chapters?.subject_id
     if (sid) subjectCounts[sid] = (subjectCounts[sid] || 0) + 1
   })
@@ -19,10 +19,28 @@ export default async function SubjectsPage() {
     return <div className="text-red-400">Error loading subjects: {error.message}</div>
   }
 
-  const subjectMeta: Record<string, { icon: string; accent: string; arrowHover: string }> = {
-    Physics: { icon: '⚡', accent: 'text-accent-electric', arrowHover: 'group-hover:text-accent-electric' },
-    Chemistry: { icon: '🧪', accent: 'text-amber-400', arrowHover: 'group-hover:text-amber-400' },
-    Mathematics: { icon: '📐', accent: 'text-emerald-400', arrowHover: 'group-hover:text-emerald-400' },
+  const subjectMeta: Record<string, { icon: string; gradient: string; accent: string; arrowHover: string; glow: string }> = {
+    Physics: {
+      icon: '⚡',
+      gradient: 'from-blue-500/20 to-accent-blue/10 border-accent-electric/25',
+      accent: 'text-accent-electric',
+      arrowHover: 'group-hover:text-accent-electric',
+      glow: 'group-hover:shadow-[0_0_40px_-12px_rgba(59,130,246,0.35)]',
+    },
+    Chemistry: {
+      icon: '🧪',
+      gradient: 'from-amber-500/20 to-amber-600/10 border-amber-400/25',
+      accent: 'text-amber-400',
+      arrowHover: 'group-hover:text-amber-400',
+      glow: 'group-hover:shadow-[0_0_40px_-12px_rgba(251,191,36,0.25)]',
+    },
+    Mathematics: {
+      icon: '📐',
+      gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/25',
+      accent: 'text-emerald-400',
+      arrowHover: 'group-hover:text-emerald-400',
+      glow: 'group-hover:shadow-[0_0_40px_-12px_rgba(52,211,153,0.25)]',
+    },
   }
 
   return (
@@ -39,21 +57,23 @@ export default async function SubjectsPage() {
         {subjects?.map(subject => {
           const meta = subjectMeta[subject.name] || {
             icon: '📚',
+            gradient: 'from-accent-electric/20 to-accent-blue/10 border-accent-electric/25',
             accent: 'text-accent-electric',
             arrowHover: 'group-hover:text-accent-electric',
+            glow: 'group-hover:shadow-[0_0_40px_-12px_rgba(59,130,246,0.35)]',
           }
           const count = subjectCounts[subject.id] || 0
 
           return (
             <Link key={subject.id} href={`/subjects/${subject.id}`}>
-              <div className="rounded-2xl surface-glass p-6 h-full group transition-all duration-300 card-hover-lift relative overflow-hidden">
+              <div className={`rounded-2xl surface-glass p-6 h-full group transition-all duration-300 card-hover-lift relative overflow-hidden ${meta.glow}`}>
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-electric/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="flex items-start justify-between">
-                  <div className="size-12 rounded-xl icon-3d border border-white/[0.08] flex items-center justify-center text-2xl group-hover:scale-105 transition-transform duration-300">
+                <div className="flex items-start justify-between mb-5">
+                  <div className={`size-14 rounded-2xl bg-gradient-to-br ${meta.gradient} border flex items-center justify-center text-3xl group-hover:scale-105 transition-transform duration-300`}>
                     {meta.icon}
                   </div>
                   <svg
-                    className={`w-5 h-5 text-muted-2 transition-all duration-200 group-hover:translate-x-0.5 ${meta.arrowHover}`}
+                    className={`w-5 h-5 text-muted-2 transition-all duration-200 group-hover:translate-x-0.5 mt-1 ${meta.arrowHover}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -62,9 +82,9 @@ export default async function SubjectsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
-                <h3 className={`font-bold text-lg text-foreground mt-5 ${meta.accent}`}>{subject.name}</h3>
-                <p className="text-sm text-muted mt-1">{count} questions available</p>
-                <div className="mt-4 flex items-center gap-2">
+                <h3 className={`font-bold text-xl text-foreground ${meta.accent}`}>{subject.name}</h3>
+                <p className="text-sm text-muted mt-1.5">{count} questions available</p>
+                <div className="mt-5 flex items-center gap-2">
                   <div className="h-1.5 flex-1 bg-surface-2 rounded-full overflow-hidden border border-white/[0.06]">
                     <div className="h-full bg-gradient-primary rounded-full w-0 group-hover:w-[8%] transition-all duration-700 shadow-[0_0_12px_rgba(59,130,246,0.35)]" />
                   </div>

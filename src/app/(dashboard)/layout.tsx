@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { BookOpen, LayoutDashboard, Bookmark, FlaskConical, Bell, Sparkles, ClipboardList } from 'lucide-react'
 import { AmbientBackdrop } from '@/components/site/ambient-backdrop'
 import { SidebarLink } from '@/components/site/sidebar-link'
+import { MobileSidebarToggle } from '@/components/site/mobile-sidebar'
 
 export default async function DashboardLayout({
   children,
@@ -27,7 +28,8 @@ export default async function DashboardLayout({
       {/* Sidebar */}
       <aside className="w-[248px] flex flex-col fixed top-0 left-0 h-screen z-40 hidden md:flex sidebar-dark border-r border-white/[0.06]">
         <div className="flex items-center gap-3 px-6 h-[72px] border-b border-white/[0.06]">
-          <div className="size-10 rounded-xl icon-3d-blue border border-accent-electric/20">
+          <div className="size-10 rounded-xl grid place-items-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, rgba(96,165,250,0.25) 0%, rgba(37,99,235,0.15) 100%)', border: '1px solid rgba(96,165,250,0.3)', boxShadow: '0 0 24px -8px rgba(59,130,246,0.45)' }}>
             <Sparkles className="h-[18px] w-[18px] text-accent-electric" />
           </div>
           <div className="min-w-0">
@@ -37,10 +39,13 @@ export default async function DashboardLayout({
         </div>
 
         <nav className="flex flex-col gap-1 px-3 mt-4 flex-1">
+          <p className="px-4 mb-1 section-label">Navigation</p>
           <SidebarLink href="/dashboard" exact icon={<LayoutDashboard className="h-[18px] w-[18px]" />} label="Dashboard" />
           <SidebarLink href="/subjects" icon={<BookOpen className="h-[18px] w-[18px]" />} label="Subjects" />
           <SidebarLink href="/subjects" icon={<FlaskConical className="h-[18px] w-[18px]" />} label="Practice" />
           <SidebarLink href="/tests" icon={<ClipboardList className="h-[18px] w-[18px]" />} label="Tests" />
+          <div className="h-px bg-white/[0.06] mx-1 my-2" />
+          <p className="px-4 mb-1 section-label">Library</p>
           <SidebarLink href="/subjects" icon={<Bookmark className="h-[18px] w-[18px]" />} label="Bookmarks" disabled />
         </nav>
 
@@ -59,11 +64,14 @@ export default async function DashboardLayout({
 
       <div className="flex-1 md:ml-[248px] flex flex-col min-h-screen">
         <header className="sticky top-0 z-30 h-[72px] flex items-center justify-between px-5 sm:px-8 nav-glass border-b border-white/[0.06]">
-          <div className="md:hidden flex items-center gap-2">
-            <div className="size-9 rounded-xl icon-3d-blue border border-accent-electric/20 grid place-items-center">
-              <Sparkles className="h-4 w-4 text-accent-electric" />
+          <div className="flex items-center gap-3 md:hidden">
+            <MobileSidebarToggle initial={initial} email={user.email || ''} />
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-xl icon-3d-blue border border-accent-electric/20 grid place-items-center">
+                <Sparkles className="h-3.5 w-3.5 text-accent-electric" />
+              </div>
+              <span className="font-bold text-sm text-foreground">JEE Practice</span>
             </div>
-            <span className="font-bold text-sm text-foreground">JEE Practice</span>
           </div>
           <div className="hidden md:block" />
 

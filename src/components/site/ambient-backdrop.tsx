@@ -33,6 +33,7 @@ export function AmbientBackdrop({ intensity = 'subtle', className = '' }: Ambien
         }}
       />
       <div className="absolute inset-0 bg-gradient-mesh opacity-80" />
+      <div className="absolute inset-0 dot-grid opacity-30" />
     </div>
   )
 }
