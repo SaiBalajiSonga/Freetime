@@ -28,7 +28,7 @@ export function Card({ variant = 'dark', tone = 'blue', className, children, ...
     >
       <div
         className="pointer-events-none absolute inset-0 mix-blend-screen bg-[radial-gradient(circle_at_top,_var(--color-card-overlay),_transparent_60%)]"
-        style={{ opacity: 'var(--card-overlay-opacity)' }}
+        style={{ opacity: 0.6 }}
       />
       <div className="relative z-10">{children}</div>
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { BarChart3, BookOpen, ClipboardList, Flame, FlaskConical, Target, Timer, TrendingUp } from 'lucide-react'
@@ -45,20 +46,15 @@ export default function DashboardClient({
     Mathematics: 'green',
   }
 
+  const searchParams = useSearchParams()
+  const analyticsSection = searchParams.get('section')
   const progressToDifficulty = (value: number) => (value >= 70 ? 'easy' : value >= 40 ? 'medium' : 'hard')
 
   useEffect(() => {
-    const scrollToAnalytics = () => {
-      const params = new URLSearchParams(window.location.search)
-      if (window.location.hash === '#analytics' || params.get('section') === 'analytics') {
-        document.getElementById('analytics')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }
-
-    scrollToAnalytics()
-    window.addEventListener('hashchange', scrollToAnalytics)
-    return () => window.removeEventListener('hashchange', scrollToAnalytics)
-  }, [])
+    if (analyticsSection !== 'analytics') return
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    document.getElementById('analytics')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' })
+  }, [analyticsSection])
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-10">
