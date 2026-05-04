@@ -8,9 +8,6 @@ import {
   MinusCircle,
   Clock,
   ChevronRight,
-  Zap,
-  Target,
-  Timer,
 } from 'lucide-react'
 
 export const metadata = {

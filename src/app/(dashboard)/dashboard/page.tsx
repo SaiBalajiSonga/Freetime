@@ -80,7 +80,11 @@ export default async function DashboardPage() {
 
   const circ = 2 * Math.PI * 80
   const dash = (pct / 100) * circ
-  const sColors: Record<string, [string, string]> = { Physics: ['#3b82f6','icon-3d-blue'], Chemistry: ['#f97316','icon-3d-orange'], Mathematics: ['#10b981','icon-3d-green'] }
+  const sColors: Record<string, [string, string]> = {
+    Physics: ['#60a5fa', 'icon-3d-blue'],
+    Chemistry: ['#f97316', 'icon-3d-orange'],
+    Mathematics: ['#34d399', 'icon-3d-green'],
+  }
 
   return (
     <DashboardClient 

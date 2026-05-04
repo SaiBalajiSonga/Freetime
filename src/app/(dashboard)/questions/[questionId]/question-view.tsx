@@ -75,7 +75,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Left: Question */}
       <div className="flex-1 space-y-5">
-        <div className="rounded-2xl border border-border bg-surface p-7">
+        <div className="rounded-2xl surface-glass-strong p-7 border border-white/[0.07]">
           <div className="flex items-start justify-between mb-5">
             <div>
               <h1 className="text-xl font-extrabold text-foreground tracking-[-0.03em]">
@@ -83,7 +83,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
               </h1>
               <div className="flex flex-wrap gap-2 mt-2.5">
                 {question.chapters?.subjects?.name && (
-                  <span className="text-[11px] font-semibold text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/20 px-2.5 py-1 rounded-pill">
+                  <span className="text-[11px] font-semibold text-accent-electric bg-accent-electric/10 border border-accent-electric/25 px-2.5 py-1 rounded-pill">
                     {question.chapters.subjects.name}
                   </span>
                 )}
@@ -105,12 +105,12 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
           {question.hint && (
             <div className="mt-5 pt-5 border-t border-border">
-              <button onClick={() => setShowHint(!showHint)} className="flex items-center gap-2 text-sm text-accent-cyan hover:text-accent-glow font-semibold transition-colors">
+              <button onClick={() => setShowHint(!showHint)} className="flex items-center gap-2 text-sm text-accent-electric hover:text-accent-glow font-semibold transition-colors">
                 {showHint ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 {showHint ? 'Hide Hint' : 'Show Hint'}
               </button>
               {showHint && (
-                <div className="mt-3 text-sm text-accent-cyan bg-accent-cyan/5 border border-accent-cyan/20 rounded-xl p-4">
+                <div className="mt-3 text-sm text-accent-electric bg-accent-electric/5 border border-accent-electric/20 rounded-xl p-4">
                   <Latex>{question.hint}</Latex>
                 </div>
               )}
@@ -120,7 +120,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
         {/* Explanation */}
         {showSolution && (
-          <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+          <div className="rounded-2xl surface-glass border border-white/[0.06] overflow-hidden">
             <button onClick={() => setShowExplanation(!showExplanation)} className="w-full flex items-center justify-between p-5 text-left hover:bg-surface-2 transition-colors">
               <span className="font-bold text-foreground">Explanation</span>
               {showExplanation ? <ChevronUp className="h-4 w-4 text-muted-2" /> : <ChevronDown className="h-4 w-4 text-muted-2" />}
@@ -136,7 +136,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
       {/* Right: Answer Panel */}
       <div className="lg:w-[380px] shrink-0 space-y-5">
-        <div className="rounded-2xl border border-border bg-surface p-6 sticky top-[90px]">
+        <div className="rounded-2xl surface-glass-strong p-6 sticky top-[90px] border border-white/[0.07]">
           {/* Timer */}
           {practiceMode && (
             <div className="flex items-center justify-end gap-2 mb-5">
@@ -159,14 +159,14 @@ export default function QuestionView({ question, options, attempts: initialAttem
                   const showCorrectness = !practiceMode
                   const isCorrectSubmission = latestAttempt?.is_correct || result?.isCorrect
 
-                  let border = 'border-border hover:border-accent-cyan/50 hover:bg-accent-cyan/5 text-muted'
-                  if (isSelected && !showCorrectness) border = 'border-accent-cyan bg-accent-cyan/10 ring-2 ring-accent-cyan/20 text-foreground'
+                  let border = 'border-border hover:border-accent-electric/45 hover:bg-accent-electric/5 text-muted'
+                  if (isSelected && !showCorrectness) border = 'border-accent-electric bg-accent-electric/10 ring-2 ring-accent-electric/25 text-foreground'
                   if (showCorrectness && opt.is_correct && isCorrectSubmission) border = 'border-emerald-500 bg-emerald-500/10 text-emerald-100'
                   if (showCorrectness && isSelected && !opt.is_correct) border = 'border-red-500 bg-red-500/10 text-red-100'
 
                   return (
                     <div key={opt.id} className={`flex items-center gap-3 p-3.5 border rounded-xl transition-all cursor-pointer ${border}`}>
-                      <RadioGroupItem value={opt.id} id={opt.id} className="shrink-0 border-border-strong text-accent-cyan" />
+                      <RadioGroupItem value={opt.id} id={opt.id} className="shrink-0 border-border-strong text-accent-electric" />
                       <Label htmlFor={opt.id} className="flex-1 cursor-pointer text-sm font-medium"><Latex>{opt.text}</Latex></Label>
                       {showCorrectness && opt.is_correct && isCorrectSubmission && <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />}
                       {showCorrectness && isSelected && !opt.is_correct && <XCircle className="h-4 w-4 text-red-400 shrink-0" />}
@@ -182,7 +182,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
               value={practiceMode ? numericalAnswer : (latestAttempt?.answer || '')}
               onChange={(e) => setNumericalAnswer(e.target.value)}
               disabled={!practiceMode}
-              className="w-full h-12 rounded-xl bg-surface-2 border border-border px-4 text-foreground placeholder:text-muted-2 focus:border-accent-glow focus:outline-none focus:ring-2 focus:ring-accent-glow/30 transition text-base"
+              className="w-full h-12 rounded-xl bg-surface-2/80 border border-white/[0.08] px-4 text-foreground placeholder:text-muted-2 focus:border-accent-electric focus:outline-none focus:ring-2 focus:ring-accent-electric/25 transition text-base"
             />
           )}
 
@@ -228,7 +228,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
         {/* History */}
         {attempts.length > 0 && (
-          <div className="rounded-2xl border border-border bg-surface p-6">
+          <div className="rounded-2xl surface-glass p-6 border border-white/[0.06]">
             <div className="flex items-center gap-2 mb-4">
               <History className="h-4 w-4 text-muted-2" />
               <h3 className="font-bold text-foreground text-sm">Previous Submissions</h3>

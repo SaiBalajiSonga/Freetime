@@ -19,7 +19,7 @@ function Badge({ className, variant = "default", dot = true, children, ...props 
       {...props}
     >
       {dot && (
-        <span className="size-1.5 rounded-full bg-accent-glow shadow-[0_0_8px_var(--color-accent-glow)]" />
+        <span className="size-1.5 rounded-full bg-accent-electric shadow-[0_0_10px_rgba(96,165,250,0.65)]" />
       )}
       {children}
     </span>

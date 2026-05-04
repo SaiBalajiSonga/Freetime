@@ -9,18 +9,18 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-gradient-primary text-white rounded-pill shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] hover:brightness-110 active:brightness-95",
+          "bg-gradient-primary text-white rounded-pill shadow-[0_10px_36px_-8px_rgba(59,130,246,0.55)] hover:brightness-110 active:brightness-95 active:scale-[0.98]",
         default:
-          "bg-gradient-primary text-white rounded-pill shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] hover:brightness-110 active:brightness-95",
+          "bg-gradient-primary text-white rounded-pill shadow-[0_10px_36px_-8px_rgba(59,130,246,0.55)] hover:brightness-110 active:brightness-95 active:scale-[0.98]",
         outline:
-          "rounded-pill border border-border-strong bg-transparent text-foreground hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent-glow/30 focus-visible:border-accent-glow",
+          "rounded-pill border border-border-strong bg-transparent text-foreground hover:bg-surface-2 hover:border-accent-electric/35 focus-visible:ring-2 focus-visible:ring-accent-electric/35 focus-visible:border-accent-electric",
         secondary:
           "rounded-pill border border-border-strong bg-surface-2 text-foreground hover:bg-surface-2/80",
         ghost:
           "rounded-pill text-muted hover:text-foreground hover:bg-surface-2",
         destructive:
           "rounded-pill bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20",
-        link: "text-accent-cyan underline-offset-4 hover:underline",
+        link: "text-accent-electric underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 gap-2 px-6 py-3 text-sm",

@@ -102,7 +102,7 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
   return (
     <div className="space-y-8 animate-in-up pb-16">
       {/* SCORE HERO */}
-      <div className="rounded-2xl border border-border bg-surface p-6 space-y-5">
+      <div className="rounded-2xl surface-glass-strong p-6 space-y-5 border border-white/[0.07]">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -122,13 +122,13 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
         {/* Stat pills */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { icon: <Target className="h-4 w-4" />, label: 'Accuracy', value: `${accuracy}%`, color: 'text-accent-cyan' },
+            { icon: <Target className="h-4 w-4" />, label: 'Accuracy', value: `${accuracy}%`, color: 'text-accent-electric' },
             { icon: <CheckCircle2 className="h-4 w-4" />, label: 'Correct', value: session.correct, color: 'text-emerald-400' },
             { icon: <XCircle className="h-4 w-4" />, label: 'Wrong', value: session.incorrect, color: 'text-red-400' },
             { icon: <MinusCircle className="h-4 w-4" />, label: 'Skipped', value: session.unattempted, color: 'text-muted' },
             { icon: <Clock className="h-4 w-4" />, label: 'Time', value: formatDuration(session.time_taken ?? 0), color: 'text-muted' },
           ].map(item => (
-            <div key={item.label} className="rounded-xl border border-border bg-surface-2 p-3 flex items-center gap-2">
+            <div key={item.label} className="rounded-xl border border-white/[0.07] bg-surface-2/70 backdrop-blur-sm p-3 flex items-center gap-2">
               <span className={item.color}>{item.icon}</span>
               <div>
                 <p className={`text-sm font-bold ${item.color}`}>{item.value}</p>
@@ -141,7 +141,7 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
 
       {/* SUBJECT BREAKDOWN */}
       {isMultiSubject && (
-        <div className="rounded-2xl border border-border bg-surface p-6 space-y-4">
+        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
           <h2 className="font-bold text-foreground">Subject Breakdown</h2>
           <div className="space-y-4">
             {subjects.map(([name, data]) => {
@@ -154,7 +154,7 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
                       <span className="text-emerald-400">{data.correct}✓</span>
                       <span className="text-red-400">{data.incorrect}✗</span>
                       <span className="text-muted">{data.unattempted}–</span>
-                      <span className="font-bold text-accent-cyan">{data.score} pts</span>
+                      <span className="font-bold text-accent-electric">{data.score} pts</span>
                     </div>
                   </div>
                   <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
@@ -171,8 +171,8 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
       )}
 
       {/* QUESTION REVIEW */}
-      <div className="rounded-2xl border border-border bg-surface overflow-hidden">
-        <div className="flex items-center justify-between p-5 border-b border-border">
+      <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
+        <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
           <h2 className="font-bold text-foreground">Question Review</h2>
           <div className="flex gap-1">
             {(['all', 'correct', 'wrong', 'skipped'] as Filter[]).map(f => (
@@ -181,8 +181,8 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all border ${
                   filter === f
-                    ? 'bg-accent-cyan/15 border-accent-cyan/40 text-accent-cyan'
-                    : 'border-border text-muted hover:text-foreground'
+                    ? 'bg-accent-electric/15 border-accent-electric/40 text-accent-electric'
+                    : 'border-white/[0.08] text-muted hover:text-foreground hover:border-white/15'
                 }`}
               >
                 {f} {f === 'all' ? `(${sessionQuestions.length})` :
@@ -194,7 +194,7 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
           </div>
         </div>
 
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-white/[0.06]">
           {filtered.map(sq => {
             const q = sq.questions
             const isExp = expanded.has(sq.id)
@@ -258,7 +258,7 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
                       </div>
                     ) : (
                       <div className="flex items-center gap-4 text-sm">
-                        <div className="rounded-xl border border-border bg-surface px-4 py-2">
+                        <div className="rounded-xl border border-white/[0.07] bg-surface-2/50 px-4 py-2 backdrop-blur-sm">
                           <p className="text-[10px] text-muted mb-0.5">Your answer</p>
                           <p className={sq.is_correct ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
                             {sq.answer_given ?? '—'}
@@ -273,7 +273,7 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
 
                     {/* Solution */}
                     {q.solution && (
-                      <div className="rounded-xl border border-border bg-surface p-4">
+                      <div className="rounded-xl border border-white/[0.07] bg-surface-2/40 p-4 backdrop-blur-sm">
                         <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-2">Solution</p>
                         <div className="text-sm text-muted leading-relaxed">
                           <Latex>{q.solution}</Latex>
@@ -302,7 +302,7 @@ export default function ResultClient({ session, sessionQuestions }: Props) {
         </Link>
         <Link
           href="/tests"
-          className="px-6 py-3.5 rounded-2xl font-bold text-sm border border-border bg-surface text-muted hover:text-foreground hover:border-border-strong transition-all"
+          className="px-6 py-3.5 rounded-2xl font-bold text-sm border border-white/[0.1] bg-surface-2/50 text-muted hover:text-foreground hover:border-accent-electric/35 transition-all backdrop-blur-sm"
         >
           Back to Tests
         </Link>

@@ -47,12 +47,12 @@ export default async function ChapterQuestionsPage({ params }: { params: Promise
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
-        <Link href="/subjects" className="text-muted-2 hover:text-accent-cyan font-medium transition-colors">Subjects</Link>
+        <Link href="/subjects" className="text-muted-2 hover:text-accent-electric font-medium transition-colors">Subjects</Link>
         <svg className="w-3.5 h-3.5 text-border-strong" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
         {/* @ts-ignore */}
-        <Link href={`/subjects/${chapter?.subjects?.id}`} className="text-muted-2 hover:text-accent-cyan font-medium transition-colors">
+        <Link href={`/subjects/${chapter?.subjects?.id}`} className="text-muted-2 hover:text-accent-electric font-medium transition-colors">
           {/* @ts-ignore */}
           {chapter?.subjects?.name}
         </Link>
@@ -63,20 +63,20 @@ export default async function ChapterQuestionsPage({ params }: { params: Promise
       </div>
 
       {/* Question List */}
-      <div className="rounded-2xl border border-border bg-surface overflow-hidden">
-        <div className="px-6 py-5 border-b border-border">
+      <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
+        <div className="px-6 py-5 border-b border-white/[0.06]">
           <h2 className="font-bold text-lg text-foreground">{chapter?.name}</h2>
           <p className="text-xs text-muted mt-1 font-medium">{questions?.length || 0} Questions available</p>
         </div>
 
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-white/[0.06]">
           {questions?.map((q, idx) => {
             const status = getStatus(q.id)
             return (
               <Link key={q.id} href={`/questions/${q.id}`} className="block">
-                <div className="flex items-center justify-between px-6 py-4 hover:bg-surface-2 transition-colors group">
+                <div className="flex items-center justify-between px-6 py-4 hover:bg-surface-2/60 transition-colors group">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
-                    {status === 'solved'    && <CheckCircle2 className="h-4 w-4 text-accent-cyan shrink-0" />}
+                    {status === 'solved'    && <CheckCircle2 className="h-4 w-4 text-accent-electric shrink-0" />}
                     {status === 'attempted' && <XCircle className="h-4 w-4 text-red-400 shrink-0" />}
                     {status === 'unsolved'  && <Circle className="h-4 w-4 text-border-strong shrink-0" />}
 
@@ -92,7 +92,7 @@ export default async function ChapterQuestionsPage({ params }: { params: Promise
                     <span className={`px-2.5 py-0.5 rounded-pill text-[10px] font-bold capitalize ${diffColor[q.difficulty] || 'bg-surface-2 text-muted border border-border'}`}>
                       {q.difficulty}
                     </span>
-                    <svg className="w-4 h-4 text-muted-2 group-hover:text-accent-cyan transition-all group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg className="w-4 h-4 text-muted-2 group-hover:text-accent-electric transition-all group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </div>

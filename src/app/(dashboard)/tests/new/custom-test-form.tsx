@@ -152,7 +152,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
       <div className="space-y-6">
 
         {/* Step 1: Subjects */}
-        <div className="rounded-2xl border border-border bg-surface p-6 space-y-4">
+        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
           <div>
             <h2 className="font-bold text-foreground">Step 1 — Select Subjects</h2>
             <p className="text-xs text-muted mt-0.5">You can select multiple subjects.</p>
@@ -183,7 +183,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
                 const isCollapsed = collapsedSubjects[subject.id]
 
                 return (
-                  <div key={subject.id} className="rounded-xl border border-border bg-surface-2 overflow-hidden">
+                  <div key={subject.id} className="rounded-xl border border-white/[0.06] bg-surface-2/70 overflow-hidden backdrop-blur-sm">
                     {/* Subject header */}
                     <div className="flex items-center justify-between px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
         </div>
 
         {/* Step 2: Difficulty */}
-        <div className="rounded-2xl border border-border bg-surface p-6 space-y-4">
+        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
           <h2 className="font-bold text-foreground">Step 2 — Difficulty</h2>
           <div className="flex flex-wrap gap-2">
             {DIFFICULTIES.map(d => (
@@ -266,7 +266,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
         </div>
 
         {/* Step 3: Question Count */}
-        <div className="rounded-2xl border border-border bg-surface p-6 space-y-4">
+        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
           <h2 className="font-bold text-foreground">Step 3 — Questions</h2>
           <div className="flex flex-wrap gap-2">
             {QUESTION_COUNTS.map(n => (
@@ -278,7 +278,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
         </div>
 
         {/* Step 4: Time Limit */}
-        <div className="rounded-2xl border border-border bg-surface p-6 space-y-4">
+        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
           <h2 className="font-bold text-foreground">Step 4 — Time Limit</h2>
           <div className="flex flex-wrap gap-2">
             {TIME_LIMITS.map(t => (
@@ -300,7 +300,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
 
       {/* Right: Summary + Start */}
       <div className="lg:sticky lg:top-24 h-fit space-y-4">
-        <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
+        <div className="rounded-2xl surface-glass-strong p-5 space-y-4 border border-white/[0.07]">
           <h3 className="font-bold text-foreground">Test Summary</h3>
 
           <div className="space-y-3">
@@ -333,7 +333,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted">Max Score</span>
-              <span className="text-accent-cyan font-bold">{questionCount * 4}</span>
+              <span className="text-accent-electric font-bold">{questionCount * 4}</span>
             </div>
           </div>
 
@@ -343,7 +343,7 @@ export default function CustomTestForm({ subjects, chapters }: Props) {
             type="button"
             onClick={handleSubmit}
             disabled={!canStart || isPending}
-            className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-primary text-black transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-primary text-white shadow-[0_8px_28px_-8px_rgba(59,130,246,0.5)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isPending ? (
               <>
