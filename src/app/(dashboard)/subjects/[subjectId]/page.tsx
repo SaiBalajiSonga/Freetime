@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { BookOpenCheck, ChevronRight } from 'lucide-react'
 import { Card, DifficultyBadge, SectionHeader } from '@/components/site/dashboard-ui'
+import { getDifficultyFromProgress } from '@/lib/progress'
 
 export default async function ChaptersPage({ params }: { params: Promise<{ subjectId: string }> }) {
   const { subjectId } = await params
@@ -43,8 +44,6 @@ export default async function ChaptersPage({ params }: { params: Promise<{ subje
     }
   })
 
-  const progressToStatus = (value: number) => (value >= 70 ? 'easy' : value >= 40 ? 'medium' : 'hard')
-
   return (
     <div className="space-y-8 animate-in-up">
       <div className="flex items-center gap-2 text-sm">
@@ -79,7 +78,7 @@ export default async function ChaptersPage({ params }: { params: Promise<{ subje
                       <p className="text-xs text-muted mt-1">{stats.total} questions</p>
                     </div>
                   </div>
-                  <DifficultyBadge level={progressToStatus(pct)} />
+                  <DifficultyBadge level={getDifficultyFromProgress(pct)} />
                 </div>
 
                 <div className="mt-5">

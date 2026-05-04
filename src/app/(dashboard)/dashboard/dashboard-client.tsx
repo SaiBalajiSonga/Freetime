@@ -6,13 +6,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { BarChart3, BookOpen, ClipboardList, Flame, FlaskConical, Target, Timer, TrendingUp } from 'lucide-react'
 import { Card, DifficultyBadge, FloatingButton, GridItem, SectionHeader } from '@/components/site/dashboard-ui'
-
-type WeekDay = {
-  label: string
-  date?: string
-  count: number
-  isToday?: boolean
-}
+import { getDifficultyFromProgress } from '@/lib/progress'
 
 type DashboardClientProps = {
   userAttempts: any[]
@@ -26,7 +20,7 @@ type DashboardClientProps = {
   display: string
   inProgress: number
   streak: number
-  weekDays: WeekDay[]
+  weekDays: Array<{ label: string; date: string; count: number }>
   maxBar: number
 }
 
@@ -71,7 +65,6 @@ export default function DashboardClient({
 
   const searchParams = useSearchParams()
   const analyticsSection = searchParams.get('section')
-  const progressToDifficulty = (value: number) => (value >= 70 ? 'easy' : value >= 40 ? 'medium' : 'hard')
 
   useEffect(() => {
     if (analyticsSection !== 'analytics') return
@@ -143,7 +136,7 @@ export default function DashboardClient({
                 <p className="text-sm text-white/70 mt-1">{totalSolved} of {totalQ} solved</p>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <DifficultyBadge level={progressToDifficulty(pct)} className="text-white border-white/40" />
+                <DifficultyBadge level={getDifficultyFromProgress(pct)} className="text-white border-white/40" />
                 <div className="rounded-2xl border border-white/20 px-3 py-2 text-xs text-white/80">
                   <span className="font-semibold">{inProgress}</span> in progress
                 </div>
@@ -170,7 +163,7 @@ export default function DashboardClient({
                     <h3 className="text-xl font-bold">{subj}</h3>
                     <p className="text-sm text-white/70 mt-1">{stats.solved} solved • {stats.total - stats.solved} remaining</p>
                   </div>
-                  <DifficultyBadge level={progressToDifficulty(progress)} className="text-white border-white/40" />
+                  <DifficultyBadge level={getDifficultyFromProgress(progress)} className="text-white border-white/40" />
                 </div>
                 <div className="mt-6">
                   <div className="h-2 w-full rounded-full bg-white/15 overflow-hidden">
@@ -208,8 +201,8 @@ export default function DashboardClient({
               </div>
             </div>
             <div className="grid grid-cols-7 gap-3 items-end">
-              {weekDays.map((day, index) => (
-                <div key={`${day.label}-${day.date ?? index}`} className="flex flex-col items-center gap-2">
+              {weekDays.map((day) => (
+                <div key={day.date} className="flex flex-col items-center gap-2">
                   <div className="flex h-20 w-full items-end">
                     <div
                       className="w-full rounded-xl bg-[#3B82F6]/30"
