@@ -22,6 +22,12 @@ type DashboardClientProps = {
   streak: number
   weekDays: Array<{ label: string; date: string; count: number }>
   maxBar: number
+  dcm: Record<string, number>
+  todayKey: string
+  weeks: Array<Array<{ key: string; count: number; future: boolean }>>
+  sColors: Record<string, [string, string]>
+  dash: number
+  circ: number
 }
 
 export default function DashboardClient({
