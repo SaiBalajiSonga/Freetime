@@ -9,7 +9,7 @@ const items = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
   { href: '/subjects', label: 'Subjects', icon: BookOpen },
   { href: '/tests', label: 'Tests', icon: ClipboardList },
-  { href: '/dashboard#analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/dashboard?section=analytics', label: 'Analytics', icon: BarChart3 },
 ]
 
 export function MobileBottomNav() {

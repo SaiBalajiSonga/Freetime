@@ -43,7 +43,7 @@ export default async function ChaptersPage({ params }: { params: Promise<{ subje
     }
   })
 
-  const chapterTone = (value: number) => (value >= 70 ? 'easy' : value >= 40 ? 'medium' : 'hard')
+  const progressToDifficulty = (value: number) => (value >= 70 ? 'easy' : value >= 40 ? 'medium' : 'hard')
 
   return (
     <div className="space-y-8 animate-in-up">
@@ -79,7 +79,7 @@ export default async function ChaptersPage({ params }: { params: Promise<{ subje
                       <p className="text-xs text-muted mt-1">{stats.total} questions</p>
                     </div>
                   </div>
-                  <DifficultyBadge level={chapterTone(pct)} />
+                  <DifficultyBadge level={progressToDifficulty(pct)} />
                 </div>
 
                 <div className="mt-5">

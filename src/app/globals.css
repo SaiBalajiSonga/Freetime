@@ -35,6 +35,7 @@
   --color-accent-red: #ef4444;
   --color-primary: #3b82f6;
   --color-card-overlay: rgba(255, 255, 255, 0.16);
+  --card-overlay-opacity: 0.6;
 
   /* ── Radii ── */
   --radius-sm: 8px;

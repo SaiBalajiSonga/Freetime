@@ -26,7 +26,10 @@ export function Card({ variant = 'dark', tone = 'blue', className, children, ...
       )}
       {...props}
     >
-      <div className="pointer-events-none absolute inset-0 opacity-60 mix-blend-screen bg-[radial-gradient(circle_at_top,_var(--color-card-overlay),_transparent_60%)]" />
+      <div
+        className="pointer-events-none absolute inset-0 mix-blend-screen bg-[radial-gradient(circle_at_top,_var(--color-card-overlay),_transparent_60%)]"
+        style={{ opacity: 'var(--card-overlay-opacity)' }}
+      />
       <div className="relative z-10">{children}</div>
     </div>
   )

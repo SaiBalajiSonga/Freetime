@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { BarChart3, BookOpen, ClipboardList, Flame, FlaskConical, Target, Timer, TrendingUp } from 'lucide-react'
@@ -35,7 +36,7 @@ export default function DashboardClient({
     { href: '/subjects', label: 'Subjects', icon: <BookOpen className="h-5 w-5" />, tone: 'blue', description: 'Browse topics' },
     { href: '/subjects', label: 'Practice', icon: <FlaskConical className="h-5 w-5" />, tone: 'green', description: 'Start drills' },
     { href: '/tests', label: 'Tests', icon: <ClipboardList className="h-5 w-5" />, tone: 'yellow', description: 'Mock exams' },
-    { href: '/dashboard#analytics', label: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, tone: 'red', description: 'Track growth' },
+    { href: '/dashboard?section=analytics', label: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, tone: 'red', description: 'Track growth' },
   ] as const
 
   const subjectTone: Record<string, 'blue' | 'yellow' | 'green' | 'red'> = {
@@ -45,6 +46,19 @@ export default function DashboardClient({
   }
 
   const progressToDifficulty = (value: number) => (value >= 70 ? 'easy' : value >= 40 ? 'medium' : 'hard')
+
+  useEffect(() => {
+    const scrollToAnalytics = () => {
+      const params = new URLSearchParams(window.location.search)
+      if (window.location.hash === '#analytics' || params.get('section') === 'analytics') {
+        document.getElementById('analytics')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+
+    scrollToAnalytics()
+    window.addEventListener('hashchange', scrollToAnalytics)
+    return () => window.removeEventListener('hashchange', scrollToAnalytics)
+  }, [])
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-10">
@@ -104,7 +118,9 @@ export default function DashboardClient({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-white/70 font-semibold">Overall</p>
-                <h3 className="text-3xl font-extrabold mt-2">{pct}%</h3>
+                <h3 className="text-3xl font-extrabold mt-2" aria-label={`Overall progress ${pct}%`}>
+                  {pct}%
+                </h3>
                 <p className="text-sm text-white/70 mt-1">{totalSolved} of {totalQ} solved</p>
               </div>
               <div className="flex flex-col items-end gap-2">
