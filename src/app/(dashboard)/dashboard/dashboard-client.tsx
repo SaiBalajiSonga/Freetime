@@ -1,7 +1,28 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { BarChart3, BookOpen, ClipboardList, Flame, FlaskConical, Target, Timer, TrendingUp } from 'lucide-react'
+import { Card, DifficultyBadge, FloatingButton, GridItem, SectionHeader } from '@/components/site/dashboard-ui'
+import { getDifficultyFromProgress } from '@/lib/progress'
+
+type DashboardClientProps = {
+  userAttempts: any[]
+  sp: Record<string, { total: number; solved: number }>
+  totalSolved: number
+  totalQ: number
+  pct: number
+  accuracy: number
+  hrs: number
+  mns: number
+  display: string
+  inProgress: number
+  streak: number
+  weekDays: Array<{ label: string; date: string; count: number }>
+  maxBar: number
+}
 
 export default function DashboardClient({
   userAttempts,
@@ -17,13 +38,7 @@ export default function DashboardClient({
   streak,
   weekDays,
   maxBar,
-  dcm,
-  todayKey,
-  weeks,
-  sColors,
-  dash,
-  circ
-}: any) {
+}: DashboardClientProps) {
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -31,253 +46,232 @@ export default function DashboardClient({
   }
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 16 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   }
 
+  const quickActions = [
+    { href: '/subjects', label: 'Subjects', icon: <BookOpen className="h-5 w-5" />, tone: 'blue', description: 'Browse topics' },
+    { href: '/subjects', label: 'Practice', icon: <FlaskConical className="h-5 w-5" />, tone: 'green', description: 'Start drills' },
+    { href: '/tests', label: 'Tests', icon: <ClipboardList className="h-5 w-5" />, tone: 'yellow', description: 'Mock exams' },
+    { href: '/dashboard?section=analytics', label: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, tone: 'red', description: 'Track growth' },
+  ] as const
+
+  const subjectTone: Record<string, 'blue' | 'yellow' | 'green' | 'red'> = {
+    Physics: 'blue',
+    Chemistry: 'yellow',
+    Mathematics: 'green',
+  }
+
+  const searchParams = useSearchParams()
+  const analyticsSection = searchParams.get('section')
+
+  useEffect(() => {
+    if (analyticsSection !== 'analytics') return
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    document.getElementById('analytics')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' })
+  }, [analyticsSection])
+
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-
-      {/* ── Hero card ── */}
-      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl surface-glass-strong border border-white/[0.08]">
-        <div
-          className="pointer-events-none absolute top-[-80px] right-[-60px] w-[280px] h-[280px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.14) 0%, transparent 70%)' }}
-        />
-        <div
-          className="pointer-events-none absolute bottom-[-100px] left-[10%] w-[220px] h-[220px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)' }}
-        />
-
-        <div className="relative z-10 p-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="section-label">Overview</p>
-              <h1 className="text-2xl font-extrabold text-foreground mt-1.5 tracking-[-0.03em]">Hi, {display} 👋</h1>
-              <p className="text-muted text-sm mt-1">Keep the momentum going. You&apos;re doing great.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="px-4 py-2.5 flex items-center gap-2 border border-white/[0.08] bg-surface-2/80 rounded-xl backdrop-blur-sm">
-                <span className="text-lg">🔥</span>
-                <div>
-                  <p className="text-lg font-extrabold text-foreground tracking-tight leading-none">{streak}</p>
-                  <p className="text-[9px] text-muted-2 font-bold uppercase tracking-wider mt-0.5">Streak</p>
-                </div>
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-10">
+      <motion.section variants={itemVariants} className="rounded-3xl border border-white/[0.08] bg-surface/80 p-6 md:p-8 shadow-xl">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="section-label mb-2">Welcome back</p>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-[-0.03em]">Hi, {display} 👋</h1>
+            <p className="text-sm text-muted mt-2 max-w-md">Your dashboard is tuned for fast focus. Pick a lane and keep stacking wins.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-surface-2/80 px-4 py-3">
+              <Flame className="h-5 w-5 text-[#FACC15]" />
+              <div>
+                <p className="text-lg font-bold text-foreground leading-none">{streak}</p>
+                <p className="text-[10px] text-muted-2 font-semibold uppercase tracking-[0.2em]">Streak</p>
               </div>
             </div>
-          </div>
-
-          {/* Progress Ring */}
-          <div className="flex flex-col items-center py-8">
-            <div className="relative">
-              <svg className="w-[190px] h-[190px]" viewBox="0 0 180 180" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="90" cy="90" r="80" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="12" />
-                <motion.circle
-                  cx="90" cy="90" r="80" fill="none" stroke="url(#rGrad)" strokeWidth="12" strokeLinecap="round"
-                  initial={{ strokeDashoffset: circ }}
-                  animate={{ strokeDashoffset: circ - dash }}
-                  transition={{ duration: 1.5, delay: 0.3 }}
-                  strokeDasharray={`${circ} ${circ}`}
-                />
-                <defs>
-                  <linearGradient id="rGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#93c5fd" />
-                    <stop offset="50%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#2563eb" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[52px] font-extrabold text-foreground leading-none tracking-tight">
-                  {pct}<span className="text-2xl text-muted-2">%</span>
-                </span>
-                <span className="text-muted-2 text-[11px] font-bold uppercase tracking-widest mt-1">Completed</span>
+            <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-surface-2/80 px-4 py-3">
+              <Target className="h-5 w-5 text-[#84CC16]" />
+              <div>
+                <p className="text-lg font-bold text-foreground leading-none">{accuracy}%</p>
+                <p className="text-[10px] text-muted-2 font-semibold uppercase tracking-[0.2em]">Accuracy</p>
               </div>
             </div>
-          </div>
-
-          {/* Stat pills */}
-          <div className="flex justify-center gap-3 flex-wrap">
-            {[
-              { emoji: '✅', val: totalSolved, label: 'Solved' },
-              { emoji: '⏳', val: inProgress, label: 'In Progress' },
-              { emoji: '🎯', val: `${accuracy}%`, label: 'Accuracy' },
-              { emoji: '📚', val: totalQ, label: 'Total' },
-              { emoji: '⏱️', val: hrs > 0 ? `${hrs}h ${mns}m` : `${mns}m`, label: 'Time' },
-            ].map(s => (
-              <motion.div
-                key={s.label}
-                whileHover={{ y: -3 }}
-                className="px-4 py-3 text-center min-w-[90px] border border-white/[0.07] bg-surface-2/70 rounded-2xl backdrop-blur-sm transition-all hover:border-accent-electric/25 hover:shadow-[0_8px_28px_-12px_rgba(59,130,246,0.2)]"
-              >
-                <span className="text-sm">{s.emoji}</span>
-                <p className="text-lg font-extrabold text-foreground mt-1 tracking-tight leading-none">{s.val}</p>
-                <p className="text-[9px] text-muted-2 font-bold uppercase tracking-widest mt-0.5">{s.label}</p>
-              </motion.div>
-            ))}
+            <Link href="/subjects" className="rounded-2xl bg-[#3B82F6] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_-18px_rgba(59,130,246,0.8)] transition-transform hover:-translate-y-1">
+              Start practice
+            </Link>
+            <div className="flex size-12 items-center justify-center rounded-full border border-white/[0.08] bg-surface-2 text-lg font-bold text-[#93C5FD]">
+              {display?.[0]?.toUpperCase() ?? '?'}
+            </div>
           </div>
         </div>
-      </motion.div>
+      </motion.section>
 
-      {/* ── Weekly + Heatmap ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Weekly bars */}
-        <motion.div variants={itemVariants} className="rounded-2xl surface-glass p-6 border border-white/[0.06]">
-          <div className="flex justify-between items-center mb-5">
-            <div>
-              <h2 className="text-base font-bold text-foreground">This Week</h2>
-              <p className="text-muted-2 text-xs mt-0.5">Daily practice activity</p>
-            </div>
-            <div className="px-3 py-1.5 border border-white/[0.08] bg-surface-2/80 rounded-xl">
-              <span className="text-xs font-bold text-accent-electric">{weekDays.reduce((a: any, d: any) => a + d.count, 0)} total</span>
-            </div>
-          </div>
-          <div className="flex items-end justify-between gap-2 h-[120px]">
-            {weekDays.map((d: any, i: any) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                <div className="w-full flex justify-center" style={{ height: '90px' }}>
-                  <motion.div
-                    initial={{ height: 4 }}
-                    animate={{ height: Math.max(d.count > 0 ? (d.count / maxBar) * 80 : 4, 4) }}
-                    transition={{ duration: 0.8, delay: 0.4 + (i * 0.05) }}
-                    className="rounded-lg"
-                    style={{
-                      width: '100%', maxWidth: '32px',
-                      marginTop: 'auto',
-                      background: d.isToday
-                        ? 'linear-gradient(180deg, #93c5fd, #2563eb)'
-                        : d.count > 0
-                          ? 'linear-gradient(180deg, rgba(96,165,250,0.45), rgba(37,99,235,0.2))'
-                          : 'rgba(255,255,255,0.04)',
-                      boxShadow: d.count > 0 && d.isToday ? '0 4px 18px rgba(59,130,246,0.35)' : 'none',
-                    }}
-                  />
-                </div>
-                <span className={`text-[10px] font-bold ${d.isToday ? 'text-accent-electric' : 'text-muted-2'}`}>{d.label}</span>
-                <span className={`text-[9px] font-medium ${d.isToday ? 'text-accent-glow' : 'text-muted-2/50'}`}>{d.date}</span>
+      <motion.section variants={itemVariants} className="space-y-5">
+        <SectionHeader
+          label="Quick actions"
+          title="Jump back in"
+          subtitle="Everything you need is one tap away."
+        />
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {quickActions.map((action) => (
+            <GridItem key={action.label} {...action} />
+          ))}
+        </div>
+      </motion.section>
+
+      <motion.section variants={itemVariants} className="space-y-5">
+        <SectionHeader
+          label="Core progress"
+          title="Stacked subject cards"
+          subtitle="Color-coded cards highlight where you are winning and what needs attention."
+        />
+        <div className="grid gap-5 lg:grid-cols-3">
+          <Card variant="colored" tone="blue" className="lg:col-span-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-white/70 font-semibold">Overall</p>
+                <h3 className="text-3xl font-extrabold mt-2" aria-label={`Overall progress ${pct}%`}>
+                  {pct}%
+                </h3>
+                <p className="text-sm text-white/70 mt-1">{totalSolved} of {totalQ} solved</p>
               </div>
-            ))}
-          </div>
-        </motion.div>
+              <div className="flex flex-col items-end gap-2">
+                <DifficultyBadge level={getDifficultyFromProgress(pct)} className="text-white border-white/40" />
+                <div className="rounded-2xl border border-white/20 px-3 py-2 text-xs text-white/80">
+                  <span className="font-semibold">{inProgress}</span> in progress
+                </div>
+              </div>
+            </div>
+            <div className="mt-6">
+              <div className="h-2 w-full rounded-full bg-white/15 overflow-hidden">
+                <div className="h-full rounded-full bg-white/80" style={{ width: `${pct}%` }} />
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-white/70">
+                <span>{hrs > 0 ? `${hrs}h ${mns}m` : `${mns}m`} total time</span>
+                <span>{accuracy}% accuracy</span>
+              </div>
+            </div>
+          </Card>
 
-        {/* Heatmap */}
-        <motion.div variants={itemVariants} className="rounded-2xl surface-glass p-6 border border-white/[0.06]">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h2 className="text-base font-bold text-foreground">Practice Map</h2>
-              <p className="text-muted-2 text-xs mt-0.5">{Object.keys(dcm).length} active days</p>
+          {Object.entries(sp).map(([subj, stats]: any) => {
+            const progress = stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0
+            const tone = subjectTone[subj] || 'blue'
+            return (
+              <Card key={subj} variant="colored" tone={tone}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold">{subj}</h3>
+                    <p className="text-sm text-white/70 mt-1">{stats.solved} solved • {stats.total - stats.solved} remaining</p>
+                  </div>
+                  <DifficultyBadge level={getDifficultyFromProgress(progress)} className="text-white border-white/40" />
+                </div>
+                <div className="mt-6">
+                  <div className="h-2 w-full rounded-full bg-white/15 overflow-hidden">
+                    <div className="h-full rounded-full bg-white/80" style={{ width: `${progress}%` }} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs text-white/70">
+                    <span>{progress}% complete</span>
+                    <span className="uppercase tracking-[0.15em]">Focus</span>
+                  </div>
+                </div>
+              </Card>
+            )
+          })}
+          {!Object.keys(sp).length && (
+            <Card variant="dark" className="lg:col-span-2 text-center">
+              <p className="text-muted">No subjects tracked yet.</p>
+              <Link href="/subjects" className="mt-3 inline-block text-sm font-semibold text-[#93C5FD]">Explore subjects →</Link>
+            </Card>
+          )}
+        </div>
+      </motion.section>
+
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <motion.section id="analytics" variants={itemVariants}>
+          <Card variant="dark" className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="section-label mb-2">Analytics</p>
+                <h3 className="text-lg font-bold text-foreground">Weekly pulse</h3>
+                <p className="text-xs text-muted mt-1">Track daily momentum this week.</p>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted">
+                <TrendingUp className="h-4 w-4 text-[#3B82F6]" />
+                {weekDays.reduce((a: any, d: any) => a + d.count, 0)} sessions
+              </div>
             </div>
-            <div className="flex gap-1.5 items-center">
-              <span className="text-[8px] text-muted-2/50 font-medium">Less</span>
-              {[4, 6, 8, 10, 12].map(o => <div key={o} className="w-2 h-2 rounded-sm" style={{ backgroundColor: `rgba(96,165,250,${o / 14})` }} />)}
-              <span className="text-[8px] text-muted-2/50 font-medium">More</span>
-            </div>
-          </div>
-          <div className="flex gap-[3px]">
-            <div className="flex flex-col gap-[3px] mr-1">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                <div key={i} className="h-[13px] flex items-center">
-                  <span className="text-[8px] text-muted-2/50 font-medium">{d}</span>
+            <div className="grid grid-cols-7 gap-3 items-end">
+              {weekDays.map((day) => (
+                <div key={day.date} className="flex flex-col items-center gap-2">
+                  <div className="flex h-20 w-full items-end">
+                    <div
+                      className="w-full rounded-xl bg-[#3B82F6]/30"
+                      style={{ height: `${Math.max(20, (day.count / maxBar) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-semibold text-muted-2">{day.label}</span>
                 </div>
               ))}
             </div>
-            <div className="flex gap-[3px] flex-1">
-              {weeks.map((wk: any, wi: any) => (
-                <motion.div
-                  key={wi}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.2 + (wi * 0.03) }}
-                  className="flex flex-col gap-[3px] flex-1"
+            <div className="mt-5 grid grid-cols-2 gap-3 text-xs text-muted">
+              <div className="rounded-2xl border border-white/[0.08] bg-surface-2/70 p-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-2">Solved</p>
+                <p className="text-lg font-bold text-foreground">{totalSolved}</p>
+              </div>
+              <div className="rounded-2xl border border-white/[0.08] bg-surface-2/70 p-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-2">Time</p>
+                <p className="text-lg font-bold text-foreground flex items-center gap-1">
+                  <Timer className="h-4 w-4 text-[#FACC15]" />
+                  {hrs > 0 ? `${hrs}h ${mns}m` : `${mns}m`}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </motion.section>
+
+        <motion.section variants={itemVariants}>
+          <Card variant="dark" className="p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <p className="section-label mb-2">Recent activity</p>
+                <h3 className="text-lg font-bold text-foreground">Latest attempts</h3>
+              </div>
+              {userAttempts.length > 0 && (
+                <Link href="/subjects" className="text-xs font-semibold text-[#93C5FD] hover:text-white transition-colors">
+                  See all
+                </Link>
+              )}
+            </div>
+            <div className="space-y-3">
+              {userAttempts.slice(0, 5).map((attempt: any, index: number) => (
+                <div
+                  key={attempt.id || index}
+                  className="flex items-center justify-between rounded-2xl border border-white/[0.08] bg-surface-2/70 px-4 py-3 transition-transform hover:-translate-y-0.5"
                 >
-                  {wk.map((d: any, di: any) => {
-                    let bg = 'rgba(255,255,255,0.03)'
-                    if (!d.future && d.count > 0) bg = d.count >= 8 ? 'rgba(96,165,250,0.95)' : d.count >= 4 ? 'rgba(96,165,250,0.65)' : d.count >= 2 ? 'rgba(96,165,250,0.38)' : 'rgba(96,165,250,0.2)'
-                    if (d.future) bg = 'transparent'
-                    return <div key={di} className={`aspect-square rounded-[3px] ${d.key === todayKey ? 'ring-1 ring-accent-electric/45' : ''}`} style={{ backgroundColor: bg, minHeight: '13px' }} />
-                  })}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* ── Subject Progress + Activity ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        <motion.div variants={itemVariants} className="lg:col-span-3 rounded-2xl surface-glass p-6 border border-white/[0.06]">
-          <h2 className="text-lg font-bold text-foreground mb-5">Subject Progress</h2>
-          <div className="space-y-5">
-            {Object.entries(sp).map(([subj, stats]: any, index) => {
-              const p = stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0
-              const [barCol] = sColors[subj] || ['#22d3ee']
-              return (
-                <div key={subj} className="flex items-center gap-4">
-                  <div className="size-10 rounded-xl bg-surface-2 border border-border flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5 text-accent-electric" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-1.5">
-                      <span className="text-sm font-semibold text-foreground">{subj}</span>
-                      <span className="text-xs font-bold text-accent-electric">{p}%</span>
-                    </div>
-                    <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden border border-white/[0.06]">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${p}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1, delay: 0.3 + (index * 0.1) }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: barCol, boxShadow: `0 0 10px ${barCol}` }}
-                      />
-                    </div>
-                    <p className="text-[11px] text-muted-2 mt-1.5 font-medium">{stats.solved} of {stats.total} solved</p>
-                  </div>
-                </div>
-              )
-            })}
-            {!Object.keys(sp).length && <p className="text-sm text-muted text-center py-6">No subjects yet.</p>}
-          </div>
-        </motion.div>
-
-        <motion.div variants={itemVariants} className="lg:col-span-2 rounded-2xl surface-glass p-6 border border-white/[0.06]">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-lg font-bold text-foreground">Recent Activity</h2>
-            {userAttempts.length > 0 && <Link href="/subjects" className="text-xs font-semibold text-accent-electric hover:text-accent-glow transition-colors">See all</Link>}
-          </div>
-          <div className="space-y-1">
-            {userAttempts.slice(0, 6).map((a: any, i: any) => (
-              <motion.div
-                key={a.id}
-                whileHover={{ x: 4 }}
-                className="flex items-center justify-between py-2.5 px-3 rounded-xl border-b border-white/[0.05] last:border-0 hover:bg-surface-2/80 transition-colors"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="size-7 rounded-lg bg-surface-2 border border-border flex items-center justify-center text-[11px] font-bold text-muted-2">{i + 1}</span>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{(a as any).questions?.chapters?.name || '—'}</p>
-                    <p className="text-[10px] text-muted-2 font-medium">{new Date(a.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{attempt.questions?.chapters?.name || 'Practice session'}</p>
+                    <p className="text-[11px] text-muted mt-1">
+                      {new Date(attempt.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </p>
                   </div>
+                  <span className={`text-[10px] font-semibold uppercase tracking-[0.2em] ${
+                    attempt.is_correct ? 'text-[#84CC16]' : 'text-[#EF4444]'
+                  }`}>
+                    {attempt.is_correct ? 'Correct' : 'Wrong'}
+                  </span>
                 </div>
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${a.is_correct ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' : 'text-rose-400 bg-rose-400/10 border-rose-400/20'}`}>
-                  {a.is_correct ? '✓ Correct' : '✗ Wrong'}
-                </span>
-              </motion.div>
-            ))}
-            {!userAttempts.length && (
-              <div className="text-center py-10">
-                <div className="size-12 rounded-xl bg-surface-2 border border-border flex items-center justify-center mx-auto mb-4">
-                  <span className="text-xl">⚡</span>
+              ))}
+              {!userAttempts.length && (
+                <div className="rounded-2xl border border-white/[0.08] bg-surface-2/70 px-4 py-6 text-center text-sm text-muted">
+                  No recent attempts yet. Start a practice set to see activity here.
                 </div>
-                <p className="text-sm text-muted font-medium">No activity yet</p>
-                <Link href="/subjects" className="text-xs text-accent-electric font-bold mt-2 inline-block hover:text-accent-glow">Start practicing →</Link>
-              </div>
-            )}
-          </div>
-        </motion.div>
+              )}
+            </div>
+          </Card>
+        </motion.section>
       </div>
+
+      <FloatingButton href="/subjects" label="Practice" icon={<FlaskConical className="h-4 w-4" />} />
     </motion.div>
   )
 }

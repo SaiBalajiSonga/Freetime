@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Eye, EyeOff, RotateCcw, History } from 'lucide-react'
 import Latex from '@/components/ui/latex'
+import { Card, DifficultyBadge } from '@/components/site/dashboard-ui'
 
 type QuestionViewProps = {
   question: any
@@ -65,17 +66,11 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
 
-  const diffMap: Record<string, string> = {
-    easy:   'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    medium: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    hard:   'bg-red-500/10 text-red-400 border border-red-500/20',
-  }
-
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Left: Question */}
       <div className="flex-1 space-y-5">
-        <div className="rounded-2xl surface-glass-strong p-7 border border-white/[0.07]">
+        <Card variant="dark" className="p-7">
           <div className="flex items-start justify-between mb-5">
             <div>
               <h1 className="text-xl font-extrabold text-foreground tracking-[-0.03em]">
@@ -94,9 +89,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
                 )}
               </div>
             </div>
-            <span className={`px-3 py-1 rounded-pill text-xs font-bold capitalize ${diffMap[question.difficulty] || 'bg-surface-2 text-muted border border-border'}`}>
-              {question.difficulty}
-            </span>
+            <DifficultyBadge level={question.difficulty} />
           </div>
 
           <div className="text-[15px] text-muted leading-relaxed">
@@ -109,14 +102,14 @@ export default function QuestionView({ question, options, attempts: initialAttem
                 {showHint ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 {showHint ? 'Hide Hint' : 'Show Hint'}
               </button>
-              {showHint && (
-                <div className="mt-3 text-sm text-accent-electric bg-accent-electric/5 border border-accent-electric/20 rounded-xl p-4">
+            {showHint && (
+                <div className="mt-3 text-sm text-[#93C5FD] bg-[#3B82F6]/10 border border-[#3B82F6]/25 rounded-xl p-4">
                   <Latex>{question.hint}</Latex>
                 </div>
               )}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Explanation */}
         {showSolution && (
@@ -136,7 +129,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
       {/* Right: Answer Panel */}
       <div className="lg:w-[380px] shrink-0 space-y-5">
-        <div className="rounded-2xl surface-glass-strong p-6 sticky top-[90px] border border-white/[0.07]">
+        <Card variant="dark" className="p-6 sticky top-[90px]">
           {/* Timer */}
           {practiceMode && (
             <div className="flex items-center justify-end gap-2 mb-5">
@@ -186,7 +179,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
             />
           )}
 
-          {practiceMode && (
+            {practiceMode && (
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || (question.type === 'mcq' ? !selectedOption : !numericalAnswer)}
@@ -224,11 +217,11 @@ export default function QuestionView({ question, options, attempts: initialAttem
               {latestAttempt?.is_correct ? 'Practice Again' : 'Try Again'}
             </Button>
           )}
-        </div>
+        </Card>
 
         {/* History */}
         {attempts.length > 0 && (
-          <div className="rounded-2xl surface-glass p-6 border border-white/[0.06]">
+          <Card variant="dark" className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <History className="h-4 w-4 text-muted-2" />
               <h3 className="font-bold text-foreground text-sm">Previous Submissions</h3>
@@ -258,7 +251,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </div>

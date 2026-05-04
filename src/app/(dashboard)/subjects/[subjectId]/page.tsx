@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { BookOpenCheck, ChevronRight } from 'lucide-react'
+import { Card, DifficultyBadge, SectionHeader } from '@/components/site/dashboard-ui'
+import { getDifficultyFromProgress } from '@/lib/progress'
 
 export default async function ChaptersPage({ params }: { params: Promise<{ subjectId: string }> }) {
   const { subjectId } = await params
@@ -44,14 +47,18 @@ export default async function ChaptersPage({ params }: { params: Promise<{ subje
   return (
     <div className="space-y-8 animate-in-up">
       <div className="flex items-center gap-2 text-sm">
-        <Link href="/subjects" className="text-muted-2 hover:text-accent-electric font-medium transition-colors">
+        <Link href="/subjects" className="text-muted-2 hover:text-[#93C5FD] font-medium transition-colors">
           Subjects
         </Link>
-        <svg className="w-3.5 h-3.5 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
+        <ChevronRight className="h-4 w-4 text-muted-2" />
         <span className="font-bold text-foreground">{subject?.name}</span>
       </div>
+
+      <SectionHeader
+        label="Chapters"
+        title={`${subject?.name} roadmap`}
+        subtitle="Each chapter card shows how far you have pushed through the questions."
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {chapters?.map(chapter => {
@@ -59,44 +66,38 @@ export default async function ChaptersPage({ params }: { params: Promise<{ subje
           const pct = stats.total > 0 ? Math.round((stats.solved / stats.total) * 100) : 0
 
           return (
-            <Link key={chapter.id} href={`/chapters/${chapter.id}`}>
-              <div className="rounded-2xl surface-glass p-5 h-full group transition-all duration-300 card-hover-lift border border-white/[0.06]">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-bold text-[15px] text-foreground leading-tight pr-2">{chapter.name}</h3>
-                  <svg
-                    className="w-4 h-4 text-muted-2 shrink-0 mt-0.5 transition-all group-hover:text-accent-electric group-hover:translate-x-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+            <Link key={chapter.id} href={`/chapters/${chapter.id}`} className="block">
+              <Card variant="dark" className="h-full">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-surface-2 text-[#93C5FD]">
+                      <BookOpenCheck className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-base text-foreground leading-tight">{chapter.name}</h3>
+                      <p className="text-xs text-muted mt-1">{stats.total} questions</p>
+                    </div>
+                  </div>
+                  <DifficultyBadge level={getDifficultyFromProgress(pct)} />
                 </div>
-                <p className="text-sm text-muted font-medium">{stats.total} questions</p>
 
-                <div className="mt-4 pt-4 border-t border-white/[0.06]">
-                  <div className="h-1.5 w-full bg-surface-2 rounded-full overflow-hidden border border-white/[0.06]">
-                    <div
-                      className="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-accent-electric to-accent-blue shadow-[0_0_12px_rgba(59,130,246,0.35)]"
-                      style={{ width: `${pct}%` }}
-                    />
+                <div className="mt-5">
+                  <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full rounded-full bg-[#3B82F6]/80" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="text-[11px] text-muted-2 font-medium">
-                      {stats.solved} / {stats.total} solved
-                    </p>
-                    {pct > 0 && <span className="text-[11px] font-bold text-accent-electric">{pct}%</span>}
+                  <div className="mt-3 flex items-center justify-between text-[11px] text-muted">
+                    <span>{stats.solved} solved</span>
+                    <span className="text-foreground font-semibold">{pct}%</span>
                   </div>
                 </div>
-              </div>
+              </Card>
             </Link>
           )
         })}
         {chapters?.length === 0 && (
-          <div className="col-span-full py-16 text-center rounded-2xl surface-glass border border-white/[0.06] p-8">
+          <Card variant="dark" className="col-span-full py-16 text-center">
             <p className="text-muted font-medium">No chapters found for this subject.</p>
-          </div>
+          </Card>
         )}
       </div>
     </div>

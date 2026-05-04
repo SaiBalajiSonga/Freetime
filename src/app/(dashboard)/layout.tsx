@@ -6,6 +6,7 @@ import { BookOpen, LayoutDashboard, Bookmark, FlaskConical, Bell, Sparkles, Clip
 import { AmbientBackdrop } from '@/components/site/ambient-backdrop'
 import { SidebarLink } from '@/components/site/sidebar-link'
 import { MobileSidebarToggle } from '@/components/site/mobile-sidebar'
+import { MobileBottomNav } from '@/components/site/mobile-bottom-nav'
 
 export default async function DashboardLayout({
   children,
@@ -99,10 +100,12 @@ export default async function DashboardLayout({
           </div>
         </header>
 
-        <main className="flex-1 p-5 sm:p-8 max-w-[1200px] w-full mx-auto">
+        <main className="flex-1 p-5 pb-28 sm:p-8 max-w-[1200px] w-full mx-auto">
           {children}
         </main>
       </div>
+
+      <MobileBottomNav />
     </div>
   )
 }
