@@ -28,8 +28,8 @@ export function SidebarLink({
 
   if (disabled) {
     return (
-      <div className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-muted-2/40 text-sm cursor-not-allowed">
-        {icon}
+      <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-2/40 text-sm cursor-not-allowed select-none">
+        <span className="opacity-40">{icon}</span>
         <span>{label}</span>
       </div>
     )
@@ -39,21 +39,20 @@ export function SidebarLink({
     <Link
       href={href}
       className={cn(
-        'group relative flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200',
+        'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
         active
-          ? 'bg-accent-blue/10 text-foreground border border-accent-electric/20 shadow-[0_0_20px_-8px_rgba(59,130,246,0.35)]'
-          : 'text-muted-2 hover:bg-surface-2 hover:text-foreground border border-transparent'
+          ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
+          : 'text-[var(--color-sidebar-text)] hover:bg-[var(--color-surface-2)] hover:text-foreground'
       )}
     >
+      {/* Active left bar */}
       {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-accent-electric shadow-[0_0_10px_rgba(96,165,250,0.9)]" />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-[var(--color-primary)]" />
       )}
-      <span
-        className={cn(
-          'transition-transform duration-300 group-hover:scale-110',
-          active ? 'text-accent-electric' : 'group-hover:text-accent-electric/70'
-        )}
-      >
+      <span className={cn(
+        'transition-transform duration-200 group-hover:scale-110',
+        active ? 'text-[var(--color-primary)]' : 'group-hover:text-[var(--color-primary)]'
+      )}>
         {icon}
       </span>
       <span>{label}</span>

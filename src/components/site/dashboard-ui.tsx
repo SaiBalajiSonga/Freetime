@@ -2,71 +2,87 @@ import Link from 'next/link'
 import type React from 'react'
 import { cn } from '@/lib/utils'
 
+/* ── Card ───────────────────────────────────────────────── */
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
-  variant?: 'colored' | 'dark'
-  tone?: 'blue' | 'green' | 'yellow' | 'red'
+  variant?: 'white' | 'colored' | 'blue'
+  tone?: 'blue' | 'green' | 'yellow' | 'red' | 'orange' | 'purple'
 }
 
-const toneStyles: Record<NonNullable<CardProps['tone']>, string> = {
-  blue: 'from-[#3B82F6]/35 via-[#3B82F6]/15 to-[#0B0F14]/60',
-  green: 'from-[#84CC16]/30 via-[#84CC16]/15 to-[#0B0F14]/60',
-  yellow: 'from-[#FACC15]/30 via-[#FACC15]/15 to-[#0B0F14]/60',
-  red: 'from-[#EF4444]/30 via-[#EF4444]/15 to-[#0B0F14]/60',
+const toneGradients: Record<NonNullable<CardProps['tone']>, string> = {
+  blue:   'from-[#2563eb] to-[#1d4ed8]',
+  green:  'from-[#10b981] to-[#059669]',
+  yellow: 'from-[#f59e0b] to-[#d97706]',
+  red:    'from-[#ef4444] to-[#dc2626]',
+  orange: 'from-[#f97316] to-[#ea580c]',
+  purple: 'from-[#8b5cf6] to-[#7c3aed]',
 }
 
-export function Card({ variant = 'dark', tone = 'blue', className, children, ...props }: CardProps) {
+export function Card({ variant = 'white', tone = 'blue', className, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'card-stack relative overflow-hidden rounded-3xl border border-white/[0.08] p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl',
+        'relative overflow-hidden rounded-2xl transition-all duration-250',
         variant === 'colored'
-          ? `bg-gradient-to-br ${toneStyles[tone]} text-foreground`
-          : 'bg-surface/90 text-foreground',
+          ? `bg-gradient-to-br ${toneGradients[tone]} text-white shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5`
+          : variant === 'blue'
+          ? 'bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] text-white shadow-[var(--shadow-blue-glow)]'
+          : 'bg-white border border-[var(--color-border)] text-foreground shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5',
         className
       )}
       {...props}
     >
-      <div
-        className="pointer-events-none absolute inset-0 mix-blend-screen bg-[radial-gradient(circle_at_top,_var(--color-card-overlay),_transparent_60%)]"
-        style={{ opacity: 0.6 }}
-      />
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 p-5">{children}</div>
+      {/* Subtle sheen overlay on colored variants */}
+      {(variant === 'colored' || variant === 'blue') && (
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl"
+          style={{ background: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18) 0%, transparent 60%)' }}
+        />
+      )}
     </div>
   )
 }
 
+/* ── GridItem (Quick actions) ───────────────────────────── */
 type GridItemProps = {
   href: string
   label: string
   icon: React.ReactNode
-  tone?: CardProps['tone']
+  tone?: 'blue' | 'green' | 'yellow' | 'red' | 'orange' | 'purple'
   description?: string
 }
 
+const gridToneStyles: Record<NonNullable<GridItemProps['tone']>, { box: string; ring: string }> = {
+  blue:   { box: 'icon-box-blue',   ring: 'hover:border-blue-200' },
+  green:  { box: 'icon-box-green',  ring: 'hover:border-green-200' },
+  yellow: { box: 'icon-box-yellow', ring: 'hover:border-yellow-200' },
+  red:    { box: 'icon-box-red',    ring: 'hover:border-red-200' },
+  orange: { box: 'icon-box-orange', ring: 'hover:border-orange-200' },
+  purple: { box: 'icon-box-purple', ring: 'hover:border-purple-200' },
+}
+
 export function GridItem({ href, label, icon, description, tone = 'blue' }: GridItemProps) {
+  const styles = gridToneStyles[tone]
   return (
     <Link
       href={href}
       className={cn(
-        'group relative rounded-2xl border border-white/[0.08] bg-surface/80 p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl',
-        'hover:bg-surface-2/80'
+        'group flex flex-col gap-3 rounded-2xl bg-white border border-[var(--color-border)] p-4 shadow-[var(--shadow-card)] transition-all duration-250 hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]',
+        styles.ring
       )}
     >
-      <div className={cn('mb-3 flex size-11 items-center justify-center rounded-2xl border border-white/[0.12]', {
-        'bg-[#3B82F6]/15 text-[#93C5FD]': tone === 'blue',
-        'bg-[#84CC16]/15 text-[#BEF264]': tone === 'green',
-        'bg-[#FACC15]/15 text-[#FDE68A]': tone === 'yellow',
-        'bg-[#EF4444]/15 text-[#FCA5A5]': tone === 'red',
-      })}>
+      <div className={cn('icon-box size-11', styles.box)}>
         {icon}
       </div>
-      <p className="text-sm font-semibold text-foreground">{label}</p>
-      {description && <p className="mt-1 text-xs text-muted">{description}</p>}
-      <span className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div>
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
+      </div>
     </Link>
   )
 }
 
+/* ── SectionHeader ──────────────────────────────────────── */
 type SectionHeaderProps = {
   label?: string
   title: string
@@ -76,17 +92,37 @@ type SectionHeaderProps = {
 
 export function SectionHeader({ label, title, subtitle, action }: SectionHeaderProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        {label && <p className="section-label mb-2">{label}</p>}
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-[-0.03em]">{title}</h2>
-        {subtitle && <p className="text-sm text-muted mt-2 max-w-xl">{subtitle}</p>}
+        {label && <p className="section-label mb-1">{label}</p>}
+        <h2 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">{title}</h2>
+        {subtitle && <p className="text-sm text-muted mt-1 max-w-xl">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>
   )
 }
 
+/* ── PageHeader ─────────────────────────────────────────── */
+type PageHeaderProps = {
+  title: string
+  subtitle?: string
+  action?: React.ReactNode
+}
+
+export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
+  return (
+    <div className="flex items-start justify-between gap-4 mb-7">
+      <div>
+        <h1 className="page-header-title">{title}</h1>
+        {subtitle && <p className="page-header-subtitle">{subtitle}</p>}
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </div>
+  )
+}
+
+/* ── DifficultyBadge ────────────────────────────────────── */
 type DifficultyBadgeProps = {
   level?: string | null
   className?: string
@@ -95,25 +131,27 @@ type DifficultyBadgeProps = {
 export function DifficultyBadge({ level, className }: DifficultyBadgeProps) {
   const key = level?.toLowerCase() ?? ''
   const ariaLabel = level ? `${level} difficulty` : 'Mixed difficulty'
-  const styles =
-    key === 'easy'
-      ? 'bg-[#84CC16]/15 text-[#BEF264] border-[#84CC16]/30'
-      : key === 'medium'
-        ? 'bg-[#FACC15]/15 text-[#FDE68A] border-[#FACC15]/35'
-        : key === 'hard'
-          ? 'bg-[#EF4444]/15 text-[#FCA5A5] border-[#EF4444]/35'
-          : 'bg-surface-2 text-muted border-border'
+  const badgeClass =
+    key === 'easy'   ? 'badge-easy'   :
+    key === 'medium' ? 'badge-medium' :
+    key === 'hard'   ? 'badge-hard'   :
+                       'badge-mixed'
 
   return (
     <span
       aria-label={ariaLabel}
-      className={cn('rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]', styles, className)}
+      className={cn(
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.15em]',
+        badgeClass,
+        className
+      )}
     >
       {level || 'mixed'}
     </span>
   )
 }
 
+/* ── FloatingButton ─────────────────────────────────────── */
 type FloatingButtonProps = {
   href: string
   label: string
@@ -126,7 +164,7 @@ export function FloatingButton({ href, label, icon, className }: FloatingButtonP
     <Link
       href={href}
       className={cn(
-        'fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-[#3B82F6] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_-18px_rgba(59,130,246,0.9)] transition-transform hover:-translate-y-1 hover:shadow-[0_22px_50px_-18px_rgba(59,130,246,1)] md:hidden',
+        'fixed bottom-20 right-5 z-40 flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-blue-glow)] transition-transform hover:-translate-y-1 md:hidden',
         className
       )}
     >

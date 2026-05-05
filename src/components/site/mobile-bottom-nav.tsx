@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 const items = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-  { href: '/subjects', label: 'Subjects', icon: BookOpen },
+  { href: '/subjects', label: 'Learn', icon: BookOpen },
   { href: '/tests', label: 'Tests', icon: ClipboardList },
   { href: '/dashboard?section=analytics', label: 'Analytics', icon: BarChart3 },
 ]
@@ -21,8 +21,8 @@ export function MobileBottomNav() {
   if (hideOnTests) return null
 
   return (
-    <nav className="fixed bottom-4 left-1/2 z-40 w-[min(92vw,420px)] -translate-x-1/2 rounded-3xl border border-white/[0.08] bg-surface/90 px-3 py-2 shadow-2xl backdrop-blur-md md:hidden">
-      <div className="grid grid-cols-4 gap-2">
+    <nav className="fixed bottom-4 left-1/2 z-50 w-[min(92vw,400px)] -translate-x-1/2 rounded-2xl bg-white border border-[var(--color-border)] px-3 py-2 shadow-[0_8px_32px_rgba(15,23,42,0.14)] md:hidden">
+      <div className="grid grid-cols-4 gap-1">
         {items.map((item) => {
           const isAnalytics = item.href.includes('section=analytics')
           const active = isAnalytics
@@ -34,13 +34,13 @@ export function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-semibold transition-all',
+                'flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition-all',
                 active
-                  ? 'bg-[#3B82F6]/20 text-white shadow-[0_10px_30px_-18px_rgba(59,130,246,0.8)]'
-                  : 'text-muted-2 hover:text-foreground hover:bg-white/[0.04]'
+                  ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-primary)]'
+                  : 'text-muted hover:text-foreground hover:bg-surface-2'
               )}
             >
-              <Icon className={cn('h-4 w-4', active ? 'text-[#93C5FD]' : '')} />
+              <Icon className={cn('h-[18px] w-[18px]', active ? 'text-[var(--color-primary)]' : '')} />
               {item.label}
             </Link>
           )

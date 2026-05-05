@@ -58,7 +58,7 @@ export default async function ChapterQuestionsPage({ params }: { params: Promise
         subtitle={`${questions?.length || 0} questions ready to solve`}
       />
 
-      <Card variant="dark" className="p-0 overflow-hidden">
+      <Card variant="white" className="p-0 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/[0.06]">
           <h2 className="font-semibold text-foreground">{chapter?.name}</h2>
           <p className="text-xs text-muted mt-1">Pick a question to start practicing.</p>

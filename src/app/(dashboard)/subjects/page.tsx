@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type React from 'react'
-import { Atom, BookOpen, FlaskConical, Sigma } from 'lucide-react'
-import { Card, SectionHeader } from '@/components/site/dashboard-ui'
+import { Atom, BookOpen, FlaskConical, Sigma, ChevronRight } from 'lucide-react'
+import { Card, PageHeader } from '@/components/site/dashboard-ui'
 
 export default async function SubjectsPage() {
   const supabase = await createClient()
@@ -19,68 +19,75 @@ export default async function SubjectsPage() {
   })
 
   if (error) {
-    return <div className="text-red-400">Error loading subjects: {error.message}</div>
+    return <div className="text-red-500">Error loading subjects: {error.message}</div>
   }
 
-  const subjectMeta: Record<string, { icon: React.ReactNode; tone: 'blue' | 'green' | 'yellow' }> = {
+  const subjectMeta: Record<string, { icon: React.ReactNode; color: 'blue' | 'green' | 'orange' }> = {
     Physics: {
       icon: <Atom className="h-6 w-6" />,
-      tone: 'blue',
+      color: 'blue',
     },
     Chemistry: {
       icon: <FlaskConical className="h-6 w-6" />,
-      tone: 'yellow',
+      color: 'orange',
     },
     Mathematics: {
       icon: <Sigma className="h-6 w-6" />,
-      tone: 'green',
+      color: 'green',
     },
   }
 
   return (
-    <div className="space-y-10 animate-in-up">
-      <SectionHeader
-        label="Library"
-        title="Subjects"
-        subtitle="Choose a subject to dive into chapters and questions with a single tap."
+    <div className="space-y-8 animate-in-up">
+      <PageHeader
+        title="Learn"
+        subtitle="Choose a subject to dive into chapters and practice questions."
       />
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {subjects?.map(subject => {
           const meta = subjectMeta[subject.name] || {
             icon: <BookOpen className="h-6 w-6" />,
-            tone: 'blue' as const,
+            color: 'blue' as const,
           }
           const count = subjectCounts[subject.id] || 0
+          
+          const boxClass = meta.color === 'blue' ? 'icon-box-blue' :
+                           meta.color === 'green' ? 'icon-box-green' :
+                           'icon-box-orange'
 
           return (
-            <Link key={subject.id} href={`/subjects/${subject.id}`} className="block">
-              <Card variant="colored" tone={meta.tone} className="h-full">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white">
-                      {meta.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">{subject.name}</h3>
-                      <p className="text-sm text-white/70">{count} questions</p>
-                    </div>
+            <Link key={subject.id} href={`/subjects/${subject.id}`} className="block group">
+              <Card variant="white" className="h-full flex flex-col hover:border-[var(--color-primary)]">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`icon-box size-12 ${boxClass}`}>
+                    {meta.icon}
                   </div>
-                  <span className="text-xs font-semibold text-white/80">Open →</span>
+                  <div className="size-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-[var(--color-primary)] transition-colors">
+                    <ChevronRight className="h-4 w-4 text-muted group-hover:text-white" />
+                  </div>
                 </div>
-                <div className="mt-6">
-                  <div className="h-1.5 w-full rounded-full bg-white/15 overflow-hidden">
-                    <div className="h-full rounded-full bg-white/80 w-[12%]" />
+                
+                <div className="mt-auto">
+                  <h3 className="text-xl font-bold text-foreground">{subject.name}</h3>
+                  <p className="text-sm text-muted mt-1">{count} questions available</p>
+                  
+                  <div className="mt-5">
+                    <div className="progress-track">
+                      <div className="progress-fill w-[12%]" />
+                    </div>
+                    <p className="text-[11px] text-muted-2 mt-2 font-medium uppercase tracking-wider">
+                      Tap to view chapters
+                    </p>
                   </div>
-                  <p className="text-[11px] text-white/70 mt-3">Tap to see chapters and progress</p>
                 </div>
               </Card>
             </Link>
           )
         })}
         {subjects?.length === 0 && (
-          <Card variant="dark" className="col-span-full py-16 text-center">
-            <div className="size-16 rounded-2xl icon-3d mx-auto mb-4 flex items-center justify-center text-2xl border border-white/[0.08]">
+          <Card variant="white" className="col-span-full py-16 text-center">
+            <div className="size-16 rounded-2xl bg-slate-100 mx-auto mb-4 flex items-center justify-center text-2xl">
               📚
             </div>
             <p className="text-muted font-medium">No subjects found.</p>

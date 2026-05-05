@@ -70,7 +70,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Left: Question */}
       <div className="flex-1 space-y-5">
-        <Card variant="dark" className="p-7">
+        <Card variant="white" className="p-7">
           <div className="flex items-start justify-between mb-5">
             <div>
               <h1 className="text-xl font-extrabold text-foreground tracking-[-0.03em]">
@@ -129,7 +129,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
       {/* Right: Answer Panel */}
       <div className="lg:w-[380px] shrink-0 space-y-5">
-        <Card variant="dark" className="p-6 sticky top-[90px]">
+        <Card variant="white" className="p-6 sticky top-[90px]">
           {/* Timer */}
           {practiceMode && (
             <div className="flex items-center justify-end gap-2 mb-5">
@@ -221,7 +221,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
         {/* History */}
         {attempts.length > 0 && (
-          <Card variant="dark" className="p-6">
+          <Card variant="white" className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <History className="h-4 w-4 text-muted-2" />
               <h3 className="font-bold text-foreground text-sm">Previous Submissions</h3>
