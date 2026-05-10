@@ -151,7 +151,7 @@ export default async function ExamDetailPage({
           </div>
         ) : existingSession?.status === 'in_progress' ? (
           <Link
-            href={`/tests/${existingSession.id}`}
+            href={`/tests/${existingSession.id}/instructions`}
             className="block w-full py-4 rounded-2xl font-bold text-base bg-amber-400 hover:bg-amber-300 text-black transition-all flex items-center justify-center gap-2 shadow-[0_0_32px_-8px_rgba(251,191,36,0.5)]"
           >
             Resume Exam

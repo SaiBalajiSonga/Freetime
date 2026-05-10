@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { ResumeTestLink } from './resume-test-link'
 import Link from 'next/link'
 import {
   ClipboardList,
@@ -9,6 +10,8 @@ import {
   MinusCircle,
   Clock,
   ChevronRight,
+  BookOpen,
+  Zap,
 } from 'lucide-react'
 import { PageHeader, Card } from '@/components/site/dashboard-ui'
 
@@ -51,7 +54,7 @@ export default async function TestsPage() {
   return (
     <div className="space-y-8 animate-in-up">
       {/* Page Header */}
-      <PageHeader 
+      <PageHeader
         title="Tests"
         subtitle="Choose a mode and start practising under exam conditions."
       />
@@ -69,12 +72,12 @@ export default async function TestsPage() {
                 <ChevronRight className="h-4 w-4 text-muted group-hover:text-white" />
               </div>
             </div>
-            
+
             <div>
               <h2 className="text-xl font-bold text-foreground">Custom Test</h2>
               <p className="text-sm text-muted mt-1">Design your own exam with full control.</p>
             </div>
-            
+
             <ul className="space-y-2.5 mt-5 mb-6">
               {[
                 'Multi-subject & chapter filtering',
@@ -87,7 +90,7 @@ export default async function TestsPage() {
                 </li>
               ))}
             </ul>
-            
+
             <div className="mt-auto pt-4 border-t border-[var(--color-border)]">
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-cyan-500">
                 Start Custom Test <ChevronRight className="h-3.5 w-3.5" />
@@ -107,12 +110,12 @@ export default async function TestsPage() {
                 <ChevronRight className="h-4 w-4 text-muted group-hover:text-white" />
               </div>
             </div>
-            
+
             <div>
               <h2 className="text-xl font-bold text-foreground">JEE Mains Mock</h2>
               <p className="text-sm text-muted mt-1">Full-length paper — official NTA interface.</p>
             </div>
-            
+
             <ul className="space-y-2.5 mt-5 mb-6">
               {[
                 '90 questions (30 Physics + 30 Chem + 30 Math)',
@@ -125,7 +128,7 @@ export default async function TestsPage() {
                 </li>
               ))}
             </ul>
-            
+
             <div className="mt-auto pt-4 border-t border-[var(--color-border)]">
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-500">
                 Start JEE Mock <ChevronRight className="h-3.5 w-3.5" />
@@ -166,20 +169,19 @@ export default async function TestsPage() {
                       : pct >= 50 ? 'text-amber-500'
                         : 'text-red-500'
 
-                return (
-                  <Link
+                return isInProgress ? (
+                  <ResumeTestLink
                     key={session.id}
-                    href={href}
+                    sessionId={session.id}
                     className="group flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
                   >
                     {/* Mode icon */}
-                    <div className={`size-12 rounded-xl flex-shrink-0 flex items-center justify-center ${
-                      session.mode === 'jee_mains'
-                        ? 'bg-amber-50 text-amber-500'
-                        : session.mode === 'weekly_exam'
-                          ? 'bg-violet-50 text-violet-500'
-                          : 'bg-cyan-50 text-cyan-500'
-                    }`}>
+                    <div className={`size-12 rounded-xl flex-shrink-0 flex items-center justify-center ${session.mode === 'jee_mains'
+                      ? 'bg-amber-50 text-amber-500'
+                      : session.mode === 'weekly_exam'
+                        ? 'bg-violet-50 text-violet-500'
+                        : 'bg-cyan-50 text-cyan-500'
+                      }`}>
                       {session.mode === 'jee_mains'
                         ? <GraduationCap className="h-6 w-6" />
                         : session.mode === 'weekly_exam'
@@ -238,6 +240,74 @@ export default async function TestsPage() {
                       <span className="text-xs text-cyan-500 font-bold uppercase tracking-wider whitespace-nowrap">
                         Resume <ChevronRight className="h-3 w-3 inline" />
                       </span>
+                    )}
+
+                    <ChevronRight className="h-5 w-5 text-muted-2 flex-shrink-0 transition-transform group-hover:translate-x-1 sm:hidden" />
+                  </ResumeTestLink>
+                ) : (
+                  <Link
+                    key={session.id}
+                    href={href}
+                    className="group flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
+                  >
+                    {/* Mode icon */}
+                    <div className={`size-12 rounded-xl flex-shrink-0 flex items-center justify-center ${session.mode === 'jee_mains'
+                      ? 'bg-amber-50 text-amber-500'
+                      : session.mode === 'weekly_exam'
+                        ? 'bg-violet-50 text-violet-500'
+                        : 'bg-cyan-50 text-cyan-500'
+                      }`}>
+                      {session.mode === 'jee_mains' ? <BookOpen className="h-6 w-6" /> :
+                        session.mode === 'weekly_exam' ? <Calendar className="h-6 w-6" /> :
+                          <Zap className="h-6 w-6" />}
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-base text-foreground truncate">
+                          {session.mode === 'jee_mains' ? 'Full Mock Test' :
+                            session.mode === 'weekly_exam' ? (session.config as any)?.exam_title || 'Weekly Exam' :
+                              'Custom Practice'}
+                        </h3>
+                        {isInProgress ? (
+                          <span className="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 rounded-md px-2 py-0.5 animate-pulse">
+                            In Progress
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 rounded-md px-2 py-0.5">
+                            Submitted
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-medium text-muted">{formatDate(session.created_at)}</p>
+                    </div>
+
+                    {/* Stats */}
+                    {!isInProgress && session.status === 'submitted' && (
+                      <div className="hidden sm:flex items-center gap-4 text-xs font-medium">
+                        <span className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          {session.correct ?? 0}
+                        </span>
+                        <span className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-md">
+                          <XCircle className="h-3.5 w-3.5" />
+                          {session.incorrect ?? 0}
+                        </span>
+                        <span className="flex items-center gap-1 text-muted-2 bg-slate-100 px-2 py-1 rounded-md">
+                          <MinusCircle className="h-3.5 w-3.5" />
+                          {session.unattempted ?? 0}
+                        </span>
+                        {session.time_taken != null && (
+                          <span className="flex items-center gap-1 text-muted-2">
+                            <Clock className="h-3.5 w-3.5" />
+                            {formatDuration(session.time_taken)}
+                          </span>
+                        )}
+                        <span className={`font-bold text-base ml-2 ${scoreColor}`}>
+                          {session.score}/{session.max_score}
+                        </span>
+                      </div>
                     )}
 
                     <ChevronRight className="h-5 w-5 text-muted-2 flex-shrink-0 transition-transform group-hover:translate-x-1 sm:hidden" />

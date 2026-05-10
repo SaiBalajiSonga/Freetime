@@ -77,6 +77,7 @@ export default function ExamInterface({
   onNavigate, onAnswerChange, onClear, onSetMark, onShowSubmit, onHideSubmit, onSubmit,
 }: SharedProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isFullscreenAlert, setIsFullscreenAlert] = useState(false)
 
   const subjects = groupBySubject(sq)
   const activeSubjectName = currentSq.questions.chapters.subjects.name
@@ -93,18 +94,72 @@ export default function ExamInterface({
 
   useEffect(() => {
     const elem = document.documentElement
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen().catch(() => {})
+
+    // ── Strict Initial Fullscreen Enforcement ──
+    const enforceFullscreen = async () => {
+      if (!document.fullscreenElement && elem.requestFullscreen) {
+        try {
+          await elem.requestFullscreen()
+        } catch {
+          // If browser blocks auto-fullscreen (e.g. hard refresh), immediately show the lock screen
+          setIsFullscreenAlert(true)
+        }
+      } else if (!document.fullscreenElement) {
+        setIsFullscreenAlert(true)
+      }
     }
+    enforceFullscreen()
+
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault()
       e.returnValue = ''
     }
+
+    // ── Proctoring Event Handlers ──
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreenAlert(true)
+      }
+    }
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault()
+    const handleCopy = (e: ClipboardEvent) => e.preventDefault()
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'PrintScreen') {
+        try { navigator.clipboard.writeText('').catch(() => {}) } catch {}
+        e.preventDefault()
+      }
+      if (e.ctrlKey || e.metaKey) {
+        const k = e.key.toLowerCase()
+        if (k === 'c' || k === 'v' || k === 'p' || k === 's' || k === 'x') {
+          e.preventDefault()
+        }
+      }
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('contextmenu', handleContextMenu)
+    document.addEventListener('copy', handleCopy)
+    document.addEventListener('keydown', handleKeyDown)
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('contextmenu', handleContextMenu)
+      document.removeEventListener('copy', handleCopy)
+      document.removeEventListener('keydown', handleKeyDown)
     }
   }, [])
+
+  const resumeFullscreen = () => {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen()
+        .then(() => setIsFullscreenAlert(false))
+        .catch(() => setIsFullscreenAlert(false))
+    } else {
+      setIsFullscreenAlert(false)
+    }
+  }
 
   // Save & Next: saves answer, clears mark
   const handleSaveAndNext = () => {
@@ -129,7 +184,7 @@ export default function ExamInterface({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#1a1a1a] text-[#e0e0e0]" style={{ fontFamily: 'system-ui, Arial, sans-serif' }}>
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#1a1a1a] text-[#e0e0e0] select-none" style={{ fontFamily: 'system-ui, Arial, sans-serif' }}>
       
       {/* TOP HEADER BAR */}
       <div className="flex items-center justify-between px-4 h-14 bg-[#1c2333] border-b border-[#333] flex-shrink-0">
@@ -425,6 +480,29 @@ export default function ExamInterface({
           </div>
         </div>
       </div>
+
+      {/* FULLSCREEN ALERT MODAL */}
+      {isFullscreenAlert && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md">
+          <div className="bg-[#242424] border border-red-500/30 rounded-[8px] shadow-2xl w-full max-w-md mx-4 p-8 text-center space-y-6">
+            <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-2">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="font-bold text-[22px] text-white">Fullscreen Exited</h3>
+            <p className="text-[15px] text-gray-300">
+              You must remain in fullscreen mode while taking the exam. Please click the button below to resume your test.
+            </p>
+            <button
+              onClick={resumeFullscreen}
+              className="w-full py-3.5 rounded-[4px] font-bold text-[15px] bg-[#1a6fc4] text-white hover:bg-[#155ba0] transition-colors shadow-lg"
+            >
+              Resume Exam
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* SUBMIT MODAL */}
       {showSubmitModal && (
