@@ -23,6 +23,11 @@ export default async function ResultPage({
 
   if (sErr || !session) redirect('/tests')
 
+  // If this is an exam session, redirect to the exam result page
+  if (session.weekly_exam_id) {
+    redirect(`/exams/${session.weekly_exam_id}/result`)
+  }
+
   // Not submitted yet → go back to test
   if (session.status !== 'submitted') {
     redirect(`/tests/${sessionId}`)
