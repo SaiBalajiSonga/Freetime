@@ -20,6 +20,7 @@ export default function NewQuestionPage() {
   const [chapters, setChapters] = useState<any[]>([])
   const [selectedSubject, setSelectedSubject] = useState<string>('')
   const [type, setType] = useState('mcq')
+  const [visibility, setVisibility] = useState<'public' | 'exam'>('public')
 
   // Image upload state
   const [imageUrl, setImageUrl] = useState<string>('')
@@ -85,7 +86,7 @@ export default function NewQuestionPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold tracking-[-0.03em] text-foreground">Add New Question</h1>
-        <p className="text-muted mt-1">Create a new practice question for students.</p>
+        <p className="text-muted mt-1">Create a question for practice or add it to the Exam Bank.</p>
       </div>
 
       <div className="rounded-2xl border border-border bg-surface">
@@ -122,6 +123,38 @@ export default function NewQuestionPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            {/* Visibility Toggle */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">Destination</Label>
+              <input type="hidden" name="visibility" value={visibility} />
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVisibility('public')}
+                  className={`flex flex-col gap-1 p-4 rounded-xl border-2 text-left transition-all ${
+                    visibility === 'public'
+                      ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400'
+                      : 'border-border bg-surface-2 text-muted hover:border-border-strong'
+                  }`}
+                >
+                  <span className="font-bold text-sm">📚 Practice Pool</span>
+                  <span className="text-xs opacity-70">Visible to students during practice &amp; learn sessions</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisibility('exam')}
+                  className={`flex flex-col gap-1 p-4 rounded-xl border-2 text-left transition-all ${
+                    visibility === 'exam'
+                      ? 'border-violet-500 bg-violet-500/10 text-violet-400'
+                      : 'border-border bg-surface-2 text-muted hover:border-border-strong'
+                  }`}
+                >
+                  <span className="font-bold text-sm">🔒 Exam Bank</span>
+                  <span className="text-xs opacity-70">Hidden from students — used in scheduled exams only</span>
+                </button>
               </div>
             </div>
 

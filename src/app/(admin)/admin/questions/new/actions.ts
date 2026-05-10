@@ -14,7 +14,8 @@ export async function createQuestion(formData: FormData) {
   const solution = formData.get('solution') as string
   const hint = formData.get('hint') as string
   const image_url = formData.get('image_url') as string | null
-  
+  const visibility = (formData.get('visibility') as string) || 'public'
+
   // Create question
   const questionData: any = {
     chapter_id: chapterId,
@@ -24,6 +25,7 @@ export async function createQuestion(formData: FormData) {
     solution: solution || null,
     hint: hint || null,
     image_url: image_url || null,
+    visibility,
   }
 
   if (type === 'numerical') {
