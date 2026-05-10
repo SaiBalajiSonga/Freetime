@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ShieldCheck, BookOpen, UploadCloud } from 'lucide-react'
@@ -25,14 +25,16 @@ export default async function ExamBankPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Use admin client to bypass RLS — exam-visibility questions are intentionally
+  // hidden from students via RLS, so we must use service role here on the admin page.
+  const adminSupabase = createAdminClient()
+
   // Build query — always filter by visibility=exam
-  let query = supabase
+  const { data: questions } = await adminSupabase
     .from('questions')
     .select('id, statement, type, difficulty, chapters(name, subjects(name))')
     .eq('visibility', 'exam')
     .order('created_at', { ascending: false })
-
-  const { data: questions } = await query
   const qs = (questions as any[]) ?? []
 
   // Counts for summary
