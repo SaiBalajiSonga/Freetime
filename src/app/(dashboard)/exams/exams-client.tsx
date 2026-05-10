@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Calendar, Clock, BookOpen, Trophy, ClipboardList } from 'lucide-react'
-import ExamStartButton from './[examId]/exam-start-button'
+import { Calendar, Clock, BookOpen, Trophy, ClipboardList, Loader2 } from 'lucide-react'
+import { createWeeklyExamSession } from '@/app/(dashboard)/tests/actions'
 
 type ExamItem = {
   id: string
@@ -273,7 +273,7 @@ function ExamCard({ exam }: { exam: ExamItem }) {
             >
               View Details
             </Link>
-            <ExamStartButton examId={exam.id} compact />
+            <CompactStartButton examId={exam.id} />
           </>
         )}
 
@@ -322,6 +322,37 @@ function ExamCard({ exam }: { exam: ExamItem }) {
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+// ── Compact inline start button ─────────────────────────────────────────────
+function CompactStartButton({ examId }: { examId: string }) {
+  const [isPending, startTransition] = useTransition()
+  const [err, setErr] = useState<string | null>(null)
+
+  function handleStart() {
+    setErr(null)
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    }
+    startTransition(async () => {
+      const result = await createWeeklyExamSession(examId)
+      if (result?.error) setErr(result.error)
+    })
+  }
+
+  return (
+    <div>
+      {err && <p className="text-xs text-red-400 mb-1">{err}</p>}
+      <button
+        type="button"
+        onClick={handleStart}
+        disabled={isPending}
+        className="text-sm font-extrabold uppercase tracking-wide text-emerald-600 hover:opacity-80 transition-opacity disabled:opacity-40"
+      >
+        {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin inline" /> : 'Start Exam'}
+      </button>
     </div>
   )
 }

@@ -184,7 +184,6 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
 
       {/* TIME MANAGEMENT PANEL */}
       {(() => {
-        const attempted = sessionQuestions.filter(sq => !!sq.answer_given)
         const correctSqs = sessionQuestions.filter(sq => sq.is_correct === true)
         const wrongSqs = sessionQuestions.filter(sq => sq.is_correct === false && !!sq.answer_given)
         const avgTime = sessionQuestions.length > 0
