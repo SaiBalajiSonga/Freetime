@@ -10,6 +10,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/tests/weekly',
+        destination: '/exams',
+        permanent: true,
+      },
+      {
+        source: '/tests/weekly/:examId',
+        destination: '/exams/:examId',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
