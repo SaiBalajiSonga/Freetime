@@ -189,7 +189,11 @@ export default function TestClient({ session, sessionQuestions: initial }: Props
       return
     }
 
-    router.push(`/tests/${session.id}/result`)
+    if (session.weekly_exam_id) {
+      router.push(`/exams/${session.weekly_exam_id}/result`)
+    } else {
+      router.push(`/tests/${session.id}/result`)
+    }
   }
 
   const stats = {

@@ -18,7 +18,13 @@ export default async function InstructionsPage(props: { params: Promise<{ sessio
     .single()
 
   if (error || !session) return redirect('/tests')
-  if (session.status === 'submitted') return redirect(`/tests/${sessionId}/result`)
+  if (session.status === 'submitted') {
+    if (session.weekly_exam_id) {
+      return redirect(`/exams/${session.weekly_exam_id}/result`)
+    } else {
+      return redirect(`/tests/${sessionId}/result`)
+    }
+  }
 
   return <InstructionsClient session={session} />
 }

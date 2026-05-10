@@ -143,7 +143,7 @@ export default async function ExamDetailPage({
               <Trophy className="h-8 w-8 text-amber-400" />
             </div>
             <Link
-              href={`/tests/${existingSession.id}/result`}
+              href={`/exams/${examId}/result`}
               className="block w-full py-4 rounded-2xl font-bold text-base bg-surface-2 border border-border text-foreground hover:bg-surface text-center transition-all"
             >
               View Detailed Results

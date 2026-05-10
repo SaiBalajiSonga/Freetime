@@ -25,7 +25,11 @@ export default async function TestSessionPage({
 
   // Already submitted → go to results
   if (session.status === 'submitted') {
-    redirect(`/tests/${sessionId}/result`)
+    if (session.weekly_exam_id) {
+      redirect(`/exams/${session.weekly_exam_id}/result`)
+    } else {
+      redirect(`/tests/${sessionId}/result`)
+    }
   }
 
   // Load session questions with question data
