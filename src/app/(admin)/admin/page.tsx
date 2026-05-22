@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
-import { DeleteQuestionButton, DeleteAllQuestionsButton } from './questions/delete-buttons'
+import { DeleteAllQuestionsButton } from './questions/delete-buttons'
 import { AdminNav } from './admin-nav'
+import { QuestionsTable } from './questions/questions-table'
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -53,76 +54,12 @@ export default async function AdminDashboardPage({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-2xl border border-border bg-surface overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-surface-2">
-                <th className="text-left py-4 px-5 font-bold text-muted-2 text-[11px] uppercase tracking-wider">ID</th>
-                <th className="text-left py-4 px-5 font-bold text-muted-2 text-[11px] uppercase tracking-wider">Subject</th>
-                <th className="text-left py-4 px-5 font-bold text-muted-2 text-[11px] uppercase tracking-wider">Chapter</th>
-                <th className="text-left py-4 px-5 font-bold text-muted-2 text-[11px] uppercase tracking-wider max-w-[280px]">Statement</th>
-                <th className="text-left py-4 px-5 font-bold text-muted-2 text-[11px] uppercase tracking-wider">Difficulty</th>
-                <th className="text-left py-4 px-5 font-bold text-muted-2 text-[11px] uppercase tracking-wider">Type</th>
-                <th className="text-left py-4 px-5 font-bold text-muted-2 text-[11px] uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {questions?.map((q, idx) => {
-                const qId = `Q-${String((page - 1) * pageSize + idx + 1).padStart(3, '0')}`
-                const diffColor: Record<string, string> = {
-                  easy:   'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-                  medium: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-                  hard:   'bg-red-500/10 text-red-400 border border-red-500/20',
-                }
+      {/* Table with multi-select */}
+      <QuestionsTable questions={(questions as any) ?? []} page={page} pageSize={pageSize} />
 
-                return (
-                  <tr key={q.id} className="hover:bg-surface-2/60 transition-colors">
-                    <td className="py-3.5 px-5 text-muted-2 font-mono text-xs font-medium">{qId}</td>
-                    <td className="py-3.5 px-5 text-foreground font-medium">
-                      {/* @ts-ignore */}
-                      {q.chapters?.subjects?.name || '—'}
-                    </td>
-                    {/* @ts-ignore */}
-                    <td className="py-3.5 px-5 text-muted">{q.chapters?.name || '—'}</td>
-                    <td className="py-3.5 px-5 text-muted max-w-[280px] truncate">{q.statement}</td>
-                    <td className="py-3.5 px-5">
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold capitalize ${diffColor[q.difficulty] || 'bg-surface-2 text-muted border border-border'}`}>
-                        {q.difficulty}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-5 text-muted-2 uppercase text-xs font-bold">{q.type}</td>
-                    <td className="py-3.5 px-5">
-                      <div className="flex items-center gap-3">
-                        <Link href={`/questions/${q.id}`} className="text-accent-cyan hover:text-accent-glow text-xs font-bold transition-colors">
-                          View
-                        </Link>
-                        <Link href={`/admin/questions/${q.id}/edit`} className="text-amber-400 hover:text-amber-300 text-xs font-bold transition-colors">
-                          Edit
-                        </Link>
-                        <DeleteQuestionButton questionId={q.id} />
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {questions?.length === 0 && (
-          <div className="py-16 text-center">
-            <div className="size-16 rounded-2xl bg-surface-2 border border-border flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📝</span>
-            </div>
-            <p className="text-muted font-medium">No questions yet.</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {(totalCount || 0) > 0 && (
-          <div className="flex items-center justify-between px-5 py-4 border-t border-border bg-surface-2/40">
+      {(totalCount || 0) > 0 && totalPages > 1 && (
+        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 bg-surface-2/40">
             <span className="text-xs text-muted-2 font-medium">
               Page {page} of {totalPages}
             </span>
@@ -161,8 +98,8 @@ export default async function AdminDashboardPage({
               )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

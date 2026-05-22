@@ -64,6 +64,25 @@ export async function deleteBySubject(subjectId: string) {
   return { success: true }
 }
 
+export async function deleteSelectedQuestions(questionIds: string[]) {
+  if (!questionIds.length) return { error: 'No questions selected' }
+  const supabase = createAdminClient()
+
+  await supabase.from('question_options').delete().in('question_id', questionIds)
+  await supabase.from('attempts').delete().in('question_id', questionIds)
+  const { error } = await supabase.from('questions').delete().in('id', questionIds)
+
+  if (error) {
+    console.error('[Admin] Delete selected questions error:', error.message)
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/subjects')
+  revalidatePath('/dashboard')
+  return { success: true, deleted: questionIds.length }
+}
+
 export async function deleteAllQuestions() {
   const supabase = createAdminClient()
 
