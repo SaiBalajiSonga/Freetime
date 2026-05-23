@@ -69,7 +69,7 @@ export function FilterBar({
             const timer = setTimeout(() => updateFilter('q', val), 400)
             return () => clearTimeout(timer)
           }}
-          className="w-full h-8 pl-8 pr-3 text-xs font-medium rounded-lg border border-white/10 bg-white/[0.04] text-foreground placeholder:text-muted-2 focus:outline-none focus:border-accent-electric/40 focus:ring-1 focus:ring-accent-electric/20 transition-all"
+          className="w-full h-8 pl-8 pr-3 text-sm font-medium rounded-lg border border-white/10 bg-white/[0.04] text-foreground placeholder:text-muted-2 focus:outline-none focus:border-accent-electric/40 focus:ring-1 focus:ring-accent-electric/20 transition-all"
           style={{ opacity: isPending ? 0.7 : 1 }}
         />
       </div>
@@ -79,7 +79,7 @@ export function FilterBar({
         id="filter-subject"
         value={currentFilters.subject ?? ''}
         onChange={(e) => updateFilter('subject', e.target.value)}
-        className="h-8 px-3 text-xs font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
+        className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
       >
         <option value="">All Subjects</option>
         {subjects.map((s) => (
@@ -94,7 +94,7 @@ export function FilterBar({
         id="filter-difficulty"
         value={currentFilters.difficulty ?? ''}
         onChange={(e) => updateFilter('difficulty', e.target.value)}
-        className="h-8 px-3 text-xs font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
+        className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
       >
         <option value="">All Difficulties</option>
         <option value="easy">Easy</option>
@@ -107,7 +107,7 @@ export function FilterBar({
         id="filter-type"
         value={currentFilters.type ?? ''}
         onChange={(e) => updateFilter('type', e.target.value)}
-        className="h-8 px-3 text-xs font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
+        className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
       >
         <option value="">All Types</option>
         <option value="mcq">MCQ</option>
@@ -119,7 +119,7 @@ export function FilterBar({
         <button
           type="button"
           onClick={clearFilters}
-          className="flex items-center gap-1 h-8 px-3 text-xs font-bold text-muted hover:text-foreground transition-colors"
+          className="flex items-center gap-1 h-8 px-3 text-sm font-bold text-muted hover:text-foreground transition-colors"
           id="clear-filters"
         >
           <X className="h-3 w-3" />

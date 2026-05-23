@@ -63,9 +63,9 @@
   --radius-pill: 9999px;
 
   /* ── Typography ── */
-  --font-sans: var(--font-geist-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-heading: var(--font-geist-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Outfit", system-ui, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", monospace;
+  --font-heading: var(--font-sans), "Outfit", system-ui, sans-serif;
 
   /* ── Shadows (light-mode) ── */
   --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.04);
@@ -84,7 +84,10 @@
     background: var(--color-shell);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-size: 15px; /* Base size bumped slightly for readability */
+    line-height: 1.6; /* Better leading to reduce eye strain */
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   ::selection {
     background: rgba(37, 99, 235, 0.18);

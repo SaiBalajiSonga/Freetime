@@ -52,14 +52,14 @@ export default async function AdminLayout({
           {/* Back to app */}
           <Link
             href="/dashboard"
-            className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-2 text-sm font-medium hover:bg-surface-2 hover:text-foreground transition-all"
+            className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-2 text-[15px] font-medium hover:bg-surface-2 hover:text-foreground transition-all"
           >
             <ArrowLeft className="h-[18px] w-[18px]" />
             Back to App
           </Link>
 
           <div className="h-px bg-border my-3 mx-1" />
-          <span className="px-3 text-[10px] uppercase tracking-widest text-muted-2/60 font-bold mb-1">Console</span>
+          <span className="px-3 text-xs uppercase tracking-widest text-muted-2/60 font-bold mb-1">Console</span>
 
           <SidebarLink
             href="/admin"
@@ -96,8 +96,8 @@ export default async function AdminLayout({
               {initial}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{user.email?.split('@')[0]}</p>
-              <p className="text-[11px] text-muted-2">Admin</p>
+              <p className="text-[15px] font-medium text-foreground truncate">{user.email?.split('@')[0]}</p>
+              <p className="text-xs text-muted-2">Admin</p>
             </div>
           </div>
         </div>
@@ -109,7 +109,7 @@ export default async function AdminLayout({
         <header className="sticky top-0 z-30 h-[72px] flex items-center justify-between px-5 sm:px-8 nav-glass border-b border-white/[0.06]">
           <div className="hidden md:block" />
           <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-            <span className="text-sm font-medium text-muted hidden sm:inline max-w-[220px] truncate">{user.email}</span>
+            <span className="text-[15px] font-medium text-muted hidden sm:inline max-w-[220px] truncate">{user.email}</span>
             <div className="h-8 w-px bg-border hidden sm:block" />
             <form action={logout}>
               <Button type="submit" variant="outline" size="sm">

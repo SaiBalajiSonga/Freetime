@@ -28,7 +28,7 @@ export function SidebarLink({
 
   if (disabled) {
     return (
-      <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-2/40 text-sm cursor-not-allowed select-none">
+      <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-2/40 text-[15px] cursor-not-allowed select-none">
         <span className="opacity-40">{icon}</span>
         <span>{label}</span>
       </div>
@@ -39,7 +39,7 @@ export function SidebarLink({
     <Link
       href={href}
       className={cn(
-        'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+        'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-all duration-200',
         active
           ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
           : 'text-[var(--color-sidebar-text)] hover:bg-[var(--color-surface-2)] hover:text-foreground'
