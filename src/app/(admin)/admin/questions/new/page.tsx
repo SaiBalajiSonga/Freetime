@@ -121,24 +121,24 @@ export default function NewQuestionPage() {
   if (successState) {
     return (
       <div className="max-w-lg mx-auto py-20 text-center space-y-5">
-        <div className="size-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
-          <CheckCircle2 className="h-8 w-8 text-emerald-400" />
-        </div>
-        <div>
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-8 shadow-xl">
+          <div className="size-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="h-8 w-8 text-emerald-400" />
+          </div>
           <h2 className="text-xl font-extrabold text-foreground">Question created!</h2>
-          <p className="text-sm text-muted mt-1">Your question has been saved successfully.</p>
-        </div>
-        <div className="flex justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => { setSuccessState(false); setStatement(''); setOptions(['','','','']); setNumericalAnswer(''); setSolution(''); setHint(''); setImageUrl('') }}
-            className="inline-flex items-center gap-2 h-9 px-5 text-sm font-bold rounded-xl bg-gradient-primary text-white hover:brightness-110 transition-all"
-          >
-            Add Another
-          </button>
-          <Link href="/admin" className="inline-flex items-center gap-2 h-9 px-5 text-sm font-bold rounded-xl border border-white/10 bg-surface-2 text-foreground hover:bg-white/[0.08] transition-colors">
-            Back to Questions
-          </Link>
+          <p className="text-sm text-emerald-400/80 mt-1 mb-6">Your question has been saved successfully.</p>
+          <div className="flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => { setSuccessState(false); setStatement(''); setOptions(['','','','']); setNumericalAnswer(''); setSolution(''); setHint(''); setImageUrl('') }}
+              className="inline-flex items-center gap-2 h-10 px-5 text-sm font-bold rounded-xl bg-gradient-primary text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] hover:brightness-110 transition-all"
+            >
+              Add Another
+            </button>
+            <Link href="/admin" className="inline-flex items-center gap-2 h-10 px-5 text-sm font-bold rounded-xl border border-white/10 bg-surface-2 text-foreground hover:bg-white/[0.08] transition-colors">
+              Back to Questions
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -161,12 +161,12 @@ export default function NewQuestionPage() {
       </div>
 
       {/* Two-panel layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
         {/* ── LEFT: Form ── */}
         <form action={handleSubmit} onKeyDown={handleKeyDown} className="space-y-0">
 
           {/* Section: Metadata */}
-          <div className="rounded-t-2xl border border-white/[0.08] bg-surface p-6 border-b-0">
+          <div className="rounded-2xl border border-white/[0.08] bg-surface p-6 mb-4">
             <p className={sectionHeader}>Metadata</p>
             <div className="grid grid-cols-2 gap-4">
               {/* Subject */}
@@ -232,7 +232,7 @@ export default function NewQuestionPage() {
           </div>
 
           {/* Section: Content */}
-          <div className="border border-white/[0.08] bg-surface p-6 border-b-0">
+          <div className="rounded-2xl border border-white/[0.08] bg-surface p-6 mb-4">
             <p className={sectionHeader}>Content</p>
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -286,7 +286,7 @@ export default function NewQuestionPage() {
           </div>
 
           {/* Section: Options */}
-          <div className="border border-white/[0.08] bg-surface p-6 border-b-0">
+          <div className="rounded-2xl border border-white/[0.08] bg-surface p-6 mb-4">
             <p className={sectionHeader}>Answer</p>
             {type === 'mcq' ? (
               <div className="space-y-3">
@@ -324,7 +324,7 @@ export default function NewQuestionPage() {
           </div>
 
           {/* Section: Extras (collapsible) */}
-          <details className="border border-white/[0.08] bg-surface overflow-hidden rounded-b-2xl group">
+          <details className="rounded-2xl border border-white/[0.08] bg-surface overflow-hidden group mb-4">
             <summary className="flex items-center justify-between px-6 py-4 cursor-pointer select-none text-sm font-bold text-muted-2 hover:text-foreground transition-colors list-none">
               <span>Extras</span>
               <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
@@ -362,7 +362,7 @@ export default function NewQuestionPage() {
         </form>
 
         {/* ── RIGHT: Live preview (sticky, desktop only) ── */}
-        <div className="hidden xl:block sticky top-[88px] h-[calc(100vh-110px)]">
+        <div className="hidden lg:block sticky top-[88px] h-[calc(100vh-110px)]">
           <QuestionPreview
             statement={statement}
             type={type}

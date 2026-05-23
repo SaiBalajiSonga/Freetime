@@ -23,7 +23,8 @@ export function ExpandableRow({
 }) {
   return (
     <tr
-      className={`transition-colors ${
+      onClick={() => onToggle(id)}
+      className={`cursor-pointer transition-colors ${
         isSelected
           ? 'bg-accent-electric/5 ring-1 ring-inset ring-accent-electric/20'
           : isOpen
@@ -36,7 +37,6 @@ export function ExpandableRow({
       <td className="py-3.5 px-3 w-8">
         <button
           type="button"
-          onClick={() => onToggle(id)}
           className="text-muted-2 hover:text-foreground transition-all duration-200"
           id={`expand-row-${id}`}
           aria-label={isOpen ? 'Collapse' : 'Expand'}
@@ -75,7 +75,7 @@ export function ExpandedContent({
   imageUrl?: string | null
 }) {
   return (
-    <tr className="bg-surface-2/30">
+    <tr className="bg-surface-2/30 border-l-4 border-l-accent-cyan">
       <td colSpan={colSpan} className="px-8 py-5">
         <div className="space-y-4 max-w-3xl animate-slide-down">
           {/* Full statement */}

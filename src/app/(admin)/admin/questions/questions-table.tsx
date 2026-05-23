@@ -137,8 +137,8 @@ export function QuestionsTable({
   if (questions.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-white/10 bg-surface py-20 text-center">
-        <div className="size-16 rounded-2xl bg-surface-2 border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">📝</span>
+        <div className="size-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+          <LayoutList className="h-7 w-7 text-muted-2" />
         </div>
         <p className="text-foreground font-bold mb-1">No questions found</p>
         <p className="text-sm text-muted-2">Try adjusting your filters or add a new question.</p>
@@ -191,7 +191,7 @@ export function QuestionsTable({
           type="button"
           onClick={() => toggleView('table')}
           id="view-table-btn"
-          className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-accent-electric/15 text-accent-electric' : 'text-muted-2 hover:text-foreground hover:bg-surface-2'}`}
+          className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-accent-electric/15 text-accent-electric' : 'text-muted-2 hover:text-foreground hover:bg-white/[0.04]'}`}
           title="Table view"
         >
           <LayoutList className="h-4 w-4" />
@@ -200,7 +200,7 @@ export function QuestionsTable({
           type="button"
           onClick={() => toggleView('card')}
           id="view-card-btn"
-          className={`p-1.5 rounded-lg transition-colors ${viewMode === 'card' ? 'bg-accent-electric/15 text-accent-electric' : 'text-muted-2 hover:text-foreground hover:bg-surface-2'}`}
+          className={`p-1.5 rounded-lg transition-colors ${viewMode === 'card' ? 'bg-accent-electric/15 text-accent-electric' : 'text-muted-2 hover:text-foreground hover:bg-white/[0.04]'}`}
           title="Card view"
         >
           <LayoutGrid className="h-4 w-4" />
@@ -316,11 +316,11 @@ export function QuestionsTable({
                       </td>
                       {/* Actions */}
                       <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-3">
-                          <Link href={`/questions/${q.id}`} className="text-accent-cyan hover:text-accent-glow text-xs font-bold transition-colors">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/questions/${q.id}`} className="px-2 py-1 rounded-md bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 text-[11px] font-bold transition-colors">
                             View
                           </Link>
-                          <Link href={`/admin/questions/${q.id}/edit`} className="text-amber-400 hover:text-amber-300 text-xs font-bold transition-colors">
+                          <Link href={`/admin/questions/${q.id}/edit`} className="px-2 py-1 rounded-md bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 text-[11px] font-bold transition-colors">
                             Edit
                           </Link>
                           <DeleteQuestionButton questionId={q.id} />

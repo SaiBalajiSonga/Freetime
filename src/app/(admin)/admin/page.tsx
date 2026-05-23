@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, ChevronLeft, ChevronRight, Upload, AlertTriangle } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Upload, AlertTriangle, Layers, ArrowRight } from 'lucide-react'
 import { DeleteAllQuestionsButton } from './questions/delete-buttons'
 import { QuestionsTable } from './questions/questions-table'
 import { FilterBar } from '@/components/admin/filter-bar'
 import { StatsBar } from '@/components/admin/stats-bar'
+import { PageSizeSelect } from '@/components/admin/page-size-select'
 
 export const metadata = {
   title: 'PYQ Questions — Admin',
@@ -102,7 +103,10 @@ export default async function AdminDashboardPage({
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-[-0.03em]">PYQ Questions</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-extrabold text-foreground tracking-[-0.03em]">
+            <Layers className="h-6 w-6 text-accent-cyan" />
+            PYQ Questions
+          </h1>
           <div className="flex items-center gap-3 mt-1.5">
             <StatsBar stats={globalStats} />
           </div>
@@ -153,21 +157,7 @@ export default async function AdminDashboardPage({
               Showing {displayCount.toLocaleString()} questions
             </span>
             {/* Page size selector */}
-            <select
-              onChange={(e) => {
-                const u = new URL(window.location.href)
-                u.searchParams.set('pageSize', e.target.value)
-                u.searchParams.delete('page')
-                window.location.href = u.toString()
-              }}
-              defaultValue={String(pageSize)}
-              className="h-8 px-2 text-[14px] font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer hover:bg-white/[0.04] transition-colors"
-              id="page-size-select"
-            >
-              {[15, 30, 50, 100].map((n) => (
-                <option key={n} value={n}>{n} / page</option>
-              ))}
-            </select>
+            <PageSizeSelect currentSize={pageSize} />
           </div>
           <div className="flex items-center gap-1.5">
             {page > 1 && (
@@ -209,9 +199,12 @@ export default async function AdminDashboardPage({
       {/* ── Danger Zone ── */}
       {(totalCount ?? 0) > 0 && (
         <details className="rounded-2xl border border-red-500/20 bg-red-500/5 overflow-hidden group">
-          <summary className="flex items-center gap-2 px-5 py-4 cursor-pointer text-red-400/70 hover:text-red-400 text-sm font-bold transition-colors select-none">
-            <AlertTriangle className="h-4 w-4" />
-            Danger Zone
+          <summary className="group flex items-center justify-between px-5 py-4 cursor-pointer text-red-400/70 hover:text-red-400 text-sm font-bold transition-colors select-none">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Danger Zone
+            </div>
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </summary>
           <div className="px-5 pb-5 pt-2 border-t border-red-500/10">
             <p className="text-xs text-muted-2 mb-4">

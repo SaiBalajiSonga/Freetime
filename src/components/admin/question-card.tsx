@@ -50,7 +50,7 @@ export function QuestionCard({
 
   return (
     <div
-      className={`relative flex flex-col rounded-xl border-l-4 border border-white/[0.08] bg-surface p-4 transition-all duration-200 ${
+      className={`relative flex flex-col rounded-xl border-l-4 border border-white/[0.08] bg-surface p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
         diffBorderColor[q.difficulty] ?? 'border-l-white/20'
       } ${isSelected ? 'ring-1 ring-inset ring-accent-electric/30 bg-accent-electric/5' : 'hover:bg-surface-2/60'}`}
     >
@@ -87,23 +87,23 @@ export function QuestionCard({
       </div>
 
       {/* Statement */}
-      <p className="text-sm text-foreground leading-snug line-clamp-3 flex-1">
+      <p className="text-[15px] text-foreground leading-snug line-clamp-3 flex-1">
         {q.statement}
       </p>
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/[0.06]">
         <span className="font-mono text-[10px] text-muted-2">{qId}</span>
-        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           <Link
             href={`/questions/${q.id}`}
-            className="text-accent-cyan hover:text-accent-glow text-xs font-bold transition-colors"
+            className="px-2 py-1 rounded-md bg-accent-cyan/10 text-accent-cyan hover:bg-accent-cyan/20 text-[11px] font-bold transition-colors"
           >
             View
           </Link>
           <Link
             href={`/admin/questions/${q.id}/edit`}
-            className="text-amber-400 hover:text-amber-300 text-xs font-bold transition-colors flex items-center gap-1"
+            className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 text-[11px] font-bold transition-colors"
           >
             <Pencil className="h-3 w-3" />
             Edit

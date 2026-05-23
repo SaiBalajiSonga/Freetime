@@ -409,6 +409,16 @@
   .step-connector.done {
     background: #3b82f6;
   }
+
+  /* ── Admin select — kills browser appearance ── */
+  .admin-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 32px !important;
+  }
 }
 
 @layer utilities {
@@ -443,5 +453,13 @@
   @keyframes slide-down {
     from { transform: translateY(-8px); opacity: 0; }
     to   { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes shimmer {
+    from { opacity: 0.5; }
+    to   { opacity: 1; }
+  }
+  .admin-layout .animate-pulse {
+    animation: shimmer 1.2s ease-in-out infinite alternate;
   }
 }

@@ -151,7 +151,7 @@ export default function AdminSubjectsPage() {
 
         {/* ── LEFT: Subjects ── */}
         <div className="rounded-2xl border border-white/[0.08] bg-surface overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface-2/40">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface-2/20">
             <span className="text-[11px] font-bold uppercase tracking-widest text-muted-2">Subjects</span>
             <button
               type="button"
@@ -202,7 +202,7 @@ export default function AdminSubjectsPage() {
                 return (
                   <div
                     key={s.id}
-                    className={`group flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${isActive ? 'bg-accent-electric/10' : 'hover:bg-surface-2/60'}`}
+                    className={`group flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors border-l-2 ${isActive ? 'bg-accent-electric/10 border-l-accent-cyan' : 'border-l-transparent hover:bg-surface-2/60'}`}
                     onClick={() => setSelectedSubject(isActive ? null : s)}
                   >
                     <span className="text-lg shrink-0">{meta.icon}</span>
@@ -236,10 +236,10 @@ export default function AdminSubjectsPage() {
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface-2/40">
-                <div>
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-muted-2">Chapters in </span>
-                  <span className="text-[11px] font-bold text-foreground">{selectedSubject.name}</span>
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface-2/20">
+                <div className="px-2 py-1 rounded bg-accent-cyan/10 border border-accent-cyan/20">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-accent-cyan">Chapters in </span>
+                  <span className="text-[11px] font-bold text-accent-cyan">{selectedSubject.name}</span>
                 </div>
                 <button
                   type="button"

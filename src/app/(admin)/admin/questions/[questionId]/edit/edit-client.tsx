@@ -155,12 +155,12 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
       )}
 
       {/* Two-panel layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
         {/* ── LEFT: Form ── */}
         <form action={handleSubmit} onKeyDown={handleKeyDown} className="space-y-0">
 
           {/* Section: Metadata */}
-          <div className="rounded-t-2xl border border-white/[0.08] bg-surface p-6 border-b-0">
+          <div className="rounded-2xl border border-white/[0.08] bg-surface p-6 mb-4">
             <p className={sectionHeader}>Metadata</p>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
@@ -206,7 +206,7 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
           </div>
 
           {/* Section: Content */}
-          <div className="border border-white/[0.08] bg-surface p-6 border-b-0">
+          <div className="rounded-2xl border border-white/[0.08] bg-surface p-6 mb-4">
             <p className={sectionHeader}>Content</p>
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -256,7 +256,7 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
           </div>
 
           {/* Section: Options */}
-          <div className="border border-white/[0.08] bg-surface p-6 border-b-0">
+          <div className="rounded-2xl border border-white/[0.08] bg-surface p-6 mb-4">
             <p className={sectionHeader}>Answer</p>
             {type === 'mcq' ? (
               <div className="space-y-2">
@@ -291,7 +291,7 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
           </div>
 
           {/* Section: Extras */}
-          <details className="border border-white/[0.08] bg-surface overflow-hidden rounded-b-2xl group" open={!!(solution || hint)}>
+          <details className="rounded-2xl border border-white/[0.08] bg-surface overflow-hidden group mb-4" open={!!(solution || hint)}>
             <summary className="flex items-center justify-between px-6 py-4 cursor-pointer select-none text-sm font-bold text-muted-2 hover:text-foreground transition-colors list-none">
               <span>Extras</span>
               <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
@@ -323,7 +323,7 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
         </form>
 
         {/* ── RIGHT: Live preview (sticky, desktop only) ── */}
-        <div className="hidden xl:block sticky top-[88px] h-[calc(100vh-110px)]">
+        <div className="hidden lg:block sticky top-[88px] h-[calc(100vh-110px)]">
           <QuestionPreview
             statement={statement}
             type={type}

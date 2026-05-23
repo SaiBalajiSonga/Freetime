@@ -54,7 +54,7 @@ export function FilterBar({
   )
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
       {/* Search */}
       <div className="relative flex-1 min-w-[200px] max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-2 pointer-events-none" />
@@ -79,7 +79,7 @@ export function FilterBar({
         id="filter-subject"
         value={currentFilters.subject ?? ''}
         onChange={(e) => updateFilter('subject', e.target.value)}
-        className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
+        className="admin-select h-8 px-3 pr-8 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
       >
         <option value="">All Subjects</option>
         {subjects.map((s) => (
@@ -94,7 +94,7 @@ export function FilterBar({
         id="filter-difficulty"
         value={currentFilters.difficulty ?? ''}
         onChange={(e) => updateFilter('difficulty', e.target.value)}
-        className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
+        className="admin-select h-8 px-3 pr-8 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
       >
         <option value="">All Difficulties</option>
         <option value="easy">Easy</option>
@@ -107,7 +107,7 @@ export function FilterBar({
         id="filter-type"
         value={currentFilters.type ?? ''}
         onChange={(e) => updateFilter('type', e.target.value)}
-        className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
+        className="admin-select h-8 px-3 pr-8 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none focus:border-accent-electric/40 transition-all cursor-pointer"
       >
         <option value="">All Types</option>
         <option value="mcq">MCQ</option>
@@ -116,15 +116,20 @@ export function FilterBar({
 
       {/* Clear */}
       {hasFilters && (
-        <button
-          type="button"
-          onClick={clearFilters}
-          className="flex items-center gap-1 h-8 px-3 text-sm font-bold text-muted hover:text-foreground transition-colors"
-          id="clear-filters"
-        >
-          <X className="h-3 w-3" />
-          Clear
-        </button>
+        <div className="flex items-center gap-2 ml-auto pl-2 border-l border-white/10">
+          <span className="text-[11px] font-bold text-accent-electric bg-accent-electric/10 border border-accent-electric/20 px-2 py-0.5 rounded-full">
+            {[currentFilters.q, currentFilters.subject, currentFilters.difficulty, currentFilters.type].filter(Boolean).length} active
+          </span>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 h-8 px-3 text-xs font-bold text-muted hover:text-foreground transition-colors"
+            id="clear-filters"
+          >
+            <X className="h-3 w-3" />
+            Clear
+          </button>
+        </div>
       )}
     </div>
   )

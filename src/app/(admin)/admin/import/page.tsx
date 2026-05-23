@@ -7,7 +7,7 @@ import { processImportData, commitImport } from './actions'
 import { ImportDropzone } from '@/components/admin/import-dropzone'
 import { ImportPreview } from '@/components/admin/import-preview'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CheckCircle2, AlertCircle, Upload, Eye, Sparkles, ArrowRight, Code, FileJson } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Upload, Eye, Sparkles, ArrowRight, Code, FileJson, UploadCloud } from 'lucide-react'
 import Link from 'next/link'
 
 type Step = 'upload' | 'preview' | 'result'
@@ -141,7 +141,10 @@ export default function ImportPage() {
     <div className="max-w-4xl mx-auto space-y-7">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-extrabold tracking-[-0.03em] text-foreground">Bulk Import Questions</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-[-0.03em] text-foreground">
+          <UploadCloud className="h-6 w-6 text-accent-cyan" />
+          Bulk Import Questions
+        </h1>
         <p className="text-sm text-muted mt-1">Upload a JSON or CSV file to add multiple questions at once.</p>
       </div>
 

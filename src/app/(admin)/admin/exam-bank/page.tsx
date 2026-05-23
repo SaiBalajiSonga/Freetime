@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { ShieldCheck, UploadCloud, Search, ChevronDown, Trash2, SquareCheck, Square, MinusSquare, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ShieldCheck, UploadCloud, Search, ChevronDown, Trash2, SquareCheck, Square, MinusSquare, ChevronLeft, ChevronRight, Database } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { getExamQuestions, getExamStats } from './actions'
 import { deleteSelectedQuestions } from '../actions'
@@ -157,7 +157,7 @@ export default function ExamBankPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <ShieldCheck className="h-5 w-5 text-violet-400" />
+            <Database className="h-5 w-5 text-violet-400" />
             <h1 className="text-2xl font-extrabold text-foreground tracking-[-0.03em]">Exam Bank</h1>
             <span className="text-sm font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full">
               {globalStats?.total ?? 0} questions
@@ -184,21 +184,21 @@ export default function ExamBankPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-2 pointer-events-none" />
           <input type="text" placeholder="Search questions…" value={search} onChange={e => setSearch(e.target.value)} className="w-full h-8 pl-8 pr-3 text-sm font-medium rounded-lg border border-white/10 bg-white/[0.04] text-foreground placeholder:text-muted-2 focus:outline-none focus:border-accent-electric/40 transition-all" />
         </div>
-        <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
+        <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="admin-select h-8 px-3 pr-8 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
           <option value="">All Subjects</option>
           {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
-        <select value={filterChapter} onChange={e => setFilterChapter(e.target.value)} className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
+        <select value={filterChapter} onChange={e => setFilterChapter(e.target.value)} className="admin-select h-8 px-3 pr-8 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
           <option value="">All Chapters</option>
           {chapters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-        <select value={filterDiff} onChange={e => setFilterDiff(e.target.value)} className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
+        <select value={filterDiff} onChange={e => setFilterDiff(e.target.value)} className="admin-select h-8 px-3 pr-8 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
           <option value="">All Difficulties</option>
           <option value="easy">Easy</option>
           <option value="medium">Medium</option>
           <option value="hard">Hard</option>
         </select>
-        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="admin-select h-8 px-3 pr-8 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
           <option value="">All Types</option>
           <option value="mcq">MCQ</option>
           <option value="numerical">Numerical</option>
@@ -231,7 +231,19 @@ export default function ExamBankPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="py-20 text-center text-muted-2 text-[15px]">Loading exam bank…</div>
+        <div className="rounded-2xl border border-white/[0.08] bg-surface overflow-hidden">
+          <div className="animate-pulse flex flex-col">
+            <div className="h-12 bg-surface-2/60 border-b border-white/[0.08]" />
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 border-b border-white/[0.05] flex items-center px-5 gap-4">
+                <div className="h-4 w-4 bg-white/5 rounded" />
+                <div className="h-4 w-8 bg-white/5 rounded" />
+                <div className="h-4 w-1/3 bg-white/5 rounded" />
+                <div className="h-4 w-1/4 bg-white/5 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/10 bg-surface py-20 text-center">
           <div className="size-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto mb-4">
@@ -348,7 +360,7 @@ export default function ExamBankPage() {
             <select
               value={pageSize}
               onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1) }}
-              className="h-8 px-2 text-[14px] font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer hover:bg-white/[0.04] transition-colors"
+              className="admin-select h-8 px-2 pr-8 text-[14px] font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer hover:bg-white/[0.04] transition-colors"
             >
               {[15, 30, 50, 100].map((n) => <option key={n} value={n}>{n} / page</option>)}
             </select>
