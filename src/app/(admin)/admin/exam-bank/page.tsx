@@ -4,13 +4,9 @@ import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import { ShieldCheck, UploadCloud, Search, ChevronDown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { moveQuestionVisibility } from './actions'
+import { moveQuestionVisibility, getExamQuestions } from './actions'
 import { ExpandableRow, ExpandedContent, useExpandableRows } from '@/components/admin/expandable-row'
 import { StatsBar } from '@/components/admin/stats-bar'
-
-export const metadata = {
-  title: 'Exam Bank — Admin',
-}
 
 const diffColor: Record<string, string> = {
   easy:   'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
@@ -40,11 +36,7 @@ export default function ExamBankPage() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const { data } = await supabase
-        .from('questions')
-        .select('id, statement, type, difficulty, image_url, correct_answer, hint, solution, chapters(name, subjects(id, name)), options:question_options(id, text, is_correct)')
-        .eq('visibility', 'exam')
-        .order('created_at', { ascending: false })
+      const data = await getExamQuestions()
       setQuestions((data as any[]) ?? [])
 
       const { data: subs } = await supabase.from('subjects').select('id, name').order('name')

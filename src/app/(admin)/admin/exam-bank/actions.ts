@@ -19,3 +19,19 @@ export async function moveQuestionVisibility(questionId: string, visibility: 'pu
   revalidatePath('/admin/exam-bank')
   return { success: true }
 }
+
+export async function getExamQuestions() {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('questions')
+    .select('id, statement, type, difficulty, image_url, correct_answer, hint, solution, chapters(name, subjects(id, name)), options:question_options(id, text, is_correct)')
+    .eq('visibility', 'exam')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[Admin] getExamQuestions error:', error.message)
+    return []
+  }
+
+  return data
+}

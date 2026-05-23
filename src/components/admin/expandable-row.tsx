@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { ChevronDown } from 'lucide-react'
+import Latex from '@/components/ui/latex'
 
 // ── ExpandableRow ──────────────────────────────────────────────────
 // Wrap your main <tr> with this; it injects a chevron expand button
@@ -78,7 +79,7 @@ export function ExpandedContent({
       <td colSpan={colSpan} className="px-8 py-5">
         <div className="space-y-4 max-w-3xl animate-slide-down">
           {/* Full statement */}
-          <p className="text-foreground text-sm leading-relaxed">{statement}</p>
+          <div className="text-foreground text-sm leading-relaxed"><Latex>{statement}</Latex></div>
 
           {/* Image */}
           {imageUrl && (
@@ -106,7 +107,7 @@ export function ExpandedContent({
                   <span className="text-xs font-mono text-muted-2 shrink-0">
                     {['A', 'B', 'C', 'D'][i]}.
                   </span>
-                  <span className="flex-1 text-xs">{opt.text}</span>
+                  <span className="flex-1 text-xs"><Latex>{opt.text}</Latex></span>
                   {opt.is_correct && (
                     <span className="ml-auto text-[10px] font-bold shrink-0">✓ CORRECT</span>
                   )}
@@ -127,7 +128,7 @@ export function ExpandedContent({
           {hint && (
             <div className="flex items-start gap-2 text-xs text-amber-400/80">
               <span className="font-bold shrink-0">Hint:</span>
-              <span>{hint}</span>
+              <span><Latex>{hint}</Latex></span>
             </div>
           )}
 
@@ -137,7 +138,7 @@ export function ExpandedContent({
               <summary className="cursor-pointer text-accent-cyan font-bold hover:text-accent-glow transition-colors">
                 Show solution
               </summary>
-              <p className="mt-2 leading-relaxed">{solution}</p>
+              <div className="mt-2 leading-relaxed"><Latex>{solution}</Latex></div>
             </details>
           )}
         </div>
