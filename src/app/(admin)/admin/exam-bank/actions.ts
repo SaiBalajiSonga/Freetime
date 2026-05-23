@@ -28,6 +28,7 @@ export async function getExamQuestions(
     difficulty?: string
     type?: string
     subjectId?: string
+    chapterId?: string
   }
 ) {
   const supabase = createAdminClient()
@@ -45,6 +46,7 @@ export async function getExamQuestions(
   if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty)
   if (filters?.type) query = query.eq('type', filters.type)
   if (filters?.subjectId) query = query.eq('chapters.subjects.id', filters.subjectId)
+  if (filters?.chapterId) query = query.eq('chapter_id', filters.chapterId)
 
   query = query.order('created_at', { ascending: false }).range(offset, offset + pageSize - 1)
 

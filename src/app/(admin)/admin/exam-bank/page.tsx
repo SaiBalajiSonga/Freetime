@@ -35,7 +35,9 @@ export default function ExamBankPage() {
   const [filterDiff, setFilterDiff] = useState('')
   const [filterType, setFilterType] = useState('')
   const [filterSubject, setFilterSubject] = useState('')
+  const [filterChapter, setFilterChapter] = useState('')
   const [subjects, setSubjects] = useState<any[]>([])
+  const [chapters, setChapters] = useState<any[]>([])
 
   // ── Pagination ─────────────────────────────────────────────────
   const [page, setPage] = useState(1)
@@ -55,7 +57,17 @@ export default function ExamBankPage() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, filterDiff, filterType, filterSubject])
+  }, [debouncedSearch, filterDiff, filterType, filterSubject, filterChapter])
+
+  // Fetch chapters when subject changes
+  useEffect(() => {
+    setFilterChapter('')
+    if (filterSubject) {
+      supabase.from('chapters').select('id, name').eq('subject_id', filterSubject).order('name').then(({ data }) => setChapters(data ?? []))
+    } else {
+      supabase.from('chapters').select('id, name').order('name').then(({ data }) => setChapters(data ?? []))
+    }
+  }, [filterSubject])
 
   // ── Multi-select ───────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -104,7 +116,8 @@ export default function ExamBankPage() {
         search: debouncedSearch,
         difficulty: filterDiff,
         type: filterType,
-        subjectId: filterSubject
+        subjectId: filterSubject,
+        chapterId: filterChapter
       })
       setQuestions(res.data)
       setTotalCount(res.count)
@@ -121,7 +134,7 @@ export default function ExamBankPage() {
       setLoading(false)
     }
     load()
-  }, [page, pageSize, debouncedSearch, filterDiff, filterType, filterSubject])
+  }, [page, pageSize, debouncedSearch, filterDiff, filterType, filterSubject, filterChapter])
 
   // ── Client-side filter ─────────────────────────────────────────
   const filtered = questions
@@ -174,6 +187,10 @@ export default function ExamBankPage() {
         <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
           <option value="">All Subjects</option>
           {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+        <select value={filterChapter} onChange={e => setFilterChapter(e.target.value)} className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
+          <option value="">All Chapters</option>
+          {chapters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <select value={filterDiff} onChange={e => setFilterDiff(e.target.value)} className="h-8 px-3 text-sm font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer">
           <option value="">All Difficulties</option>
