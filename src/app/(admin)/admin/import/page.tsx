@@ -7,7 +7,7 @@ import { processImportData, commitImport } from './actions'
 import { ImportDropzone } from '@/components/admin/import-dropzone'
 import { ImportPreview } from '@/components/admin/import-preview'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CheckCircle2, AlertCircle, Upload, Eye, Sparkles, ArrowRight } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Upload, Eye, Sparkles, ArrowRight, Code, FileJson } from 'lucide-react'
 import Link from 'next/link'
 
 type Step = 'upload' | 'preview' | 'result'
@@ -79,10 +79,27 @@ function StepIndicator({ current }: { current: Step }) {
 
 export default function ImportPage() {
   const [step, setStep] = useState<Step>('upload')
+  const [importMode, setImportMode] = useState<'file' | 'raw'>('file')
   const [isProcessing, setIsProcessing] = useState(false)
   const [previewData, setPreviewData] = useState<PreviewData | null>(null)
   const [insertResult, setInsertResult] = useState<{ insertedCount: number; skippedCount: number; errorCount: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [rawJson, setRawJson] = useState('')
+  const [rawJsonError, setRawJsonError] = useState<string | null>(null)
+
+  const handleParseRaw = () => {
+    setRawJsonError(null)
+    if (!rawJson.trim()) {
+      setRawJsonError('Please enter some JSON code.')
+      return
+    }
+    try {
+      const parsed = JSON.parse(rawJson)
+      handleParsed(Array.isArray(parsed) ? parsed : [parsed])
+    } catch (err: any) {
+      setRawJsonError(`Invalid JSON format: ${err.message}`)
+    }
+  }
 
   const handleParsed = async (rawData: RawImportData[]) => {
     setIsProcessing(true)
@@ -143,14 +160,69 @@ export default function ImportPage() {
       {/* ── Step 1: Upload ── */}
       {step === 'upload' && (
         <div className="space-y-4">
-          <div className="relative">
-            <ImportDropzone onParsed={handleParsed} />
-            {isProcessing && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-md rounded-xl z-10">
-                <span className="font-bold text-accent-cyan animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">Processing data…</span>
-              </div>
-            )}
+          {/* Mode Toggle */}
+          <div className="flex items-center gap-2 p-1 bg-surface-2 rounded-xl border border-white/10 w-fit">
+            <button
+              onClick={() => setImportMode('file')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${importMode === 'file' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-2 hover:text-foreground'}`}
+            >
+              <Upload className="h-4 w-4" /> File Upload
+            </button>
+            <button
+              onClick={() => setImportMode('raw')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${importMode === 'raw' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-2 hover:text-foreground'}`}
+            >
+              <Code className="h-4 w-4" /> Raw JSON
+            </button>
           </div>
+
+          {importMode === 'file' ? (
+            <div className="relative">
+              <ImportDropzone onParsed={handleParsed} />
+              {isProcessing && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-md rounded-xl z-10">
+                  <span className="font-bold text-accent-cyan animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">Processing data…</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative group">
+                <textarea
+                  value={rawJson}
+                  onChange={(e) => setRawJson(e.target.value)}
+                  placeholder="Paste your JSON here..."
+                  className="w-full h-[300px] bg-black/40 border-2 border-white/10 hover:border-white/20 rounded-xl p-5 text-[13px] font-mono text-foreground placeholder:text-muted focus:outline-none focus:border-accent-cyan focus:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all resize-y scrollbar-thin"
+                  spellCheck={false}
+                />
+                <button
+                  onClick={() => setRawJson(SAMPLE_JSON)}
+                  className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-surface-2 border border-white/10 rounded-lg text-xs font-bold text-muted hover:text-foreground hover:bg-white/[0.04] transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <FileJson className="h-3.5 w-3.5" />
+                  Load Template
+                </button>
+              </div>
+
+              {rawJsonError && (
+                <Alert className="bg-red-500/10 border-red-500/20 text-red-400 py-2">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <AlertDescription className="text-sm font-medium ml-2">{rawJsonError}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  onClick={handleParseRaw}
+                  disabled={isProcessing}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-accent-cyan text-black font-extrabold text-[15px] rounded-xl hover:brightness-110 shadow-[0_4px_16px_rgba(6,182,212,0.3)] transition-all disabled:opacity-50"
+                >
+                  <Code className="h-4 w-4" />
+                  {isProcessing ? 'Validating...' : 'Validate & Import'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* JSON schema hint */}
           <div className="rounded-xl border border-white/[0.08] bg-surface overflow-hidden">
