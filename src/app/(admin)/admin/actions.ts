@@ -101,3 +101,43 @@ export async function deleteAllQuestions() {
   return { success: true }
 }
 
+export async function createSubject(name: string) {
+  const supabase = createAdminClient()
+  const trimmed = name.trim()
+  if (!trimmed) return { error: 'Subject name cannot be empty' }
+
+  const { data, error } = await supabase
+    .from('subjects')
+    .insert({ name: trimmed })
+    .select('id, name, created_at')
+    .single()
+
+  if (error) {
+    console.error('[Admin] createSubject error:', error.message)
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin/subjects')
+  return { success: true, subject: data }
+}
+
+export async function createChapter(subjectId: string, name: string) {
+  const supabase = createAdminClient()
+  const trimmed = name.trim()
+  if (!trimmed) return { error: 'Chapter name cannot be empty' }
+  if (!subjectId) return { error: 'Subject ID is required' }
+
+  const { data, error } = await supabase
+    .from('chapters')
+    .insert({ subject_id: subjectId, name: trimmed })
+    .select('id, name, subject_id, created_at')
+    .single()
+
+  if (error) {
+    console.error('[Admin] createChapter error:', error.message)
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin/subjects')
+  return { success: true, chapter: data }
+}

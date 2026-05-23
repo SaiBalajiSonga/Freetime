@@ -357,3 +357,88 @@
     transform: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   ADMIN DARK-MODE DESIGN SYSTEM
+   Used by src/app/(admin)/* pages
+   ══════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* ── Admin dark surfaces ── */
+  .sidebar-dark {
+    background: #0a0f1a;
+  }
+  .nav-glass {
+    background: rgba(10, 15, 26, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .surface-glass {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /* ── Icon 3D blue box ── */
+  .icon-3d-blue {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+
+  /* ── Admin pulsing live indicator ── */
+  .live-dot {
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+
+  /* ── Bulk toolbar slide-down ── */
+  .animate-slide-down {
+    animation: slide-down 0.18s ease-out forwards;
+  }
+
+  /* ── Import wizard step connector ── */
+  .step-connector {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  }
+  .step-connector.done {
+    background: #3b82f6;
+  }
+}
+
+@layer utilities {
+  /* ── Admin dark CSS tokens — scoped to .admin-layout ── */
+  /* The admin wrapper div uses class="admin-layout" to activate these overrides */
+  .admin-layout {
+    --color-background:     #080d18;
+    --color-surface:        #0f1629;
+    --color-surface-2:      #161e35;
+    --color-foreground:     #f1f5f9;
+    --color-muted:          #94a3b8;
+    --color-muted-2:        #64748b;
+    --color-border:         rgba(255, 255, 255, 0.08);
+    --color-border-strong:  rgba(255, 255, 255, 0.16);
+    --color-accent-electric: #3b82f6;
+    --color-accent-cyan:    #06b6d4;
+    --color-accent-glow:    #93c5fd;
+    --color-primary:        #3b82f6;
+    --color-sidebar-active-bg:   rgba(59, 130, 246, 0.12);
+    --color-sidebar-active-text: #93c5fd;
+    --color-sidebar-text:        #64748b;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  /* ── Admin keyframes ── */
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  @keyframes slide-down {
+    from { transform: translateY(-8px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+}

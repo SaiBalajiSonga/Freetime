@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { AdminNav } from '../../admin-nav'
 import { DeleteChapterButton } from '../../questions/delete-buttons'
 import { Plus } from 'lucide-react'
 
@@ -37,8 +36,6 @@ export default async function AdminChaptersPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-6">
-      <AdminNav />
-
       {/* Header & Breadcrumb */}
       <div className="flex items-center justify-between">
         <div>
