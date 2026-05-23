@@ -146,64 +146,62 @@ export default async function AdminDashboardPage({
       />
 
       {/* ── Pagination ── */}
-      {displayCount > 0 && totalPages > 1 && (
-        <div className="rounded-2xl border border-white/[0.08] bg-surface overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 bg-surface-2/40">
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-2 font-medium">
-                Page {page} of {totalPages} · {displayCount.toLocaleString()} questions
-              </span>
-              {/* Page size selector */}
-              <select
-                onChange={(e) => {
-                  const u = new URL(window.location.href)
-                  u.searchParams.set('pageSize', e.target.value)
-                  u.searchParams.delete('page')
-                  window.location.href = u.toString()
-                }}
-                defaultValue={String(pageSize)}
-                className="h-7 px-2 text-xs rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer"
-                id="page-size-select"
-              >
-                {[15, 25, 50, 100].map((n) => (
-                  <option key={n} value={n}>{n} / page</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-1">
-              {page > 1 && (
-                <Link href={`/admin?${new URLSearchParams({ ...params, page: String(page - 1) }).toString()}`}>
-                  <button className="size-8 rounded-xl hover:bg-surface-2 flex items-center justify-center transition-colors">
-                    <ChevronLeft className="h-4 w-4 text-muted" />
+      {displayCount > 0 && (
+        <div className="flex items-center justify-between px-2 pt-2">
+          <div className="flex items-center gap-4">
+            <span className="text-[14px] text-muted-2 font-medium">
+              Showing {displayCount.toLocaleString()} questions
+            </span>
+            {/* Page size selector */}
+            <select
+              onChange={(e) => {
+                const u = new URL(window.location.href)
+                u.searchParams.set('pageSize', e.target.value)
+                u.searchParams.delete('page')
+                window.location.href = u.toString()
+              }}
+              defaultValue={String(pageSize)}
+              className="h-8 px-2 text-[14px] font-medium rounded-lg border border-white/10 bg-surface-2 text-foreground focus:outline-none cursor-pointer hover:bg-white/[0.04] transition-colors"
+              id="page-size-select"
+            >
+              {[15, 30, 50, 100].map((n) => (
+                <option key={n} value={n}>{n} / page</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {page > 1 && (
+              <Link href={`/admin?${new URLSearchParams({ ...params as Record<string, string>, page: String(page - 1) }).toString()}`}>
+                <button className="size-8 rounded-xl hover:bg-surface-2 flex items-center justify-center transition-colors text-muted-2 hover:text-foreground">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+              </Link>
+            )}
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              let p: number
+              if (totalPages <= 7) p = i + 1
+              else if (page <= 4) p = i + 1
+              else if (page >= totalPages - 3) p = totalPages - 6 + i
+              else p = page - 3 + i
+              return (
+                <Link key={p} href={`/admin?${new URLSearchParams({ ...params as Record<string, string>, page: String(p) }).toString()}`}>
+                  <button className={`size-8 rounded-xl text-[14px] font-bold flex items-center justify-center transition-all ${
+                    p === page
+                      ? 'bg-gradient-primary text-white shadow-[0_4px_12px_-4px_rgba(37,99,235,0.5)]'
+                      : 'text-muted-2 hover:bg-surface-2 hover:text-foreground'
+                  }`}>
+                    {p}
                   </button>
                 </Link>
-              )}
-              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                let p: number
-                if (totalPages <= 7) p = i + 1
-                else if (page <= 4) p = i + 1
-                else if (page >= totalPages - 3) p = totalPages - 6 + i
-                else p = page - 3 + i
-                return (
-                  <Link key={p} href={`/admin?${new URLSearchParams({ ...params, page: String(p) }).toString()}`}>
-                    <button className={`size-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all ${
-                      p === page
-                        ? 'bg-gradient-primary text-white shadow-[0_4px_12px_-4px_rgba(37,99,235,0.5)]'
-                        : 'text-muted hover:bg-surface-2'
-                    }`}>
-                      {p}
-                    </button>
-                  </Link>
-                )
-              })}
-              {page < totalPages && (
-                <Link href={`/admin?${new URLSearchParams({ ...params, page: String(page + 1) }).toString()}`}>
-                  <button className="size-8 rounded-xl hover:bg-surface-2 flex items-center justify-center transition-colors">
-                    <ChevronRight className="h-4 w-4 text-muted" />
-                  </button>
-                </Link>
-              )}
-            </div>
+              )
+            })}
+            {page < totalPages && (
+              <Link href={`/admin?${new URLSearchParams({ ...params as Record<string, string>, page: String(page + 1) }).toString()}`}>
+                <button className="size-8 rounded-xl hover:bg-surface-2 flex items-center justify-center transition-colors text-muted-2 hover:text-foreground">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       )}
