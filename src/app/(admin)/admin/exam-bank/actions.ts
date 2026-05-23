@@ -20,18 +20,67 @@ export async function moveQuestionVisibility(questionId: string, visibility: 'pu
   return { success: true }
 }
 
-export async function getExamQuestions() {
+export async function getExamQuestions(
+  page: number = 1,
+  pageSize: number = 30,
+  filters?: {
+    search?: string
+    difficulty?: string
+    type?: string
+    subjectId?: string
+  }
+) {
   const supabase = createAdminClient()
-  const { data, error } = await supabase
+  const offset = (page - 1) * pageSize
+
+  let query = supabase
     .from('questions')
-    .select('id, statement, type, difficulty, image_url, correct_answer, hint, solution, chapters(name, subjects(id, name)), options:question_options(id, text, is_correct)')
+    .select(
+      'id, statement, type, difficulty, image_url, correct_answer, hint, solution, chapters!inner(name, subjects!inner(id, name)), options:question_options(id, text, is_correct)',
+      { count: 'exact' }
+    )
     .eq('visibility', 'exam')
-    .order('created_at', { ascending: false })
+
+  if (filters?.search) query = query.ilike('statement', `%${filters.search}%`)
+  if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty)
+  if (filters?.type) query = query.eq('type', filters.type)
+  if (filters?.subjectId) query = query.eq('chapters.subjects.id', filters.subjectId)
+
+  query = query.order('created_at', { ascending: false }).range(offset, offset + pageSize - 1)
+
+  const { data, count, error } = await query
 
   if (error) {
     console.error('[Admin] getExamQuestions error:', error.message)
-    return []
+    return { data: [], count: 0 }
   }
 
-  return data
+  return { data, count: count ?? 0 }
+}
+export async function getExamStats() {
+  const supabase = createAdminClient()
+  const [
+    { count: total },
+    { count: mcq },
+    { count: num },
+    { count: easy },
+    { count: medium },
+    { count: hard }
+  ] = await Promise.all([
+    supabase.from('questions').select('*', { count: 'exact', head: true }).eq('visibility', 'exam'),
+    supabase.from('questions').select('*', { count: 'exact', head: true }).eq('visibility', 'exam').eq('type', 'mcq'),
+    supabase.from('questions').select('*', { count: 'exact', head: true }).eq('visibility', 'exam').eq('type', 'numerical'),
+    supabase.from('questions').select('*', { count: 'exact', head: true }).eq('visibility', 'exam').eq('difficulty', 'easy'),
+    supabase.from('questions').select('*', { count: 'exact', head: true }).eq('visibility', 'exam').eq('difficulty', 'medium'),
+    supabase.from('questions').select('*', { count: 'exact', head: true }).eq('visibility', 'exam').eq('difficulty', 'hard'),
+  ])
+
+  return { 
+    total: total ?? 0, 
+    mcq: mcq ?? 0, 
+    num: num ?? 0, 
+    easy: easy ?? 0, 
+    medium: medium ?? 0, 
+    hard: hard ?? 0 
+  }
 }
