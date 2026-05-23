@@ -79,7 +79,7 @@ export function ExpandedContent({
       <td colSpan={colSpan} className="px-8 py-5">
         <div className="space-y-4 max-w-3xl animate-slide-down">
           {/* Full statement */}
-          <div className="text-foreground text-sm leading-relaxed"><Latex>{statement}</Latex></div>
+          <div className="text-foreground text-[15px] leading-relaxed"><Latex>{statement}</Latex></div>
 
           {/* Image */}
           {imageUrl && (
@@ -104,12 +104,12 @@ export function ExpandedContent({
                       : 'bg-surface border-white/[0.08] text-muted'
                   }`}
                 >
-                  <span className="text-xs font-mono text-muted-2 shrink-0">
+                  <span className="text-sm font-mono text-muted-2 shrink-0">
                     {['A', 'B', 'C', 'D'][i]}.
                   </span>
-                  <span className="flex-1 text-xs"><Latex>{opt.text}</Latex></span>
+                  <span className="flex-1 text-sm"><Latex>{opt.text}</Latex></span>
                   {opt.is_correct && (
-                    <span className="ml-auto text-[10px] font-bold shrink-0">✓ CORRECT</span>
+                    <span className="ml-auto text-xs font-bold shrink-0">✓ CORRECT</span>
                   )}
                 </div>
               ))}
@@ -119,14 +119,14 @@ export function ExpandedContent({
           {/* Numerical answer */}
           {type === 'numerical' && correctAnswer && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-2 font-bold uppercase tracking-wider">Answer:</span>
+              <span className="text-sm text-muted-2 font-bold uppercase tracking-wider">Answer:</span>
               <span className="font-mono text-emerald-400 font-bold">{correctAnswer}</span>
             </div>
           )}
 
           {/* Hint */}
           {hint && (
-            <div className="flex items-start gap-2 text-xs text-amber-400/80">
+            <div className="flex items-start gap-2 text-sm text-amber-400/80">
               <span className="font-bold shrink-0">Hint:</span>
               <span><Latex>{hint}</Latex></span>
             </div>
@@ -134,7 +134,7 @@ export function ExpandedContent({
 
           {/* Solution */}
           {solution && (
-            <details className="text-xs text-muted">
+            <details className="text-sm text-muted">
               <summary className="cursor-pointer text-accent-cyan font-bold hover:text-accent-glow transition-colors">
                 Show solution
               </summary>
