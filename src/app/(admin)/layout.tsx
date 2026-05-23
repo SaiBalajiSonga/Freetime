@@ -64,13 +64,8 @@ export default async function AdminLayout({
           <SidebarLink
             href="/admin"
             exact
-            icon={<LayoutDashboard className="h-[18px] w-[18px]" />}
-            label="Dashboard"
-          />
-          <SidebarLink
-            href="/admin/subjects"
             icon={<BookOpen className="h-[18px] w-[18px]" />}
-            label="Subjects & Chapters"
+            label="PYQ Questions"
           />
           <SidebarLink
             href="/admin/exam-bank"

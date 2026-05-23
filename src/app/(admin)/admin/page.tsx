@@ -7,7 +7,7 @@ import { FilterBar } from '@/components/admin/filter-bar'
 import { StatsBar } from '@/components/admin/stats-bar'
 
 export const metadata = {
-  title: 'Question Management — Admin',
+  title: 'PYQ Questions — Admin',
   description: 'Manage all practice and exam bank questions.',
 }
 
@@ -102,7 +102,7 @@ export default async function AdminDashboardPage({
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-[-0.03em]">Question Management</h1>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-[-0.03em]">PYQ Questions</h1>
           <div className="flex items-center gap-3 mt-1.5">
             <StatsBar stats={globalStats} />
           </div>
