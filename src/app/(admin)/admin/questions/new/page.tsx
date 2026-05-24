@@ -135,7 +135,7 @@ export default function NewQuestionPage() {
             >
               Add Another
             </button>
-            <Link href="/admin" className="inline-flex items-center gap-2 h-10 px-5 text-sm font-bold rounded-md text-white hover:bg-white/[0.08] transition-colors" style={{ background: '#1c2333', border: '1px solid #2a3142' }}>
+            <Link href="/admin/questions" className="inline-flex items-center gap-2 h-10 px-5 text-sm font-bold rounded-md text-white hover:bg-white/[0.08] transition-colors" style={{ background: '#1c2333', border: '1px solid #2a3142' }}>
               Back to Questions
             </Link>
           </div>
@@ -148,7 +148,7 @@ export default function NewQuestionPage() {
     <div className="space-y-5">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <Link href="/admin" className="p-2 rounded-md hover:text-white hover:bg-[#1c2333] transition-colors" style={{ color: '#64748b' }}>
+        <Link href="/admin/questions" className="p-2 rounded-md hover:text-white hover:bg-[#1c2333] transition-colors" style={{ color: '#64748b' }}>
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
@@ -377,7 +377,7 @@ export default function NewQuestionPage() {
             >
               {isPending ? 'Creating…' : imageUploading ? 'Uploading image…' : 'Create Question'}
             </button>
-            <Link href="/admin" className="text-sm hover:text-white transition-colors" style={{ color: '#64748b' }}>
+            <Link href="/admin/questions" className="text-sm hover:text-white transition-colors" style={{ color: '#64748b' }}>
               Cancel
             </Link>
           </div>

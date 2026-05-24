@@ -28,11 +28,11 @@ const NAV_ITEMS = [
     exact: true,
   },
   {
-    href: '/admin',
+    href: '/admin/questions',
     label: 'PYQ Questions',
     icon: FileQuestion,
     activeColor: 'text-blue-400',
-    exact: true,
+    exact: false,
   },
   {
     href: '/admin/exam-bank',

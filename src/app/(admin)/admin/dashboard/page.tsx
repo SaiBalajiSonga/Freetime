@@ -1,5 +1,5 @@
 import React from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import {
   FileQuestion,
@@ -87,7 +87,7 @@ function DiffBadge({ diff }: { diff: string }) {
 }
 
 export default async function AdminDashboardPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const now = new Date().toISOString()
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -233,7 +233,7 @@ export default async function AdminDashboardPage() {
           <div className="rounded-lg overflow-hidden" style={{ background: '#161b27', border: '1px solid #2a3142' }}>
             <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#1c2333', borderBottom: '1px solid #2a3142' }}>
               <p className="text-sm font-bold text-white">Recent Questions</p>
-              <Link href="/admin" className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+              <Link href="/admin/questions" className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-colors">
                 View all →
               </Link>
             </div>

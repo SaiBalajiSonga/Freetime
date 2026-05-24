@@ -325,7 +325,7 @@ export default function ImportPage() {
               Import More
             </button>
             <Link
-              href="/admin"
+              href="/admin/questions"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md font-bold text-sm transition-all"
               style={{ border: '1px solid #2a3142', background: '#161b27', color: '#94a3b8' }}
             >

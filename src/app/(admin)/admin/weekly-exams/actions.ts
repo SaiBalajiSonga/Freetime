@@ -21,6 +21,14 @@ export async function toggleExamPublished(examId: string, published: boolean) {
 
 export async function deleteWeeklyExam(examId: string) {
   const supabase = createAdminClient()
+  
+  // Clean up test sessions that reference this weekly exam first to satisfy FK constraints
+  const { error: tsError } = await supabase.from('test_sessions').delete().eq('weekly_exam_id', examId)
+  if (tsError) {
+    console.error('[Admin] deleteWeeklyExam (test_sessions cleanup) error:', tsError.message)
+    return { error: tsError.message }
+  }
+
   const { error } = await supabase.from('weekly_exams').delete().eq('id', examId)
 
   if (error) {

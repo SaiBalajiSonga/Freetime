@@ -125,7 +125,7 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
       {/* Page header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Link href="/admin" className="p-2 rounded-md transition-colors hover:text-white" style={{ color: '#64748b' }}>
+          <Link href="/admin/questions" className="p-2 rounded-md transition-colors hover:text-white" style={{ color: '#64748b' }}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
@@ -332,7 +332,7 @@ export default function EditQuestionClient({ questionId, initialData }: { questi
             >
               {imageUploading ? 'Uploading image…' : isPending ? 'Updating…' : 'Update Question'}
             </button>
-            <Link href="/admin" className="text-sm hover:text-white transition-colors" style={{ color: '#64748b' }}>Cancel</Link>
+            <Link href="/admin/questions" className="text-sm hover:text-white transition-colors" style={{ color: '#64748b' }}>Cancel</Link>
           </div>
         </form>
 
