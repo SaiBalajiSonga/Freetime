@@ -88,6 +88,8 @@ export default function ImportPage() {
   const [error, setError] = useState<string | null>(null)
   const [rawJson, setRawJson] = useState('')
   const [rawJsonError, setRawJsonError] = useState<string | null>(null)
+  const [progress, setProgress] = useState(0)
+  const [progressText, setProgressText] = useState('')
 
   const handleParseRaw = () => {
     setRawJsonError(null)
@@ -119,15 +121,39 @@ export default function ImportPage() {
     if (!previewData) return
     setIsProcessing(true)
     setError(null)
+    setProgress(0)
+    setProgressText('Starting import...')
     try {
       const validQs = previewData.validQuestions.map(v => v.question)
-      const res = await commitImport(validQs)
-      setInsertResult(res)
+      const CHUNK_SIZE = 200
+      let totalInserted = 0
+      let totalSkipped = 0
+      let totalErrors = 0
+
+      for (let i = 0; i < validQs.length; i += CHUNK_SIZE) {
+        const chunk = validQs.slice(i, i + CHUNK_SIZE)
+        setProgressText(`Importing ${Math.min(i + CHUNK_SIZE, validQs.length)} of ${validQs.length} questions...`)
+        
+        const res = await commitImport(chunk)
+        totalInserted += res.insertedCount
+        totalSkipped += res.skippedCount
+        totalErrors += res.errorCount
+        
+        setProgress(Math.round(((i + chunk.length) / validQs.length) * 100))
+      }
+
+      setInsertResult({
+        insertedCount: totalInserted,
+        skippedCount: totalSkipped,
+        errorCount: totalErrors
+      })
       setStep('result')
     } catch (err: any) {
       setError(err.message || 'Failed to insert questions.')
     } finally {
       setIsProcessing(false)
+      setProgress(0)
+      setProgressText('')
     }
   }
 
@@ -280,12 +306,28 @@ export default function ImportPage() {
 
       {/* ── Step 2: Preview ── */}
       {step === 'preview' && previewData && (
-        <ImportPreview
-          data={previewData}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-          isSubmitting={isProcessing}
-        />
+        <div className="space-y-4">
+          <ImportPreview
+            data={previewData}
+            onConfirm={handleConfirm}
+            onCancel={handleCancel}
+            isSubmitting={isProcessing}
+          />
+          {isProcessing && progress > 0 && (
+            <div className="bg-surface-2 border border-border p-5 rounded-lg space-y-3">
+              <div className="flex justify-between items-center text-sm font-bold">
+                <span className="text-foreground">{progressText}</span>
+                <span className="text-sky-400">{progress}%</span>
+              </div>
+              <div className="h-2 w-full bg-surface overflow-hidden rounded-full border border-border">
+                <div 
+                  className="h-full bg-sky-500 transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ── Step 3: Result ── */}

@@ -14,22 +14,44 @@ export async function processImportData(normalizedQuestions: ImportQuestion[]): 
   
   const supabase = await createClient()
 
-  for (const q of normalizedQuestions) {
-    const validation = validateQuestion(q)
-    if (validation.valid) {
-      // Generate hash
-      const hash = await generateHash(q)
-      validation.question.hash = hash
-
-      // Check DB for duplicate
-      const { data } = await supabase.from('questions').select('id').eq('hash', hash).single()
-      if (data) {
-        duplicateHashes.push(hash)
-      } else {
-        validQuestions.push(validation)
+  // 1. First pass: validate and generate hashes
+  const validatedWithHashes = await Promise.all(
+    normalizedQuestions.map(async (q) => {
+      const validation = validateQuestion(q)
+      if (validation.valid) {
+        validation.question.hash = await generateHash(q)
       }
+      return validation
+    })
+  )
+
+  // 2. Separate valid and invalid
+  const validItems = validatedWithHashes.filter(v => v.valid)
+  invalidQuestions.push(...validatedWithHashes.filter(v => !v.valid))
+
+  // 3. Batch check existing hashes in chunks of 500
+  const allHashes = validItems.map(v => v.question.hash as string)
+  const existingHashes = new Set<string>()
+
+  const chunkSize = 500
+  for (let i = 0; i < allHashes.length; i += chunkSize) {
+    const chunk = allHashes.slice(i, i + chunkSize)
+    const { data } = await supabase
+      .from('questions')
+      .select('hash')
+      .in('hash', chunk)
+    
+    if (data) {
+      data.forEach(row => existingHashes.add(row.hash))
+    }
+  }
+
+  // 4. Categorize as valid or duplicate
+  for (const validation of validItems) {
+    if (existingHashes.has(validation.question.hash as string)) {
+      duplicateHashes.push(validation.question.hash as string)
     } else {
-      invalidQuestions.push(validation)
+      validQuestions.push(validation)
     }
   }
 

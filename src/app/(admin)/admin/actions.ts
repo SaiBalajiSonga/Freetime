@@ -15,7 +15,7 @@ export async function deleteQuestion(questionId: string) {
     return { error: error.message }
   }
 
-  revalidatePath('/admin')
+  revalidatePath('/admin/questions')
   revalidatePath('/subjects')
   revalidatePath('/dashboard')
   return { success: true }
@@ -28,13 +28,15 @@ export async function deleteByChapter(chapterId: string) {
   const { data: questions } = await supabase.from('questions').select('id').eq('chapter_id', chapterId)
   const questionIds = questions?.map(q => q.id) || []
 
-  if (questionIds.length > 0) {
-    await supabase.from('question_options').delete().in('question_id', questionIds)
-    await supabase.from('attempts').delete().in('question_id', questionIds)
-    await supabase.from('questions').delete().in('id', questionIds)
+  const CHUNK_SIZE = 500
+  for (let i = 0; i < questionIds.length; i += CHUNK_SIZE) {
+    const chunk = questionIds.slice(i, i + CHUNK_SIZE)
+    await supabase.from('question_options').delete().in('question_id', chunk)
+    await supabase.from('attempts').delete().in('question_id', chunk)
+    await supabase.from('questions').delete().in('id', chunk)
   }
 
-  revalidatePath('/admin')
+  revalidatePath('/admin/questions')
   revalidatePath('/subjects')
   revalidatePath('/dashboard')
   return { success: true, deleted: questionIds.length }
@@ -52,13 +54,17 @@ export async function deleteBySubject(subjectId: string) {
     const questionIds = questions?.map(q => q.id) || []
 
     if (questionIds.length > 0) {
-      await supabase.from('question_options').delete().in('question_id', questionIds)
-      await supabase.from('attempts').delete().in('question_id', questionIds)
-      await supabase.from('questions').delete().in('id', questionIds)
+      const CHUNK_SIZE = 500
+      for (let i = 0; i < questionIds.length; i += CHUNK_SIZE) {
+        const chunk = questionIds.slice(i, i + CHUNK_SIZE)
+        await supabase.from('question_options').delete().in('question_id', chunk)
+        await supabase.from('attempts').delete().in('question_id', chunk)
+        await supabase.from('questions').delete().in('id', chunk)
+      }
     }
   }
 
-  revalidatePath('/admin')
+  revalidatePath('/admin/questions')
   revalidatePath('/subjects')
   revalidatePath('/dashboard')
   return { success: true }
@@ -68,16 +74,22 @@ export async function deleteSelectedQuestions(questionIds: string[]) {
   if (!questionIds.length) return { error: 'No questions selected' }
   const supabase = createAdminClient()
 
-  await supabase.from('question_options').delete().in('question_id', questionIds)
-  await supabase.from('attempts').delete().in('question_id', questionIds)
-  const { error } = await supabase.from('questions').delete().in('id', questionIds)
-
-  if (error) {
-    console.error('[Admin] Delete selected questions error:', error.message)
-    return { error: error.message }
+  const CHUNK_SIZE = 500
+  let errorMsg = null
+  for (let i = 0; i < questionIds.length; i += CHUNK_SIZE) {
+    const chunk = questionIds.slice(i, i + CHUNK_SIZE)
+    await supabase.from('question_options').delete().in('question_id', chunk)
+    await supabase.from('attempts').delete().in('question_id', chunk)
+    const { error } = await supabase.from('questions').delete().in('id', chunk)
+    if (error) errorMsg = error.message
   }
 
-  revalidatePath('/admin')
+  if (errorMsg) {
+    console.error('[Admin] Delete selected questions error:', errorMsg)
+    return { error: errorMsg }
+  }
+
+  revalidatePath('/admin/questions')
   revalidatePath('/subjects')
   revalidatePath('/dashboard')
   return { success: true, deleted: questionIds.length }
@@ -95,7 +107,7 @@ export async function deleteAllQuestions() {
     return { error: error.message }
   }
 
-  revalidatePath('/admin')
+  revalidatePath('/admin/questions')
   revalidatePath('/subjects')
   revalidatePath('/dashboard')
   return { success: true }
