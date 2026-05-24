@@ -15,16 +15,15 @@ export default async function NewWeeklyExamPage() {
     .single()
 
   if (!profile?.is_admin) {
-    console.log('Bypassing admin check for dev (weekly-exams-new)')
+    redirect('/')
   }
 
-  // Must use admin client — exam questions are hidden from regular users via RLS
+  // Must use admin client
   const adminSupabase = createAdminClient()
-  const { data: questions } = await adminSupabase
-    .from('questions')
-    .select('id, statement, type, difficulty, chapters(name, subjects(name))')
-    .eq('visibility', 'exam')
-    .order('created_at', { ascending: false })
+  const { data: subjectsData } = await adminSupabase
+    .from('subjects')
+    .select('id, name')
+    .order('name')
 
-  return <WeeklyExamForm questions={(questions as any[]) ?? []} />
+  return <WeeklyExamForm initialSubjects={(subjectsData as any[]) ?? []} />
 }

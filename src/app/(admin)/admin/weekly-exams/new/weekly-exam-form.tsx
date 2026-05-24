@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useTransition, useMemo } from 'react'
+import { useState, useTransition, useEffect, useCallback } from 'react'
 import { createWeeklyExam } from './actions'
+import { getExamQuestions } from '../../exam-bank/actions'
 import {
   Search, X, CheckSquare, Square, BookOpen,
   FlaskConical, Calculator, ChevronDown, ChevronUp,
-  LayoutGrid, ListFilter, Trophy, Clock
+  LayoutGrid, ListFilter, Trophy, ChevronLeft, ChevronRight, Loader2
 } from 'lucide-react'
 
 type Question = {
@@ -13,7 +14,7 @@ type Question = {
   statement: string
   type: string
   difficulty: string
-  chapters: { name: string; subjects: { name: string } } | null
+  chapters: { name: string; subjects: { id: string, name: string } } | null
 }
 
 const SUBJECT_ICONS: Record<string, React.ReactNode> = {
@@ -33,55 +34,71 @@ const inputCls =
   'w-full bg-surface-2 border border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-2 focus:border-accent-glow focus:outline-none focus:ring-2 focus:ring-accent-glow/30 transition text-sm'
 const textareaCls = `${inputCls} resize-none`
 
-export function WeeklyExamForm({ questions }: { questions: Question[] }) {
-  const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set())
+export function WeeklyExamForm({ initialSubjects }: { initialSubjects: { id: string; name: string }[] }) {
+  const [selectedQuestions, setSelectedQuestions] = useState<Map<string, Question>>(new Map())
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  
+  const [page, setPage] = useState(1)
+  const pageSize = 20
+
   const [search, setSearch]             = useState('')
-  const [activeSubject, setActiveSubject] = useState<string>('All')
+  const [activeSubjectId, setActiveSubjectId] = useState<string>('all')
   const [typeFilter, setTypeFilter]     = useState<'all' | 'mcq' | 'numerical'>('all')
   const [diffFilter, setDiffFilter]     = useState<'all' | 'easy' | 'medium' | 'hard'>('all')
   const [collapsedChapters, setCollapsedChapters] = useState<Set<string>>(new Set())
   const [error, setError]               = useState<string | null>(null)
   const [isPending, startTransition]    = useTransition()
 
-  // Derive unique subjects
-  const subjects = useMemo(() => {
-    const s = new Set<string>()
-    questions.forEach(q => { if (q.chapters?.subjects?.name) s.add(q.chapters.subjects.name) })
-    return ['All', ...Array.from(s).sort()]
-  }, [questions])
-
-  // Filtered questions
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return questions.filter(question => {
-      const subject = question.chapters?.subjects?.name ?? ''
-      if (activeSubject !== 'All' && subject !== activeSubject) return false
-      if (typeFilter !== 'all' && question.type !== typeFilter) return false
-      if (diffFilter !== 'all' && question.difficulty !== diffFilter) return false
-      if (q && !question.statement.toLowerCase().includes(q)) return false
-      return true
+  const fetchQuestions = useCallback(async () => {
+    setLoading(true)
+    const result = await getExamQuestions(page, pageSize, {
+      search: search.trim() || undefined,
+      difficulty: diffFilter !== 'all' ? diffFilter : undefined,
+      type: typeFilter !== 'all' ? typeFilter : undefined,
+      subjectId: activeSubjectId !== 'all' ? activeSubjectId : undefined,
     })
-  }, [questions, activeSubject, typeFilter, diffFilter, search])
+    setQuestions((result.data as any[]) || [])
+    setTotalCount(result.count || 0)
+    setLoading(false)
+  }, [page, search, diffFilter, typeFilter, activeSubjectId])
 
-  // Group filtered by chapter
-  const grouped = useMemo(() => {
-    const g: Record<string, Question[]> = {}
-    filtered.forEach(q => {
-      const ch = q.chapters?.name ?? 'Uncategorised'
-      if (!g[ch]) g[ch] = []
-      g[ch].push(q)
-    })
-    return g
-  }, [filtered])
+  useEffect(() => {
+    // Reset to page 1 when filters change
+    setPage(1)
+  }, [search, diffFilter, typeFilter, activeSubjectId])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchQuestions()
+    }, 300) // Debounce fetch
+    return () => clearTimeout(timer)
+  }, [fetchQuestions])
+
+  const subjects = [{ id: 'all', name: 'All' }, ...initialSubjects]
+
+  // Group fetched questions by chapter
+  const grouped: Record<string, Question[]> = {}
+  questions.forEach(q => {
+    const ch = q.chapters?.name ?? 'Uncategorised'
+    if (!grouped[ch]) grouped[ch] = []
+    grouped[ch].push(q)
+  })
 
   // Stats
-  const selectedQuestions = questions.filter(q => selectedIds.has(q.id))
-  const mcqSelected = selectedQuestions.filter(q => q.type === 'mcq').length
-  const numSelected = selectedQuestions.filter(q => q.type === 'numerical').length
+  const selectedList = Array.from(selectedQuestions.values())
+  const mcqSelected = selectedList.filter(q => q.type === 'mcq').length
+  const numSelected = selectedList.filter(q => q.type === 'numerical').length
   const maxMarks    = mcqSelected * 4 + numSelected * 4
 
-  function toggle(id: string) {
-    setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  function toggle(q: Question) {
+    setSelectedQuestions(prev => {
+      const next = new Map(prev)
+      if (next.has(q.id)) next.delete(q.id)
+      else next.set(q.id, q)
+      return next
+    })
   }
 
   function toggleChapter(chapter: string) {
@@ -89,17 +106,24 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
   }
 
   function selectAllVisible() {
-    setSelectedIds(prev => { const n = new Set(prev); filtered.forEach(q => n.add(q.id)); return n })
+    setSelectedQuestions(prev => {
+      const next = new Map(prev)
+      questions.forEach(q => next.set(q.id, q))
+      return next
+    })
   }
 
   function deselectAllVisible() {
-    const visibleIds = new Set(filtered.map(q => q.id))
-    setSelectedIds(prev => { const n = new Set(prev); visibleIds.forEach(id => n.delete(id)); return n })
+    setSelectedQuestions(prev => {
+      const next = new Map(prev)
+      questions.forEach(q => next.delete(q.id))
+      return next
+    })
   }
 
   function handleSubmit(formData: FormData) {
     setError(null)
-    formData.set('question_ids', JSON.stringify(Array.from(selectedIds)))
+    formData.set('question_ids', JSON.stringify(Array.from(selectedQuestions.keys())))
     startTransition(async () => {
       const result = await createWeeklyExam(formData)
       if (result?.error) setError(result.error)
@@ -167,17 +191,17 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
                   <LayoutGrid className="h-4 w-4 text-muted" />
                   <span className="font-bold text-foreground">Question Bank</span>
                   <span className="text-xs text-muted px-2 py-0.5 bg-surface-2 border border-border rounded-full">
-                    {filtered.length} / {questions.length}
+                    {totalCount} total
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <button type="button" onClick={selectAllVisible}
                     className="text-xs font-bold text-accent-cyan hover:text-accent-glow transition-colors px-2 py-1 rounded-md hover:bg-surface-2">
-                    Select all visible
+                    Select visible
                   </button>
                   <button type="button" onClick={deselectAllVisible}
                     className="text-xs font-bold text-muted hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-surface-2">
-                    Deselect
+                    Deselect visible
                   </button>
                 </div>
               </div>
@@ -186,17 +210,17 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
               <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
                 {subjects.map(sub => (
                   <button
-                    key={sub}
+                    key={sub.id}
                     type="button"
-                    onClick={() => setActiveSubject(sub)}
+                    onClick={() => setActiveSubjectId(sub.id)}
                     className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      activeSubject === sub
+                      activeSubjectId === sub.id
                         ? 'bg-gradient-primary text-white shadow-sm'
                         : 'bg-surface-2 text-muted border border-border hover:border-border-strong hover:text-foreground'
                     }`}
                   >
-                    {sub !== 'All' && (SUBJECT_ICONS[sub] ?? <BookOpen className="h-3.5 w-3.5" />)}
-                    {sub}
+                    {sub.id !== 'all' && (SUBJECT_ICONS[sub.name] ?? <BookOpen className="h-3.5 w-3.5" />)}
+                    {sub.name}
                   </button>
                 ))}
               </div>
@@ -248,8 +272,15 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
             </div>
 
             {/* Question list */}
-            <div className="overflow-y-auto max-h-[520px] p-3 space-y-2">
-              {Object.keys(grouped).length === 0 ? (
+            <div className="overflow-y-auto max-h-[520px] p-3 space-y-2 relative">
+              {loading && (
+                <div className="absolute inset-0 bg-surface/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-accent-cyan" />
+                  <span className="text-xs text-muted mt-2 font-medium">Loading questions...</span>
+                </div>
+              )}
+
+              {Object.keys(grouped).length === 0 && !loading ? (
                 <div className="py-16 text-center">
                   <BookOpen className="h-8 w-8 text-muted-2 mx-auto mb-3" />
                   <p className="text-sm font-bold text-foreground mb-1">No questions match</p>
@@ -258,7 +289,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
               ) : (
                 Object.entries(grouped).map(([chapter, qs]) => {
                   const isCollapsed = collapsedChapters.has(chapter)
-                  const selectedInChapter = qs.filter(q => selectedIds.has(q.id)).length
+                  const selectedInChapter = qs.filter(q => selectedQuestions.has(q.id)).length
                   return (
                     <div key={chapter} className="rounded-md border border-border overflow-hidden">
                       {/* Chapter header */}
@@ -284,9 +315,9 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
                       {!isCollapsed && (
                         <div className="divide-y divide-border/50">
                           {qs.map(q => {
-                            const sel = selectedIds.has(q.id)
+                            const sel = selectedQuestions.has(q.id)
                             return (
-                              <button key={q.id} type="button" onClick={() => toggle(q.id)}
+                              <button key={q.id} type="button" onClick={() => toggle(q)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                                   sel ? 'bg-violet-500/6 hover:bg-violet-500/10' : 'hover:bg-surface-2/50'
                                 }`}>
@@ -318,6 +349,25 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
                 })
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalCount > pageSize && (
+              <div className="border-t border-border px-5 py-3 bg-surface-2/40 flex items-center justify-between">
+                <span className="text-xs text-muted font-medium">
+                  Showing {Math.min((page - 1) * pageSize + 1, totalCount)} – {Math.min(page * pageSize, totalCount)} of {totalCount}
+                </span>
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                    className="p-1 rounded text-muted hover:text-foreground hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button type="button" onClick={() => setPage(p => p + 1)} disabled={page * pageSize >= totalCount}
+                    className="p-1 rounded text-muted hover:text-foreground hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed">
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right: Paper summary panel */}
@@ -330,7 +380,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { label: 'Total Qs', value: selectedIds.size, icon: <BookOpen className="h-3.5 w-3.5" />, color: 'text-violet-400' },
+                    { label: 'Total Qs', value: selectedQuestions.size, icon: <BookOpen className="h-3.5 w-3.5" />, color: 'text-violet-400' },
                     { label: 'Max Marks', value: maxMarks, icon: <Trophy className="h-3.5 w-3.5" />, color: 'text-amber-400' },
                     { label: 'MCQ', value: mcqSelected, icon: null, color: 'text-cyan-400' },
                     { label: 'Numerical', value: numSelected, icon: null, color: 'text-purple-400' },
@@ -343,9 +393,9 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
                 </div>
 
                 {/* Subject breakdown */}
-                {selectedIds.size > 0 && (() => {
+                {selectedQuestions.size > 0 && (() => {
                   const bySub: Record<string, number> = {}
-                  selectedQuestions.forEach(q => {
+                  selectedList.forEach(q => {
                     const s = q.chapters?.subjects?.name ?? 'Other'
                     bySub[s] = (bySub[s] ?? 0) + 1
                   })
@@ -365,21 +415,21 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
             </div>
 
             {/* Selected question list (compact) */}
-            {selectedIds.size > 0 && (
+            {selectedQuestions.size > 0 && (
               <div className="rounded-lg border border-border bg-surface overflow-hidden">
                 <div className="border-b border-border px-5 py-3 bg-surface-2/40 flex items-center justify-between">
                   <h3 className="font-bold text-foreground text-sm">Selected</h3>
-                  <button type="button" onClick={() => setSelectedIds(new Set())}
+                  <button type="button" onClick={() => setSelectedQuestions(new Map())}
                     className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors">
                     Clear all
                   </button>
                 </div>
                 <div className="max-h-[280px] overflow-y-auto divide-y divide-border/50">
-                  {selectedQuestions.map((q, i) => (
+                  {selectedList.map((q, i) => (
                     <div key={q.id} className="flex items-start gap-2 px-4 py-2.5">
                       <span className="text-[10px] font-bold text-muted-2 mt-0.5 w-5 flex-shrink-0">{i + 1}.</span>
                       <p className="text-[11px] text-foreground line-clamp-2 flex-1 leading-relaxed">{q.statement}</p>
-                      <button type="button" onClick={() => toggle(q.id)}
+                      <button type="button" onClick={() => toggle(q)}
                         className="text-muted hover:text-red-400 transition-colors flex-shrink-0 mt-0.5">
                         <X className="h-3 w-3" />
                       </button>
@@ -391,7 +441,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
           </div>
         </div>
 
-        <input type="hidden" name="question_ids" value={JSON.stringify(Array.from(selectedIds))} readOnly />
+        <input type="hidden" name="question_ids" value={JSON.stringify(Array.from(selectedQuestions.keys()))} readOnly />
 
         {error && (
           <div className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</div>
@@ -399,9 +449,9 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
 
         <div className="flex items-center gap-4">
           <button type="submit"
-            disabled={isPending || selectedIds.size === 0}
+            disabled={isPending || selectedQuestions.size === 0}
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md bg-gradient-primary text-white font-bold text-sm shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-            {isPending ? 'Creating…' : `Publish Exam (${selectedIds.size} questions · ${maxMarks} marks)`}
+            {isPending ? 'Creating…' : `Publish Exam (${selectedQuestions.size} questions · ${maxMarks} marks)`}
           </button>
           <a href="/admin/weekly-exams" className="text-sm text-muted hover:text-foreground transition-colors">
             Cancel
