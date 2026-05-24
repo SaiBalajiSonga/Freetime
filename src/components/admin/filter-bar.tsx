@@ -15,9 +15,11 @@ type Filters = {
 export function FilterBar({
   subjects,
   currentFilters,
+  basePath = '/admin/questions',
 }: {
   subjects: Subject[]
   currentFilters: Filters
+  basePath?: string
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -33,17 +35,17 @@ export function FilterBar({
       }
       params.delete('page')
       startTransition(() => {
-        router.push(`/admin/questions?${params.toString()}`)
+        router.push(`${basePath}?${params.toString()}`)
       })
     },
-    [router, searchParams]
+    [router, searchParams, basePath]
   )
 
   const clearFilters = useCallback(() => {
     startTransition(() => {
-      router.push('/admin/questions')
+      router.push(basePath)
     })
-  }, [router])
+  }, [router, basePath])
 
   const hasFilters = !!(
     currentFilters.q ||
