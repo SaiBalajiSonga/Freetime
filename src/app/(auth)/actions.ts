@@ -12,26 +12,14 @@ export async function login(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { data: authData, error } = await supabase.auth.signInWithPassword(data)
+  const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
     return { error: error.message }
   }
 
-  const adminClient = createAdminClient()
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', authData.user.id)
-    .single()
-
   revalidatePath('/', 'layout')
-  
-  if (profile?.is_admin) {
-    redirect('/admin/dashboard')
-  } else {
-    redirect('/dashboard')
-  }
+  redirect('/dashboard')
 }
 
 export async function signup(formData: FormData) {
@@ -47,26 +35,14 @@ export async function signup(formData: FormData) {
     }
   }
 
-  const { data: authData, error } = await supabase.auth.signUp(data)
+  const { error } = await supabase.auth.signUp(data)
 
   if (error) {
     return { error: error.message }
   }
 
-  const adminClient = createAdminClient()
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', authData.user?.id)
-    .single()
-
   revalidatePath('/', 'layout')
-
-  if (profile?.is_admin) {
-    redirect('/admin/dashboard')
-  } else {
-    redirect('/dashboard')
-  }
+  redirect('/dashboard')
 }
 
 export async function logout() {
