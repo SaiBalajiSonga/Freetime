@@ -17,6 +17,7 @@ type QuestionsDashboardProps = {
     pageSize?: string
     q?: string
     subject?: string
+    chapter?: string
     difficulty?: string
     type?: string
   }
@@ -51,10 +52,10 @@ export async function QuestionsDashboard({
   const pageSize = Number(params.pageSize) || 25
   const offset = (page - 1) * pageSize
 
-  // ── Filters ─────────────────────────────────────────────────────
   const filters = {
     q: params.q ?? '',
     subject: params.subject ?? '',
+    chapter: params.chapter ?? '',
     difficulty: params.difficulty ?? '',
     type: params.type ?? '',
   }
@@ -72,6 +73,7 @@ export async function QuestionsDashboard({
   if (filters.difficulty) query = query.eq('difficulty', filters.difficulty)
   if (filters.type) query = query.eq('type', filters.type)
   if (filters.subject) query = query.eq('chapters.subjects.id', filters.subject)
+  if (filters.chapter) query = query.eq('chapter_id', filters.chapter)
 
   query = query.order('created_at', { ascending: false }).range(offset, offset + pageSize - 1)
 
@@ -122,8 +124,9 @@ export async function QuestionsDashboard({
 
   const subjectList = Object.values(stats.subjects).sort((a, b) => b.count - a.count)
 
-  // ── Subjects for filter dropdown ─────────────────────────────────
+  // ── Subjects and Chapters for filter dropdown ─────────────────────────────────
   const { data: subjects } = await supabase.from('subjects').select('id, name').order('name')
+  const { data: chapters } = await supabase.from('chapters').select('id, name, subject_id').order('name')
 
   const displayCount = filteredCount ?? 0
   const totalPages = Math.ceil(displayCount / pageSize)
@@ -254,7 +257,7 @@ export async function QuestionsDashboard({
       )}
 
       {/* ── Filter bar ── */}
-      <FilterBar subjects={subjects ?? []} currentFilters={filters} basePath={basePath} />
+      <FilterBar subjects={subjects ?? []} chapters={chapters ?? []} currentFilters={filters} basePath={basePath} />
 
       {hasFilters && (
         <p className="text-xs" style={{ color: '#64748b' }}>
