@@ -372,10 +372,10 @@ export function QuestionsTable({
                         statement={q.statement}
                         type={q.type}
                         options={q.options}
-                        correctAnswer={q.correct_answer ?? undefined}
-                        hint={q.hint ?? undefined}
-                        solution={q.solution ?? undefined}
-                        imageUrl={q.image_url ?? undefined}
+                        correctAnswer={q.correct_answer}
+                        hint={q.hint}
+                        solution={q.solution}
+                        imageUrl={q.image_url}
                       />
                     ),
                   ]
