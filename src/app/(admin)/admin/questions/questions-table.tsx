@@ -133,7 +133,7 @@ export function QuestionsTable({
 
   // ── Expand rows ────────────────────────────────────────────────
   const { toggleRow, isOpen } = useExpandableRows()
-  const TABLE_COLS = 8
+  const TABLE_COLS = 4
 
   // ── Empty state ────────────────────────────────────────────────
   if (questions.length === 0) {
@@ -265,30 +265,16 @@ export function QuestionsTable({
                     </button>
                   </th>
                   <th className="text-left py-3 px-4 font-bold text-[11px] uppercase tracking-widest" style={{ color: '#64748b' }}>ID</th>
-                  <th className="text-left py-3 px-4 font-bold text-[11px] uppercase tracking-widest" style={{ color: '#64748b' }}>Subject › Chapter</th>
                   <th
-                    className="text-left py-3 px-4 font-bold text-[11px] uppercase tracking-widest cursor-pointer select-none hover:text-white transition-colors"
+                    className="text-left py-3 px-4 font-bold text-[11px] uppercase tracking-widest cursor-pointer select-none hover:text-white transition-colors w-full"
                     style={{ color: '#64748b' }}
                     onClick={() => toggleSort('statement')}
                   >
-                    Statement <SortIndicator col="statement" sortKey={sortKey} sortDir={sortDir} />
+                    Question Details <SortIndicator col="statement" sortKey={sortKey} sortDir={sortDir} />
                   </th>
-                  <th
-                    className="text-left py-3 px-4 font-bold text-[11px] uppercase tracking-widest cursor-pointer select-none hover:text-white transition-colors"
-                    style={{ color: '#64748b' }}
-                    onClick={() => toggleSort('difficulty')}
-                  >
-                    Diff <SortIndicator col="difficulty" sortKey={sortKey} sortDir={sortDir} />
+                  <th className="text-right py-3 px-4 font-bold text-[11px] uppercase tracking-widest w-48" style={{ color: '#64748b' }}>
+                    Metadata
                   </th>
-                  <th
-                    className="text-left py-3 px-4 font-bold text-[11px] uppercase tracking-widest cursor-pointer select-none hover:text-white transition-colors"
-                    style={{ color: '#64748b' }}
-                    onClick={() => toggleSort('type')}
-                  >
-                    Type <SortIndicator col="type" sortKey={sortKey} sortDir={sortDir} />
-                  </th>
-                  <th className="text-left py-3 px-4 font-bold text-[11px] uppercase tracking-widest" style={{ color: '#64748b' }}>Actions</th>
-                  <th className="w-8" />
                 </tr>
               </thead>
               <tbody>
@@ -326,41 +312,50 @@ export function QuestionsTable({
                       </td>
                       {/* ID */}
                       <td className="py-3.5 px-4 font-mono text-[11px] font-medium w-20" style={{ color: '#64748b' }}>{qId}</td>
-                      {/* Subject / Chapter */}
-                      <td className="py-3.5 px-4 w-44">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-semibold text-white">{subject ?? '—'}</span>
-                          <span className="text-[10px]" style={{ color: '#64748b' }}>{chapter ?? '—'}</span>
+                      
+                      {/* Details */}
+                      <td className="py-3.5 px-4 w-full">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-white shrink-0">
+                            {subject ?? '—'}
+                          </span>
+                          <span className="text-xs text-[#64748b] shrink-0">
+                            › {chapter ?? '—'}
+                          </span>
+                          <span className="text-[#64748b] shrink-0 mx-1">-</span>
+                          <span className="line-clamp-1 text-sm text-[#94a3b8]">
+                            {q.statement}
+                          </span>
                         </div>
                       </td>
-                      {/* Statement */}
-                      <td className="py-3.5 px-4 max-w-[300px]" style={{ color: '#94a3b8' }}>
-                        <span className="line-clamp-1 text-sm">
-                          {q.statement.slice(0, 80)}{q.statement.length > 80 ? '…' : ''}
-                        </span>
-                      </td>
-                      {/* Difficulty */}
-                      <td className="py-3.5 px-4 w-24">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold capitalize ${diffColor[q.difficulty] ?? 'bg-[#1c2333] text-[#64748b] border border-[#2a3142]'}`}>
-                          {q.difficulty}
-                        </span>
-                      </td>
-                      {/* Type */}
-                      <td className="py-3.5 px-4 w-20">
-                        <span className="uppercase text-[11px] font-bold" style={{ color: '#64748b' }}>
-                          {q.type === 'mcq' ? 'MCQ' : 'Num'}
-                        </span>
-                      </td>
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 w-32" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1.5">
-                          <Link href={`/questions/${q.id}`} className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-[11px] font-bold transition-colors">
-                            View
-                          </Link>
-                          <Link href={`/admin/questions/${q.id}/edit`} className="px-2 py-1 rounded bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 text-[11px] font-bold transition-colors">
-                            Edit
-                          </Link>
-                          <DeleteQuestionButton questionId={q.id} />
+
+                      {/* Metadata / Hover Actions */}
+                      <td className="py-3.5 px-4 text-right relative w-48">
+                        {/* Default View */}
+                        <div className="flex items-center justify-end gap-2 group-hover:opacity-0 transition-opacity">
+                          <span className="uppercase text-[11px] font-bold text-[#64748b]">
+                            {q.type === 'mcq' ? 'MCQ' : 'Num'}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold capitalize ${diffColor[q.difficulty] ?? 'bg-[#1c2333] text-[#64748b] border border-[#2a3142]'}`}>
+                            {q.difficulty}
+                          </span>
+                        </div>
+
+                        {/* Hover Actions */}
+                        <div className="absolute inset-y-0 right-4 flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-transparent">
+                          {/* We apply a small gradient background so it covers the text nicely if needed, or just rely on the row bg */}
+                          <div className="absolute inset-0 bg-gradient-to-l from-[#1a2035] via-[#1a2035] to-transparent pointer-events-none" />
+                          <div className="relative flex items-center gap-1.5 pl-6">
+                            <Link href={`/questions/${q.id}`} onClick={e => e.stopPropagation()} className="px-2 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-[11px] font-bold transition-colors">
+                              View
+                            </Link>
+                            <Link href={`/admin/questions/${q.id}/edit`} onClick={e => e.stopPropagation()} className="px-2 py-1 rounded bg-amber-400/10 text-amber-400 hover:bg-amber-400/20 text-[11px] font-bold transition-colors">
+                              Edit
+                            </Link>
+                            <div onClick={e => e.stopPropagation()}>
+                              <DeleteQuestionButton questionId={q.id} />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </ExpandableRow>,

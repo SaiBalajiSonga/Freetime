@@ -33,7 +33,7 @@ export function FilterBar({
       }
       params.delete('page')
       startTransition(() => {
-        router.push(`/admin?${params.toString()}`)
+        router.push(`/admin/questions?${params.toString()}`)
       })
     },
     [router, searchParams]
@@ -41,7 +41,7 @@ export function FilterBar({
 
   const clearFilters = useCallback(() => {
     startTransition(() => {
-      router.push('/admin')
+      router.push('/admin/questions')
     })
   }, [router])
 

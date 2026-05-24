@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Plus, ChevronLeft, ChevronRight, Upload, AlertTriangle, ArrowRight, FileQuestion, CheckSquare, Hash, Flame } from 'lucide-react'
 import { DeleteAllQuestionsButton } from './delete-buttons'
@@ -11,7 +11,7 @@ export const metadata = {
   description: 'Manage all practice and exam bank questions.',
 }
 
-export default async function AdminDashboardPage({
+export default async function AdminQuestionsPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -24,7 +24,7 @@ export default async function AdminDashboardPage({
   }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const page = Math.max(1, Number(params.page) || 1)
   const pageSize = Number(params.pageSize) || 25
@@ -50,15 +50,13 @@ export default async function AdminDashboardPage({
   if (filters.difficulty) query = query.eq('difficulty', filters.difficulty)
   if (filters.type) query = query.eq('type', filters.type)
 
+  if (filters.subject) query = query.eq('chapters.subjects.id', filters.subject)
+
   query = query.order('created_at', { ascending: false }).range(offset, offset + pageSize - 1)
 
   const { data: questions, error, count: filteredCount } = await query
 
-  // ── Subject filtering (post-fetch, since it's nested) ───────────
-  let filtered = (questions as any[]) ?? []
-  if (filters.subject) {
-    filtered = filtered.filter((q: any) => q.chapters?.subjects?.id === filters.subject)
-  }
+  const filtered = (questions as any[]) ?? []
 
   if (error) {
     return <div className="text-red-400 p-4 rounded-lg border border-red-500/20 bg-red-500/10">Error loading questions: {error.message}</div>
@@ -167,68 +165,30 @@ export default async function AdminDashboardPage({
 
       {/* ── Pagination ── */}
       {displayCount > 0 && (
-        <div className="flex items-center justify-between px-2 pt-2">
+        <div className="flex items-center justify-between px-4 py-3 bg-[#161b27] border border-[#2a3142] rounded-lg">
           <div className="flex items-center gap-4">
-            <span className="text-[13px] font-medium" style={{ color: '#64748b' }}>
-              {displayCount.toLocaleString()} questions
-            </span>
             <PageSizeSelect currentSize={pageSize} />
           </div>
-          <div className="flex items-center gap-1">
-            {page > 1 && (
-              <Link href={`/admin?${new URLSearchParams({ ...params as Record<string, string>, page: String(page - 1) }).toString()}`}>
-                <button className="size-8 rounded-md hover:bg-[#1c2333] flex items-center justify-center transition-colors text-[#64748b] hover:text-white">
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
+          <div className="flex items-center gap-4">
+            <span className="text-[13px] font-medium" style={{ color: '#94a3b8' }}>
+              Showing {Math.min((page - 1) * pageSize + 1, displayCount)} – {Math.min(page * pageSize, displayCount)} of {displayCount.toLocaleString()}
+            </span>
+            <div className="flex items-center gap-1">
+              <Link
+                href={page > 1 ? `/admin/questions?${new URLSearchParams({ ...params as Record<string, string>, page: String(page - 1) }).toString()}` : '#'}
+                className={`p-1.5 rounded text-[#94a3b8] transition-colors ${page > 1 ? 'hover:bg-[#1c2333] hover:text-white' : 'opacity-30 cursor-not-allowed pointer-events-none'}`}
+              >
+                <ChevronLeft className="h-4 w-4" />
               </Link>
-            )}
-            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-              let p: number
-              if (totalPages <= 7) p = i + 1
-              else if (page <= 4) p = i + 1
-              else if (page >= totalPages - 3) p = totalPages - 6 + i
-              else p = page - 3 + i
-              return (
-                <Link key={p} href={`/admin?${new URLSearchParams({ ...params as Record<string, string>, page: String(p) }).toString()}`}>
-                  <button className={`size-8 rounded-md text-[13px] font-bold flex items-center justify-center transition-all ${
-                    p === page
-                      ? 'bg-blue-600 text-white'
-                      : 'text-[#64748b] hover:bg-[#1c2333] hover:text-white'
-                  }`}>
-                    {p}
-                  </button>
-                </Link>
-              )
-            })}
-            {page < totalPages && (
-              <Link href={`/admin?${new URLSearchParams({ ...params as Record<string, string>, page: String(page + 1) }).toString()}`}>
-                <button className="size-8 rounded-md hover:bg-[#1c2333] flex items-center justify-center transition-colors text-[#64748b] hover:text-white">
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+              <Link
+                href={page < totalPages ? `/admin/questions?${new URLSearchParams({ ...params as Record<string, string>, page: String(page + 1) }).toString()}` : '#'}
+                className={`p-1.5 rounded text-[#94a3b8] transition-colors ${page < totalPages ? 'hover:bg-[#1c2333] hover:text-white' : 'opacity-30 cursor-not-allowed pointer-events-none'}`}
+              >
+                <ChevronRight className="h-4 w-4" />
               </Link>
-            )}
+            </div>
           </div>
         </div>
-      )}
-
-      {/* ── Danger Zone ── */}
-      {(totalCount ?? 0) > 0 && (
-        <details className="rounded-lg border border-red-500/20 bg-red-500/5 overflow-hidden group">
-          <summary className="group flex items-center justify-between px-5 py-4 cursor-pointer text-red-400/70 hover:text-red-400 text-sm font-bold transition-colors select-none">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Danger Zone
-            </div>
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </summary>
-          <div className="px-5 pb-5 pt-2 border-t border-red-500/10">
-            <p className="text-xs mb-4" style={{ color: '#64748b' }}>
-              Permanently delete <span className="font-bold text-white">{(totalCount ?? 0).toLocaleString()}</span> questions,
-              all their options, and all student attempt records. This action cannot be undone.
-            </p>
-            <DeleteAllQuestionsButton count={totalCount ?? 0} />
-          </div>
-        </details>
       )}
     </div>
   )

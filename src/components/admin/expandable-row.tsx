@@ -26,24 +26,10 @@ export function ExpandableRow({
   return (
     <tr
       onClick={() => onToggle(id)}
-      className="cursor-pointer transition-colors hover:bg-[#1a2035]"
+      className="cursor-pointer transition-colors hover:bg-[#1a2035] group relative"
       style={isSelected ? { background: 'rgba(59,130,246,0.07)', ...style } : style}
     >
       {children}
-      {/* Expand chevron cell */}
-      <td className="py-3.5 px-3 w-8">
-        <button
-          type="button"
-          className="transition-all duration-200 hover:text-white"
-          style={{ color: '#64748b' }}
-          id={`expand-row-${id}`}
-          aria-label={isOpen ? 'Collapse' : 'Expand'}
-        >
-          <ChevronDown
-            className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-      </td>
     </tr>
   )
 }
