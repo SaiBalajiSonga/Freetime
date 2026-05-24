@@ -102,15 +102,15 @@ export function ExpandedContent({
 
           {/* Numerical answer */}
           {type === 'numerical' && correctAnswer && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-2 font-bold uppercase tracking-wider">Answer:</span>
+            <div className="flex items-center gap-2 text-[15px]">
+              <span className="text-muted-2 font-bold uppercase tracking-wider">Answer:</span>
               <span className="font-mono text-emerald-400 font-bold">{correctAnswer}</span>
             </div>
           )}
 
           {/* Hint */}
           {hint && (
-            <div className="flex items-start gap-2 text-sm text-amber-400/80">
+            <div className="flex items-start gap-2 text-[15px] text-amber-400/90">
               <span className="font-bold shrink-0">Hint:</span>
               <span><Latex>{hint}</Latex></span>
             </div>
@@ -118,11 +118,11 @@ export function ExpandedContent({
 
           {/* Solution */}
           {solution && (
-            <details className="text-sm text-muted">
+            <details className="text-[15px] text-muted">
               <summary className="cursor-pointer text-accent-cyan font-bold hover:text-accent-glow transition-colors">
                 Show solution
               </summary>
-              <div className="mt-2 leading-relaxed"><Latex>{solution}</Latex></div>
+              <div className="mt-2 leading-relaxed text-foreground/90"><Latex>{solution}</Latex></div>
             </details>
           )}
         </div>
