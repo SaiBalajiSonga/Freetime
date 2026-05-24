@@ -50,7 +50,7 @@ export function QuestionCard({
 
   return (
     <div
-      className={`relative flex flex-col rounded-xl border-l-4 border border-white/[0.08] bg-surface p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
+      className={`relative flex flex-col rounded-md border-l-4 border border-white/[0.08] bg-surface p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
         diffBorderColor[q.difficulty] ?? 'border-l-white/20'
       } ${isSelected ? 'ring-1 ring-inset ring-accent-electric/30 bg-accent-electric/5' : 'hover:bg-surface-2/60'}`}
     >

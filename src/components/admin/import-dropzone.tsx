@@ -96,7 +96,7 @@ export function ImportDropzone({ onParsed }: ImportDropzoneProps) {
         />
         <Button 
           onClick={() => fileInputRef.current?.click()} 
-          className="bg-gradient-primary text-white hover:brightness-110 font-bold h-11 px-6 rounded-xl transition-all shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] border-0"
+          className="bg-gradient-primary text-white hover:brightness-110 font-bold h-11 px-6 rounded-md transition-all shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] border-0"
         >
           Select File
         </Button>

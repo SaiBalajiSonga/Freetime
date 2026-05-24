@@ -150,7 +150,7 @@ export default function AdminSubjectsPage() {
       <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 items-start">
 
         {/* ── LEFT: Subjects ── */}
-        <div className="rounded-2xl border border-white/[0.08] bg-surface overflow-hidden">
+        <div className="rounded-lg border border-white/[0.08] bg-surface overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface-2/20">
             <span className="text-[11px] font-bold uppercase tracking-widest text-muted-2">Subjects</span>
             <button
@@ -226,10 +226,10 @@ export default function AdminSubjectsPage() {
         </div>
 
         {/* ── RIGHT: Chapters ── */}
-        <div className="rounded-2xl border border-white/[0.08] bg-surface overflow-hidden">
+        <div className="rounded-lg border border-white/[0.08] bg-surface overflow-hidden">
           {!selectedSubject ? (
             <div className="py-20 text-center">
-              <div className="size-12 rounded-xl bg-surface-2 border border-white/[0.06] flex items-center justify-center mx-auto mb-3">
+              <div className="size-12 rounded-md bg-surface-2 border border-white/[0.06] flex items-center justify-center mx-auto mb-3">
                 <BookOpen className="h-5 w-5 text-muted-2" />
               </div>
               <p className="text-sm text-muted font-medium">Select a subject to manage its chapters</p>

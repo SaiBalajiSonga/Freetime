@@ -440,6 +440,11 @@
     --color-sidebar-active-bg:   rgba(59, 130, 246, 0.12);
     --color-sidebar-active-text: #93c5fd;
     --color-sidebar-text:        #64748b;
+    /* ── Admin panel surface tokens ── */
+    --panel:         #161b27;
+    --panel-dark:    #0d1117;
+    --panel-header:  #1c2333;
+    --border-subtle: #2a3142;
     background-color: var(--color-background);
     color: var(--color-foreground);
   }

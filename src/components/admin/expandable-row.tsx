@@ -14,30 +14,28 @@ export function ExpandableRow({
   onToggle,
   isSelected,
   children,
+  style,
 }: {
   id: string
   isOpen: boolean
   onToggle: (id: string) => void
   isSelected: boolean
   children: React.ReactNode
+  style?: React.CSSProperties
 }) {
   return (
     <tr
       onClick={() => onToggle(id)}
-      className={`cursor-pointer transition-colors ${
-        isSelected
-          ? 'bg-accent-electric/5 ring-1 ring-inset ring-accent-electric/20'
-          : isOpen
-          ? 'bg-surface-2/40'
-          : 'hover:bg-surface-2/60'
-      }`}
+      className="cursor-pointer transition-colors hover:bg-[#1a2035]"
+      style={isSelected ? { background: 'rgba(59,130,246,0.07)', ...style } : style}
     >
       {children}
       {/* Expand chevron cell */}
       <td className="py-3.5 px-3 w-8">
         <button
           type="button"
-          className="text-muted-2 hover:text-foreground transition-all duration-200"
+          className="transition-all duration-200 hover:text-white"
+          style={{ color: '#64748b' }}
           id={`expand-row-${id}`}
           aria-label={isOpen ? 'Collapse' : 'Expand'}
         >
@@ -75,7 +73,7 @@ export function ExpandedContent({
   imageUrl?: string | null
 }) {
   return (
-    <tr className="bg-surface-2/30 border-l-4 border-l-accent-cyan">
+    <tr style={{ background: '#0d1117', borderLeft: '4px solid rgba(59,130,246,0.3)' }}>
       <td colSpan={colSpan} className="px-8 py-5">
         <div className="space-y-4 max-w-3xl animate-slide-down">
           {/* Full statement */}
@@ -88,7 +86,7 @@ export function ExpandedContent({
               src={imageUrl}
               alt="Question diagram"
               loading="lazy"
-              className="max-h-48 rounded-xl border border-white/10 object-contain"
+              className="max-h-48 rounded-md border border-white/10 object-contain"
             />
           )}
 

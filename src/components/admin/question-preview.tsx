@@ -32,7 +32,7 @@ export function QuestionPreview({
   const hasContent = statement.trim().length > 0
 
   return (
-    <div className="flex flex-col h-full rounded-2xl border border-white/[0.08] bg-surface overflow-hidden">
+    <div className="flex flex-col h-full rounded-lg border border-white/[0.08] bg-surface overflow-hidden">
       {/* Preview header */}
       <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/[0.06] bg-surface-2/40">
         <Eye className="h-4 w-4 text-muted-2" />
@@ -53,7 +53,7 @@ export function QuestionPreview({
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         {!hasContent ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="size-12 rounded-xl bg-surface-2 border border-white/[0.06] flex items-center justify-center mb-3">
+            <div className="size-12 rounded-md bg-surface-2 border border-white/[0.06] flex items-center justify-center mb-3">
               <Eye className="h-5 w-5 text-muted-2" />
             </div>
             <p className="text-sm text-muted-2 font-medium">Preview will appear here</p>
@@ -73,7 +73,7 @@ export function QuestionPreview({
                 src={imageUrl}
                 alt="Question diagram"
                 loading="lazy"
-                className="max-h-48 rounded-xl border border-white/10 object-contain w-auto"
+                className="max-h-48 rounded-md border border-white/10 object-contain w-auto"
               />
             )}
 

@@ -64,7 +64,7 @@ export function ImportPreview({ data, onConfirm, onCancel, isSubmitting }: Impor
         <Button 
           onClick={onConfirm} 
           disabled={isSubmitting || data.validQuestions.length === 0}
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold h-11 px-6 rounded-xl hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] disabled:opacity-50 transition-all active:scale-[0.98]"
+          className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold h-11 px-6 rounded-md hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] disabled:opacity-50 transition-all active:scale-[0.98]"
         >
           {isSubmitting ? 'Inserting...' : `Confirm & Insert ${data.validQuestions.length} Questions`}
         </Button>
@@ -72,7 +72,7 @@ export function ImportPreview({ data, onConfirm, onCancel, isSubmitting }: Impor
           variant="outline" 
           onClick={onCancel} 
           disabled={isSubmitting}
-          className="bg-white/5 border-white/10 text-white h-11 px-6 rounded-xl hover:bg-white/10 hover:border-white/20 font-bold transition-all"
+          className="bg-white/5 border-white/10 text-white h-11 px-6 rounded-md hover:bg-white/10 hover:border-white/20 font-bold transition-all"
         >
           Cancel
         </Button>
@@ -80,7 +80,7 @@ export function ImportPreview({ data, onConfirm, onCancel, isSubmitting }: Impor
           <Button 
             variant="ghost" 
             onClick={() => setShowInvalid(!showInvalid)}
-            className="text-white/60 hover:text-white hover:bg-white/5 font-bold h-11 px-4 rounded-xl transition-all"
+            className="text-white/60 hover:text-white hover:bg-white/5 font-bold h-11 px-4 rounded-md transition-all"
           >
             {showInvalid ? 'Hide Invalid' : 'Show Invalid Details'}
           </Button>
@@ -94,7 +94,7 @@ export function ImportPreview({ data, onConfirm, onCancel, isSubmitting }: Impor
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
             {data.invalidQuestions.map((res, idx) => (
-              <div key={idx} className="text-sm p-4 bg-black/40 rounded-xl border border-white/5 shadow-inner">
+              <div key={idx} className="text-sm p-4 bg-black/40 rounded-md border border-white/5 shadow-inner">
                 <p className="font-bold text-red-400 mb-2 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" /> Row {idx + 1} Errors:
                 </p>

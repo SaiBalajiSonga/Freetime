@@ -96,7 +96,7 @@ export default function NewExamQuestionPage() {
       </div>
 
       {/* Notice banner */}
-      <div className="flex items-start gap-3 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-3.5">
+      <div className="flex items-start gap-3 rounded-md border border-violet-500/30 bg-violet-500/10 px-4 py-3.5">
         <ShieldCheck className="h-5 w-5 text-violet-400 flex-shrink-0 mt-0.5" />
         <p className="text-sm text-violet-300">
           <span className="font-bold">Exam-only question.</span> This question will NOT be visible to students during
@@ -104,7 +104,7 @@ export default function NewExamQuestionPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-surface">
+      <div className="rounded-lg border border-border bg-surface">
         <form action={handleSubmit}>
           <div className="border-b border-border px-6 py-5">
             <h2 className="font-bold text-foreground">Question Details</h2>
@@ -183,7 +183,7 @@ export default function NewExamQuestionPage() {
 
               {imageUrl ? (
                 <div className="space-y-3">
-                  <div className="flex justify-center bg-surface-2 border border-border rounded-xl p-3">
+                  <div className="flex justify-center bg-surface-2 border border-border rounded-md p-3">
                     <Image
                       src={imageUrl}
                       alt="Question diagram preview"
@@ -204,7 +204,7 @@ export default function NewExamQuestionPage() {
               ) : (
                 <label
                   htmlFor="image-upload-exam"
-                  className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-6 py-8 cursor-pointer transition-colors ${
+                  className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-md px-6 py-8 cursor-pointer transition-colors ${
                     imageUploading
                       ? 'border-accent-glow/50 bg-accent-glow/5 cursor-not-allowed'
                       : 'border-border hover:border-accent-glow/60 hover:bg-surface-2'
@@ -242,11 +242,11 @@ export default function NewExamQuestionPage() {
             </div>
 
             {type === 'mcq' ? (
-              <div className="space-y-4 border border-border bg-surface-2 p-5 rounded-xl">
+              <div className="space-y-4 border border-border bg-surface-2 p-5 rounded-md">
                 <Label className="text-sm font-bold text-foreground">Options &amp; Correct Answer</Label>
                 <RadioGroup name="correctOptionIndex" defaultValue="0" className="space-y-3">
                   {[0, 1, 2, 3].map((index) => (
-                    <div key={index} className="flex items-center space-x-3 bg-surface border border-border p-3 rounded-xl">
+                    <div key={index} className="flex items-center space-x-3 bg-surface border border-border p-3 rounded-md">
                       <RadioGroupItem value={index.toString()} id={`exam_opt_${index}`} className="border-border-strong text-accent-cyan ml-2" />
                       <input name={`option_${index}`} placeholder={`Option ${index + 1}`} required className="flex-1 bg-transparent border-0 text-foreground placeholder:text-muted-2 focus:outline-none text-sm" />
                     </div>
@@ -254,7 +254,7 @@ export default function NewExamQuestionPage() {
                 </RadioGroup>
               </div>
             ) : (
-              <div className="space-y-2 border border-border bg-surface-2 p-5 rounded-xl">
+              <div className="space-y-2 border border-border bg-surface-2 p-5 rounded-md">
                 <Label className="text-sm font-bold text-foreground">Correct Numerical Answer</Label>
                 <input name="correct_answer" placeholder="e.g. 42" required className={inputCls} />
               </div>
@@ -271,7 +271,7 @@ export default function NewExamQuestionPage() {
             </div>
 
             {error && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <div className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                 {error}
               </div>
             )}

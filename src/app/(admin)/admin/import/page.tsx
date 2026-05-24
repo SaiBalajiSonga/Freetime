@@ -7,15 +7,15 @@ import { processImportData, commitImport } from './actions'
 import { ImportDropzone } from '@/components/admin/import-dropzone'
 import { ImportPreview } from '@/components/admin/import-preview'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CheckCircle2, AlertCircle, Upload, Eye, Sparkles, ArrowRight, Code, FileJson, UploadCloud } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Upload, Code, FileJson, UploadCloud, FolderInput, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 type Step = 'upload' | 'preview' | 'result'
 
 const STEPS = [
-  { id: 'upload',  label: 'Upload JSON',  num: 1 },
-  { id: 'preview', label: 'Preview',      num: 2 },
-  { id: 'result',  label: 'Result',       num: 3 },
+  { id: 'upload',  label: 'Upload JSON', num: 1 },
+  { id: 'preview', label: 'Preview',     num: 2 },
+  { id: 'result',  label: 'Result',      num: 3 },
 ] as const
 
 const SAMPLE_JSON = JSON.stringify([
@@ -50,20 +50,22 @@ function StepIndicator({ current }: { current: Step }) {
   return (
     <div className="flex items-center gap-0">
       {STEPS.map((step, i) => {
-        const done = i < currentIdx
+        const done   = i < currentIdx
         const active = step.id === current
 
         return (
           <div key={step.id} className="flex items-center gap-0 flex-1 last:flex-initial">
-            <div className={`flex items-center gap-2.5 shrink-0 ${active ? 'text-foreground' : done ? 'text-accent-cyan' : 'text-muted-2'}`}>
-              <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
-                active ? 'border-accent-electric bg-accent-electric text-white' :
-                done   ? 'border-accent-cyan bg-accent-cyan/10 text-accent-cyan' :
-                         'border-white/10 bg-surface-2 text-muted-2'
-              }`}>
+            <div className={`flex items-center gap-2.5 shrink-0 ${active ? 'text-white' : done ? 'text-emerald-400' : 'text-[#64748b]'}`}>
+              <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                active ? 'bg-blue-600 text-white border-2 border-blue-600' :
+                done   ? 'bg-emerald-600/20 text-emerald-400 border-2 border-emerald-600/30' :
+                         'border-2 text-[#64748b]'
+              }`}
+                style={(!active && !done) ? { background: '#1c2333', borderColor: '#2a3142' } : {}}
+              >
                 {done ? '✓' : step.num}
               </div>
-              <span className={`text-xs font-bold hidden sm:block ${active ? 'text-foreground' : done ? 'text-accent-cyan' : 'text-muted-2'}`}>
+              <span className={`text-xs font-bold hidden sm:block ${active ? 'text-white' : done ? 'text-emerald-400' : 'text-[#64748b]'}`}>
                 {step.label}
               </span>
             </div>
@@ -89,10 +91,7 @@ export default function ImportPage() {
 
   const handleParseRaw = () => {
     setRawJsonError(null)
-    if (!rawJson.trim()) {
-      setRawJsonError('Please enter some JSON code.')
-      return
-    }
+    if (!rawJson.trim()) { setRawJsonError('Please enter some JSON code.'); return }
     try {
       const parsed = JSON.parse(rawJson)
       handleParsed(Array.isArray(parsed) ? parsed : [parsed])
@@ -140,12 +139,16 @@ export default function ImportPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-7">
       {/* Header */}
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-[-0.03em] text-foreground">
-          <UploadCloud className="h-6 w-6 text-accent-cyan" />
-          Bulk Import Questions
-        </h1>
-        <p className="text-sm text-muted mt-1">Upload a JSON or CSV file to add multiple questions at once.</p>
+      <div className="flex items-center gap-3">
+        <div className="size-9 rounded-md flex items-center justify-center"
+          style={{ background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.25)' }}
+        >
+          <FolderInput className="h-4 w-4 text-sky-400" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-black text-white tracking-tight">Bulk Import Questions</h1>
+          <p className="text-[13px]" style={{ color: '#64748b' }}>Upload a JSON file to add multiple questions at once.</p>
+        </div>
       </div>
 
       {/* Step indicator */}
@@ -164,16 +167,28 @@ export default function ImportPage() {
       {step === 'upload' && (
         <div className="space-y-4">
           {/* Mode Toggle */}
-          <div className="flex items-center gap-2 p-1 bg-surface-2 rounded-xl border border-white/10 w-fit">
+          <div className="flex items-center gap-0.5 p-1 rounded-md w-fit"
+            style={{ background: '#161b27', border: '1px solid #2a3142' }}
+          >
             <button
               onClick={() => setImportMode('file')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${importMode === 'file' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-2 hover:text-foreground'}`}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm font-bold transition-all ${
+                importMode === 'file'
+                  ? 'text-white'
+                  : 'text-[#64748b] hover:text-white'
+              }`}
+              style={importMode === 'file' ? { background: '#1c2333' } : {}}
             >
               <Upload className="h-4 w-4" /> File Upload
             </button>
             <button
               onClick={() => setImportMode('raw')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${importMode === 'raw' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-2 hover:text-foreground'}`}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm font-bold transition-all ${
+                importMode === 'raw'
+                  ? 'text-white'
+                  : 'text-[#64748b] hover:text-white'
+              }`}
+              style={importMode === 'raw' ? { background: '#1c2333' } : {}}
             >
               <Code className="h-4 w-4" /> Raw JSON
             </button>
@@ -183,8 +198,10 @@ export default function ImportPage() {
             <div className="relative">
               <ImportDropzone onParsed={handleParsed} />
               {isProcessing && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-md rounded-xl z-10">
-                  <span className="font-bold text-accent-cyan animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">Processing data…</span>
+                <div className="absolute inset-0 flex items-center justify-center backdrop-blur-md rounded-lg z-10"
+                  style={{ background: 'rgba(0,0,0,0.65)' }}
+                >
+                  <span className="font-bold text-sky-400 animate-pulse">Processing data…</span>
                 </div>
               )}
             </div>
@@ -195,12 +212,18 @@ export default function ImportPage() {
                   value={rawJson}
                   onChange={(e) => setRawJson(e.target.value)}
                   placeholder="Paste your JSON here..."
-                  className="w-full h-[300px] bg-black/40 border-2 border-white/10 hover:border-white/20 rounded-xl p-5 text-[13px] font-mono text-foreground placeholder:text-muted focus:outline-none focus:border-accent-cyan focus:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all resize-y scrollbar-thin"
+                  className="w-full h-[300px] p-5 text-[13px] font-mono text-white placeholder:text-[#64748b] focus:outline-none transition-all resize-y"
+                  style={{
+                    background: '#0d1117',
+                    border: '2px solid #2a3142',
+                    borderRadius: 8,
+                  }}
                   spellCheck={false}
                 />
                 <button
                   onClick={() => setRawJson(SAMPLE_JSON)}
-                  className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-surface-2 border border-white/10 rounded-lg text-xs font-bold text-muted hover:text-foreground hover:bg-white/[0.04] transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all opacity-0 group-hover:opacity-100"
+                  style={{ background: '#1c2333', border: '1px solid #2a3142', color: '#94a3b8', borderRadius: 6 }}
                 >
                   <FileJson className="h-3.5 w-3.5" />
                   Load Template
@@ -218,7 +241,7 @@ export default function ImportPage() {
                 <button
                   onClick={handleParseRaw}
                   disabled={isProcessing}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-accent-cyan text-black font-extrabold text-[15px] rounded-xl hover:brightness-110 shadow-[0_4px_16px_rgba(6,182,212,0.3)] transition-all disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-md hover:bg-blue-500 transition-all disabled:opacity-50 shadow-[0_4px_14px_rgba(59,130,246,0.35)]"
                 >
                   <Code className="h-4 w-4" />
                   {isProcessing ? 'Validating...' : 'Validate & Import'}
@@ -228,14 +251,16 @@ export default function ImportPage() {
           )}
 
           {/* JSON schema hint */}
-          <div className="rounded-xl border border-white/[0.08] bg-surface overflow-hidden">
+          <div className="rounded-lg overflow-hidden" style={{ background: '#161b27', border: '1px solid #2a3142' }}>
             <details>
-              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer text-sm font-bold text-muted-2 hover:text-foreground transition-colors list-none">
+              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer text-sm font-bold transition-colors list-none hover:text-white"
+                style={{ color: '#94a3b8' }}
+              >
                 <span>📋 Expected JSON format</span>
-                <span className="text-xs text-accent-cyan">Show</span>
+                <span className="text-xs text-sky-400">Show</span>
               </summary>
-              <div className="border-t border-white/[0.06] px-5 pb-5 pt-4">
-                <pre className="text-xs text-muted font-mono leading-relaxed overflow-x-auto">{SAMPLE_JSON}</pre>
+              <div className="px-5 pb-5 pt-4" style={{ borderTop: '1px solid #2a3142' }}>
+                <pre className="text-xs font-mono leading-relaxed overflow-x-auto" style={{ color: '#94a3b8' }}>{SAMPLE_JSON}</pre>
               </div>
             </details>
           </div>
@@ -244,7 +269,7 @@ export default function ImportPage() {
           <button
             type="button"
             onClick={downloadSample}
-            className="inline-flex items-center gap-2 text-xs font-bold text-accent-cyan hover:text-accent-glow transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors"
             id="download-sample-btn"
           >
             <Upload className="h-3.5 w-3.5" />
@@ -266,33 +291,33 @@ export default function ImportPage() {
       {/* ── Step 3: Result ── */}
       {step === 'result' && insertResult && (
         <div className="space-y-6">
-          {/* Big success number */}
-          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8 text-center">
-            <div className="size-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="h-8 w-8 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+          {/* Success card */}
+          <div className="rounded-lg p-8 text-center" style={{ border: '1px solid rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.05)' }}>
+            <div className="size-14 rounded-lg flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}
+            >
+              <CheckCircle2 className="h-7 w-7 text-emerald-400" />
             </div>
-            <p className="text-5xl font-extrabold text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)] tabular-nums">
-              {insertResult.insertedCount}
-            </p>
-            <p className="text-sm text-muted mt-2 font-medium">questions imported successfully</p>
+            <p className="text-5xl font-black text-emerald-400 tabular-nums">{insertResult.insertedCount}</p>
+            <p className="text-sm mt-2 font-medium" style={{ color: '#94a3b8' }}>questions imported successfully</p>
           </div>
 
           {/* Secondary stats */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 border border-white/[0.08] rounded-2xl text-center bg-surface">
+            <div className="p-5 rounded-lg text-center" style={{ border: '1px solid #2a3142', background: '#161b27' }}>
               <div className="text-2xl font-black text-amber-400">{insertResult.skippedCount}</div>
-              <div className="text-xs text-muted font-medium mt-1">Skipped (duplicates)</div>
+              <div className="text-xs font-medium mt-1" style={{ color: '#64748b' }}>Skipped (duplicates)</div>
             </div>
-            <div className="p-5 border border-white/[0.08] rounded-2xl text-center bg-surface">
+            <div className="p-5 rounded-lg text-center" style={{ border: '1px solid #2a3142', background: '#161b27' }}>
               <div className="text-2xl font-black text-red-400">{insertResult.errorCount}</div>
-              <div className="text-xs text-muted font-medium mt-1">Errors</div>
+              <div className="text-xs font-medium mt-1" style={{ color: '#64748b' }}>Errors</div>
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex gap-3">
             <button
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-primary text-white font-bold text-sm rounded-xl hover:brightness-110 transition-all shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-md hover:bg-blue-500 transition-all shadow-[0_4px_14px_rgba(59,130,246,0.35)]"
               onClick={() => { setStep('upload'); setPreviewData(null); setInsertResult(null) }}
               id="import-more-btn"
             >
@@ -301,7 +326,8 @@ export default function ImportPage() {
             </button>
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/10 bg-surface-2 text-foreground font-bold text-sm rounded-xl hover:bg-white/[0.08] transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md font-bold text-sm transition-all"
+              style={{ border: '1px solid #2a3142', background: '#161b27', color: '#94a3b8' }}
             >
               View Questions
               <ArrowRight className="h-4 w-4" />

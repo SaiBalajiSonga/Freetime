@@ -116,7 +116,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
       <form action={handleSubmit} className="space-y-6">
 
         {/* ── Exam Details ── */}
-        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+        <div className="rounded-lg border border-border bg-surface overflow-hidden">
           <div className="border-b border-border px-6 py-4 bg-surface-2/40">
             <h2 className="font-bold text-foreground">Exam Details</h2>
           </div>
@@ -159,7 +159,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
 
           {/* Left: Question picker */}
-          <div className="rounded-2xl border border-border bg-surface overflow-hidden flex flex-col">
+          <div className="rounded-lg border border-border bg-surface overflow-hidden flex flex-col">
             {/* Header */}
             <div className="border-b border-border px-5 py-4 bg-surface-2/40 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -260,7 +260,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
                   const isCollapsed = collapsedChapters.has(chapter)
                   const selectedInChapter = qs.filter(q => selectedIds.has(q.id)).length
                   return (
-                    <div key={chapter} className="rounded-xl border border-border overflow-hidden">
+                    <div key={chapter} className="rounded-md border border-border overflow-hidden">
                       {/* Chapter header */}
                       <button type="button" onClick={() => toggleChapter(chapter)}
                         className="w-full flex items-center justify-between px-4 py-2.5 bg-surface-2/60 hover:bg-surface-2 transition-colors text-left">
@@ -323,7 +323,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
           {/* Right: Paper summary panel */}
           <div className="space-y-4">
             {/* Summary card */}
-            <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+            <div className="rounded-lg border border-border bg-surface overflow-hidden">
               <div className="border-b border-border px-5 py-4 bg-surface-2/40">
                 <h3 className="font-bold text-foreground text-sm">Paper Summary</h3>
               </div>
@@ -335,7 +335,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
                     { label: 'MCQ', value: mcqSelected, icon: null, color: 'text-cyan-400' },
                     { label: 'Numerical', value: numSelected, icon: null, color: 'text-purple-400' },
                   ].map(s => (
-                    <div key={s.label} className="rounded-xl border border-border bg-surface-2 p-3 text-center">
+                    <div key={s.label} className="rounded-md border border-border bg-surface-2 p-3 text-center">
                       <div className={`text-xl font-extrabold ${s.color}`}>{s.value}</div>
                       <div className="text-[10px] text-muted font-medium mt-0.5">{s.label}</div>
                     </div>
@@ -366,7 +366,7 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
 
             {/* Selected question list (compact) */}
             {selectedIds.size > 0 && (
-              <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+              <div className="rounded-lg border border-border bg-surface overflow-hidden">
                 <div className="border-b border-border px-5 py-3 bg-surface-2/40 flex items-center justify-between">
                   <h3 className="font-bold text-foreground text-sm">Selected</h3>
                   <button type="button" onClick={() => setSelectedIds(new Set())}
@@ -394,13 +394,13 @@ export function WeeklyExamForm({ questions }: { questions: Question[] }) {
         <input type="hidden" name="question_ids" value={JSON.stringify(Array.from(selectedIds))} readOnly />
 
         {error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</div>
+          <div className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</div>
         )}
 
         <div className="flex items-center gap-4">
           <button type="submit"
             disabled={isPending || selectedIds.size === 0}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-primary text-white font-bold text-sm shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md bg-gradient-primary text-white font-bold text-sm shadow-[0_8px_24px_-6px_rgba(37,99,235,0.55)] hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
             {isPending ? 'Creating…' : `Publish Exam (${selectedIds.size} questions · ${maxMarks} marks)`}
           </button>
           <a href="/admin/weekly-exams" className="text-sm text-muted hover:text-foreground transition-colors">
