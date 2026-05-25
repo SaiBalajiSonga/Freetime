@@ -294,7 +294,6 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
     }
   }
 
-  const isJee = session.mode === 'jee_mains'
   let totalScore = 0
   let correct = 0
   let incorrect = 0
@@ -320,7 +319,7 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
         marksAwarded = 4
         correct++
       } else {
-        marksAwarded = isJee ? -1 : 0
+        marksAwarded = -1
         incorrect++
       }
     } else {
