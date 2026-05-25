@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useEffect, useCallback } from 'react'
+import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
 import { createWeeklyExam } from './actions'
 import { getExamQuestions } from '../../exam-bank/actions'
 import {
@@ -38,12 +38,24 @@ const textareaCls = `${inputCls} resize-none`
 
 function CustomDateTimePicker({ name, required, label }: { name: string, required?: boolean, label: string }) {
   const [value, setValue] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleOpenPicker = () => {
+    if (inputRef.current) {
+      try {
+        inputRef.current.showPicker()
+      } catch (err) {
+        inputRef.current.focus()
+      }
+    }
+  }
 
   return (
-    <div className="space-y-2 relative group">
+    <div className="space-y-2 relative group" onClick={handleOpenPicker}>
       <label className="text-sm font-medium text-foreground">{label} {required && <span className="text-red-400">*</span>}</label>
       <div className="relative">
         <input 
+          ref={inputRef}
           type="datetime-local" 
           name={name} 
           required={required}
