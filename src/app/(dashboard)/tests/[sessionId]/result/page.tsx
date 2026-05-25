@@ -74,13 +74,7 @@ export default async function ResultPage({
 
     if (exam && new Date() > new Date(exam.ends_at)) {
       const { data: lb } = await supabase
-        .from('test_sessions')
-        .select('id, user_id, score, correct, incorrect, time_taken, profiles(name)')
-        .eq('weekly_exam_id', session.weekly_exam_id)
-        .eq('status', 'submitted')
-        .order('score', { ascending: false })
-        .order('time_taken', { ascending: true })
-        .limit(20)
+        .rpc('get_jee_leaderboard', { p_weekly_exam_id: session.weekly_exam_id })
 
       leaderboard = lb ?? null
     }

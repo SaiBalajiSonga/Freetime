@@ -268,7 +268,7 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
   // Load all session questions
   const { data: sessionQuestions, error: sqErr } = await supabase
     .from('test_session_questions')
-    .select('*, questions(id, type, correct_answer)')
+    .select('*, questions(id, type, correct_answer, chapters(subjects(name)))')
     .eq('session_id', sessionId)
     .order('order_index')
 
@@ -298,6 +298,8 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
   let correct = 0
   let incorrect = 0
   let unattempted = 0
+
+  const subjectStats: Record<string, { score: number; correct: number; incorrect: number; unattempted: number }> = {}
 
   // Grade and update each question sequentially
   for (const sq of sessionQuestions) {
@@ -333,6 +335,17 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
       }
     }
 
+    const subjectName = q.chapters?.subjects?.name || 'Unknown'
+    if (!subjectStats[subjectName]) {
+      subjectStats[subjectName] = { score: 0, correct: 0, incorrect: 0, unattempted: 0 }
+    }
+
+    if (!givenAnswer) subjectStats[subjectName].unattempted++
+    else if (isCorrect) subjectStats[subjectName].correct++
+    else subjectStats[subjectName].incorrect++
+    
+    subjectStats[subjectName].score += marksAwarded
+
     totalScore += marksAwarded
 
     await supabase
@@ -352,6 +365,7 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
       incorrect,
       unattempted,
       time_taken: totalTimeTaken,
+      config: { ...(session.config as any || {}), subject_scores: subjectStats },
     })
     .eq('id', sessionId)
 

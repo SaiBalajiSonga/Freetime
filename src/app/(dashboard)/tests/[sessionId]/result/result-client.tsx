@@ -31,13 +31,20 @@ type SQ = {
 }
 
 type LeaderboardEntry = {
+  rank: number
   id: string
   user_id: string
   score: number
   correct: number
   incorrect: number
   time_taken: number
-  profiles: { name: string } | null
+  name: string | null
+  math_score: number
+  physics_score: number
+  chem_score: number
+  math_incorrect: number
+  physics_incorrect: number
+  chem_incorrect: number
 }
 
 type Props = {
@@ -302,72 +309,108 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
       })()}
 
       {/* LEADERBOARD (weekly exams only, after exam ends) */}
-      {leaderboard && leaderboard.length > 0 && (
-        <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
-          <div className="flex items-center gap-2 p-5 border-b border-white/[0.06]">
-            <Medal className="h-5 w-5 text-amber-400" />
-            <h2 className="font-bold text-foreground">Leaderboard</h2>
-            <span className="text-xs text-muted ml-auto">Top {leaderboard.length} students</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/[0.06] bg-surface-2/40">
-                  <th className="text-left py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Rank</th>
-                  <th className="text-left py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Name</th>
-                  <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Score</th>
-                  <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Correct</th>
-                  <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.05]">
-                {leaderboard.map((entry, idx) => {
-                  const isMe = entry.user_id === currentUserId
-                  const rankIcons: Record<number, string> = { 0: '🥇', 1: '🥈', 2: '🥉' }
-                  return (
-                    <tr
-                      key={entry.id}
-                      className={`transition-colors ${
-                        isMe
-                          ? 'bg-violet-500/10 border-l-2 border-l-violet-400'
-                          : 'hover:bg-surface-2/40'
-                      }`}
-                    >
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-muted-2 text-xs">
-                          {rankIcons[idx] ?? `#${idx + 1}`}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`font-medium text-sm ${
-                          isMe ? 'text-violet-300 font-bold' : 'text-foreground'
-                        }`}>
-                          {entry.profiles?.name ?? 'Anonymous'}
-                          {isMe && <span className="ml-1.5 text-[10px] font-bold bg-violet-500/20 text-violet-400 rounded px-1.5 py-0.5">You</span>}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <span className={`font-bold text-sm ${
-                          idx === 0 ? 'text-amber-400' : isMe ? 'text-violet-300' : 'text-foreground'
-                        }`}>
-                          {entry.score}
-                          <span className="text-muted text-xs font-normal">/{session.max_score}</span>
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="text-emerald-400 font-medium text-xs">{entry.correct ?? 0}</span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="text-muted text-xs">{formatDuration(entry.time_taken ?? 0)}</span>
-                      </td>
+      {(() => {
+        if (!leaderboard || leaderboard.length === 0) return null
+
+        const totalParticipants = leaderboard.length
+        const myEntry = leaderboard.find(e => e.user_id === currentUserId)
+        const myRank = myEntry?.rank
+        const percentile = totalParticipants > 1 && myRank 
+          ? (((totalParticipants - myRank + 1) / totalParticipants) * 100).toFixed(2) 
+          : '100.00'
+        const displayLeaderboard = leaderboard.slice(0, 20)
+
+        return (
+          <div className="space-y-4">
+            {myEntry && (
+              <div className="rounded-2xl surface-glass-strong p-6 space-y-2 border border-violet-500/30 bg-violet-500/5">
+                <h2 className="text-sm font-bold text-violet-300 uppercase tracking-wider">Your All India Rank (AIR)</h2>
+                <div className="flex items-baseline gap-4">
+                  <div className="text-5xl font-extrabold text-violet-400">#{myRank}</div>
+                  <div className="text-xl font-medium text-muted-2">
+                    {percentile} <span className="text-sm text-muted">Percentile</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted mt-2">Based on {totalParticipants} total participants</p>
+              </div>
+            )}
+
+            <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
+              <div className="flex items-center gap-2 p-5 border-b border-white/[0.06]">
+                <Medal className="h-5 w-5 text-amber-400" />
+                <h2 className="font-bold text-foreground">Leaderboard</h2>
+                <span className="text-xs text-muted ml-auto">Top {displayLeaderboard.length} of {totalParticipants} students</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/[0.06] bg-surface-2/40">
+                      <th className="text-left py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Rank</th>
+                      <th className="text-left py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Name</th>
+                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Score</th>
+                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Math</th>
+                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Phy</th>
+                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Chem</th>
+                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Time</th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.05]">
+                    {displayLeaderboard.map((entry, idx) => {
+                      const isMe = entry.user_id === currentUserId
+                      const rankIcons: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+                      const displayRank = rankIcons[entry.rank] ?? `#${entry.rank}`
+                      
+                      return (
+                        <tr
+                          key={entry.id}
+                          className={`transition-colors ${
+                            isMe
+                              ? 'bg-violet-500/10 border-l-2 border-l-violet-400'
+                              : 'hover:bg-surface-2/40'
+                          }`}
+                        >
+                          <td className="py-3 px-4">
+                            <span className="font-bold text-muted-2 text-xs">
+                              {displayRank}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`font-medium text-sm ${
+                              isMe ? 'text-violet-300 font-bold' : 'text-foreground'
+                            }`}>
+                              {entry.name ?? 'Anonymous'}
+                              {isMe && <span className="ml-1.5 text-[10px] font-bold bg-violet-500/20 text-violet-400 rounded px-1.5 py-0.5">You</span>}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <span className={`font-bold text-sm ${
+                              entry.rank === 1 ? 'text-amber-400' : isMe ? 'text-violet-300' : 'text-foreground'
+                            }`}>
+                              {entry.score}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <span className="text-muted text-xs">{entry.math_score}</span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <span className="text-muted text-xs">{entry.physics_score}</span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <span className="text-muted text-xs">{entry.chem_score}</span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <span className="text-muted text-xs">{formatDuration(entry.time_taken ?? 0)}</span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* QUESTION REVIEW */}
       <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
