@@ -6,7 +6,8 @@ import { getExamQuestions } from '../../exam-bank/actions'
 import {
   Search, X, CheckSquare, Square, BookOpen,
   FlaskConical, Calculator, ChevronDown, ChevronUp,
-  LayoutGrid, ListFilter, Trophy, ChevronLeft, ChevronRight, Loader2
+  LayoutGrid, ListFilter, Trophy, ChevronLeft, ChevronRight, Loader2,
+  Calendar, Clock
 } from 'lucide-react'
 
 type Question = {
@@ -34,6 +35,47 @@ const diffColor: Record<string, string> = {
 const inputCls =
   'w-full bg-surface-2 border border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-2 focus:border-accent-glow focus:outline-none focus:ring-2 focus:ring-accent-glow/30 transition text-sm'
 const textareaCls = `${inputCls} resize-none`
+
+function CustomDateTimePicker({ name, required, label }: { name: string, required?: boolean, label: string }) {
+  const [value, setValue] = useState('')
+
+  return (
+    <div className="space-y-2 relative group">
+      <label className="text-sm font-medium text-foreground">{label} {required && <span className="text-red-400">*</span>}</label>
+      <div className="relative">
+        <input 
+          type="datetime-local" 
+          name={name} 
+          required={required}
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+        />
+        <div className={`w-full bg-surface-2 border ${value ? 'border-accent-glow/50 ring-1 ring-accent-glow/20 shadow-[0_0_15px_-3px_rgba(37,99,235,0.15)]' : 'border-border group-hover:border-border-strong'} rounded-xl px-4 py-3.5 flex items-center justify-between text-sm transition-all duration-300`}>
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg transition-colors ${value ? 'bg-accent-electric/15 text-accent-electric' : 'bg-surface border border-border text-muted group-hover:text-foreground'}`}>
+              <Calendar className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col">
+              <span className={value ? 'text-foreground font-semibold' : 'text-muted-2 font-medium'}>
+                {value ? new Date(value).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Select Date & Time'}
+              </span>
+              {value && (
+                <span className="text-[11px] text-accent-cyan font-medium flex items-center gap-1 mt-0.5">
+                  <Clock className="h-3 w-3" />
+                  {new Date(value).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="text-muted group-hover:text-accent-glow transition-colors">
+            <ChevronDown className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function WeeklyExamForm({ initialSubjects }: { initialSubjects: { id: string; name: string }[] }) {
   const [selectedQuestions, setSelectedQuestions] = useState<Map<string, Question>>(new Map())
@@ -157,14 +199,8 @@ export function WeeklyExamForm({ initialSubjects }: { initialSubjects: { id: str
               <textarea name="description" rows={2} placeholder="Brief description for students…" className={textareaCls} />
             </div>
             <div className="grid grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Starts At <span className="text-red-400">*</span></label>
-                <input name="starts_at" type="datetime-local" required className={inputCls} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Ends At <span className="text-red-400">*</span></label>
-                <input name="ends_at" type="datetime-local" required className={inputCls} />
-              </div>
+              <CustomDateTimePicker name="starts_at" label="Starts At" required />
+              <CustomDateTimePicker name="ends_at" label="Ends At" required />
             </div>
             <div className="grid grid-cols-2 gap-5">
               <div className="space-y-2">
