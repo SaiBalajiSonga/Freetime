@@ -59,26 +59,49 @@ export default async function ExamResultPage({
     options: (allOptions ?? []).filter(o => o.question_id === (sq.questions as any).id),
   }))
 
-  // ── Leaderboard (weekly exams only) ──────────────────────────────────────
-  let leaderboard: any[] | null = null
+  // ── Fetch exam window ─────────────────────────────────────────────────────
+  // Like Allen / Narayana / nlearn: ranks are released only AFTER the exam
+  // window (ends_at) closes. Students who start late get less time but ranks
+  // are calculated once the absolute window is shut for ALL students.
+  const { data: exam } = await supabase
+    .from('weekly_exams')
+    .select('ends_at, title')
+    .eq('id', examId)
+    .single()
 
-  const { data: lb } = await supabase
-    .from('test_sessions')
-    .select('id, user_id, score, correct, incorrect, time_taken, profiles(name)')
-    .eq('weekly_exam_id', examId)
-    .eq('status', 'submitted')
-    .order('score', { ascending: false })
-    .order('time_taken', { ascending: true })
-    .limit(50)
+  const examEnded = exam ? new Date() > new Date(exam.ends_at) : false
+  const examEndsAt = exam?.ends_at ?? null
 
-  leaderboard = lb ?? null
+  // ── Rank data: only compute after exam window closes ──────────────────────
+  let rankData: { rank: number; percentile: string; totalParticipants: number } | null = null
+
+  if (examEnded) {
+    const { data: lb } = await supabase
+      .rpc('get_jee_leaderboard', { p_weekly_exam_id: examId })
+
+    if (lb && lb.length > 0) {
+      const myEntry = (lb as any[]).find(e => e.user_id === user.id)
+      const myRank = myEntry?.rank as number | undefined
+      const total = lb.length
+      const percentile =
+        myRank != null && total > 1
+          ? (((total - myRank + 1) / total) * 100).toFixed(2)
+          : '100.00'
+
+      if (myEntry) {
+        rankData = { rank: myRank!, percentile, totalParticipants: total }
+      }
+    }
+  }
 
   return (
     <ResultClient
       session={session}
       sessionQuestions={enriched}
-      leaderboard={leaderboard}
       currentUserId={user.id}
+      examEnded={examEnded}
+      examEndsAt={examEndsAt}
+      rankData={rankData}
     />
   )
 }
