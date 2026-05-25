@@ -96,6 +96,17 @@ export default function QuestionView({ question, options, attempts: initialAttem
             <Latex>{question.statement}</Latex>
           </div>
 
+          {question.image_url && (
+            <div className="mt-6 flex justify-center bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
+              <img
+                src={question.image_url}
+                alt="Question diagram"
+                loading="lazy"
+                className="max-h-[300px] w-auto object-contain rounded-md"
+              />
+            </div>
+          )}
+
           {question.hint && (
             <div className="mt-5 pt-5 border-t border-border">
               <button onClick={() => setShowHint(!showHint)} className="flex items-center gap-2 text-sm text-accent-electric hover:text-accent-glow font-semibold transition-colors">

@@ -45,6 +45,7 @@ export default async function EditQuestionPage({
     statement: question.statement,
     solution: question.solution || '',
     hint: question.hint || '',
+    image_url: question.image_url || '',
     numericalAnswer: question.correct_answer || '',
     options: options || [],
     subjects: subjects || [],

@@ -96,8 +96,8 @@ export async function updateQuestion(questionId: string, formData: FormData) {
       }
     }
 
-    revalidatePath('/admin')
-    revalidatePath(`/questions/${questionId}`)
+    revalidatePath('/admin', 'layout')
+    revalidatePath(`/questions/${questionId}`, 'layout')
     return { success: true }
   } catch (err: any) {
     return { error: err.message || 'An unexpected error occurred.' }
