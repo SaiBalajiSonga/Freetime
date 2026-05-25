@@ -62,24 +62,16 @@ export default async function ExamResultPage({
   // ── Leaderboard (weekly exams only) ──────────────────────────────────────
   let leaderboard: any[] | null = null
 
-  const { data: exam } = await supabase
-    .from('weekly_exams')
-    .select('ends_at')
-    .eq('id', examId)
-    .single()
+  const { data: lb } = await supabase
+    .from('test_sessions')
+    .select('id, user_id, score, correct, incorrect, time_taken, profiles(name)')
+    .eq('weekly_exam_id', examId)
+    .eq('status', 'submitted')
+    .order('score', { ascending: false })
+    .order('time_taken', { ascending: true })
+    .limit(50)
 
-  if (exam && new Date() > new Date(exam.ends_at)) {
-    const { data: lb } = await supabase
-      .from('test_sessions')
-      .select('id, user_id, score, correct, incorrect, time_taken, profiles(name)')
-      .eq('weekly_exam_id', examId)
-      .eq('status', 'submitted')
-      .order('score', { ascending: false })
-      .order('time_taken', { ascending: true })
-      .limit(20)
-
-    leaderboard = lb ?? null
-  }
+  leaderboard = lb ?? null
 
   return (
     <ResultClient
