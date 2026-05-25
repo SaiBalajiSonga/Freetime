@@ -328,10 +328,10 @@ export function QuestionsTable({
                       {/* ID */}
                       <td className="py-3.5 px-4 font-mono text-[11px] font-medium w-20 whitespace-nowrap" style={{ color: '#64748b' }}>{qId}</td>
                       {/* Subject / Chapter */}
-                      <td className="py-3.5 px-4 w-48 whitespace-nowrap">
+                      <td className="py-3.5 px-4 w-48 max-w-[12rem]">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-semibold text-white">{subject ?? '—'}</span>
-                          <span className="text-[10px]" style={{ color: '#64748b' }}>{chapter ?? '—'}</span>
+                          <span className="text-xs font-semibold text-white truncate" title={subject}>{subject ?? '—'}</span>
+                          <span className="text-[10px] truncate" style={{ color: '#64748b' }} title={chapter}>{chapter ?? '—'}</span>
                         </div>
                       </td>
                       {/* Statement */}
