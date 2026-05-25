@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { Plus, CalendarClock, Trash2 } from 'lucide-react'
+import { Plus, CalendarClock, Trash2, BarChart2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toggleExamPublished, deleteWeeklyExam } from './actions'
 
@@ -104,6 +104,16 @@ function ExamRow({ exam, onDelete, onTogglePublish }: {
         <td className="py-3.5 px-5 font-mono text-white text-xs">{(exam.question_ids as string[]).length}</td>
         <td className="py-3.5 px-5">
           <div className="flex items-center gap-2">
+            {status === 'ended' && (
+              <Link
+                href={`/admin/weekly-exams/${exam.id}/results`}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded text-[11px] font-bold transition-colors"
+                style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}
+              >
+                <BarChart2 className="h-3 w-3" />
+                Results
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => setOpen((o) => !o)}
