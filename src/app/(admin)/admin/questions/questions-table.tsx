@@ -364,6 +364,8 @@ export function QuestionsTable({
                           <DeleteQuestionButton questionId={q.id} />
                         </div>
                       </td>
+                      {/* Empty cell for right padding/alignment */}
+                      <td className="w-8" />
                     </ExpandableRow>,
 
                     expanded && (
