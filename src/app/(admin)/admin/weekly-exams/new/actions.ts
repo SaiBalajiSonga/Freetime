@@ -33,6 +33,13 @@ export async function createWeeklyExam(formData: FormData) {
   if (!ends_at)         return { error: 'End time is required' }
   if (isNaN(duration_minutes)) return { error: 'Invalid duration' }
 
+  const startDate = new Date(starts_at)
+  const endDate = new Date(ends_at)
+
+  if (startDate >= endDate) {
+    return { error: 'End time must be strictly after start time. (Did you select the wrong date or AM/PM?)' }
+  }
+
   let question_ids: string[] = []
   try {
     question_ids = JSON.parse(question_ids_raw)
@@ -47,8 +54,8 @@ export async function createWeeklyExam(formData: FormData) {
   const { error } = await adminSupabase.from('weekly_exams').insert({
     title,
     description: description || null,
-    starts_at:   new Date(starts_at).toISOString(),
-    ends_at:     new Date(ends_at).toISOString(),
+    starts_at:   startDate.toISOString(),
+    ends_at:     endDate.toISOString(),
     duration_minutes,
     question_ids,
     is_published,
