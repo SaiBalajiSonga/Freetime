@@ -5,7 +5,8 @@ import Link from 'next/link'
 import Latex from '@/components/ui/latex'
 import {
   CheckCircle2, XCircle, MinusCircle, Clock, Target,
-  ChevronDown, ChevronUp, ArrowRight, Trophy, Medal, Timer, BarChart3,
+  ChevronDown, ChevronUp, ArrowRight, Trophy, Medal,
+  Timer, BarChart3, Lock, BookOpen, Zap,
 } from 'lucide-react'
 
 type Option = { id: string; question_id: string; text: string; is_correct: boolean }
@@ -30,28 +31,20 @@ type SQ = {
   options: Option[]
 }
 
-type LeaderboardEntry = {
+type RankData = {
   rank: number
-  id: string
-  user_id: string
-  score: number
-  correct: number
-  incorrect: number
-  time_taken: number
-  name: string | null
-  math_score: number
-  physics_score: number
-  chem_score: number
-  math_incorrect: number
-  physics_incorrect: number
-  chem_incorrect: number
+  percentile: string
+  totalParticipants: number
 }
 
 type Props = {
   session: any
   sessionQuestions: SQ[]
-  leaderboard?: LeaderboardEntry[] | null
   currentUserId?: string
+  // Weekly exam specific
+  examEnded?: boolean
+  examEndsAt?: string | null
+  rankData?: RankData | null
 }
 
 function formatDuration(s: number) {
@@ -63,11 +56,73 @@ function formatDuration(s: number) {
   return `${s}s`
 }
 
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
 type Filter = 'all' | 'correct' | 'wrong' | 'skipped'
 
-export default function ResultClient({ session, sessionQuestions, leaderboard, currentUserId }: Props) {
+// JEE-standard subject color coding
+const SUBJECT_STYLES: Record<string, {
+  border: string; bg: string; text: string; bar: string
+  statBg: string; statBorder: string; statText: string
+}> = {
+  'Mathematics': {
+    border: 'border-l-blue-500',
+    bg: 'bg-blue-50',
+    text: 'text-blue-700',
+    bar: 'bg-blue-500',
+    statBg: 'bg-blue-50',
+    statBorder: 'border-blue-200',
+    statText: 'text-blue-700',
+  },
+  'Physics': {
+    border: 'border-l-amber-500',
+    bg: 'bg-amber-50',
+    text: 'text-amber-700',
+    bar: 'bg-amber-500',
+    statBg: 'bg-amber-50',
+    statBorder: 'border-amber-200',
+    statText: 'text-amber-700',
+  },
+  'Chemistry': {
+    border: 'border-l-emerald-500',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    bar: 'bg-emerald-500',
+    statBg: 'bg-emerald-50',
+    statBorder: 'border-emerald-200',
+    statText: 'text-emerald-700',
+  },
+}
+
+function getSubjectStyle(name: string) {
+  return SUBJECT_STYLES[name] ?? {
+    border: 'border-l-violet-500',
+    bg: 'bg-violet-50',
+    text: 'text-violet-700',
+    bar: 'bg-violet-500',
+    statBg: 'bg-violet-50',
+    statBorder: 'border-violet-200',
+    statText: 'text-violet-700',
+  }
+}
+
+export default function ResultClient({
+  session,
+  sessionQuestions,
+  currentUserId,
+  examEnded,
+  examEndsAt,
+  rankData,
+}: Props) {
   const [filter, setFilter] = useState<Filter>('all')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const isWeeklyExam = !!session.weekly_exam_id
 
   const pct = session.max_score > 0
     ? Math.round((session.score / session.max_score) * 100)
@@ -79,17 +134,27 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
     pct >= 40 ? 'Decent effort. More practice needed. 📚' :
     'Keep going — every attempt builds skill. 🔥'
 
+  // Hero gradient: reflects performance level
+  const heroBg =
+    pct >= 75 ? 'from-emerald-50 via-teal-50 to-white border-emerald-200' :
+    pct >= 50 ? 'from-amber-50 via-orange-50 to-white border-amber-200' :
+    pct >= 30 ? 'from-blue-50 via-indigo-50 to-white border-blue-200' :
+    'from-red-50 via-rose-50 to-white border-red-200'
+
   const scoreColor =
-    pct >= 75 ? 'text-emerald-400' :
-    pct >= 50 ? 'text-amber-400' :
-    'text-red-400'
+    pct >= 75 ? 'text-emerald-600' :
+    pct >= 50 ? 'text-amber-600' :
+    pct >= 30 ? 'text-blue-600' :
+    'text-red-500'
 
   const accuracy = session.correct + session.incorrect > 0
     ? Math.round((session.correct / (session.correct + session.incorrect)) * 100)
     : 0
 
-  // Subject breakdown
-  const subjectMap: Record<string, { correct: number; incorrect: number; unattempted: number; score: number; total: number }> = {}
+  // ── Subject breakdown ──────────────────────────────────────────────────────
+  const subjectMap: Record<string, {
+    correct: number; incorrect: number; unattempted: number; score: number; total: number
+  }> = {}
   for (const sq of sessionQuestions) {
     const name = sq.questions.chapters.subjects.name
     if (!subjectMap[name]) subjectMap[name] = { correct: 0, incorrect: 0, unattempted: 0, score: 0, total: 0 }
@@ -102,7 +167,7 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
   const subjects = Object.entries(subjectMap)
   const isMultiSubject = subjects.length > 1
 
-  // Chapter breakdown for Weak Topics
+  // ── Weak chapters ──────────────────────────────────────────────────────────
   const chapterMap: Record<string, { correct: number; incorrect: number; unattempted: number; total: number }> = {}
   for (const sq of sessionQuestions) {
     const chName = sq.questions.chapters?.name || 'Uncategorised'
@@ -112,14 +177,39 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
     else if (sq.is_correct) chapterMap[chName].correct++
     else chapterMap[chName].incorrect++
   }
-
   const weakChapters = Object.entries(chapterMap)
-    .filter(([_, data]) => data.incorrect > 0 || (data.correct / data.total < 0.5))
-    .sort((a, b) => b[1].incorrect - a[1].incorrect || (a[1].correct / a[1].total) - (b[1].correct / b[1].total))
+    .filter(([, data]) => data.incorrect > 0 || (data.correct / data.total < 0.5))
+    .sort((a, b) => b[1].incorrect - a[1].incorrect)
 
-  const userRank = leaderboard ? leaderboard.findIndex(lb => lb.user_id === currentUserId) + 1 : 0
+  // ── Time analysis ──────────────────────────────────────────────────────────
+  const correctSqs = sessionQuestions.filter(sq => sq.is_correct === true)
+  const wrongSqs = sessionQuestions.filter(sq => sq.is_correct === false && !!sq.answer_given)
+  const avgTime = sessionQuestions.length > 0
+    ? Math.round(sessionQuestions.reduce((s, sq) => s + (sq.time_taken ?? 0), 0) / sessionQuestions.length)
+    : 0
+  const avgCorrectTime = correctSqs.length > 0
+    ? Math.round(correctSqs.reduce((s, sq) => s + (sq.time_taken ?? 0), 0) / correctSqs.length)
+    : 0
+  const avgWrongTime = wrongSqs.length > 0
+    ? Math.round(wrongSqs.reduce((s, sq) => s + (sq.time_taken ?? 0), 0) / wrongSqs.length)
+    : 0
 
-  // Filter questions
+  // ── Difficulty map ─────────────────────────────────────────────────────────
+  const diffMap: Record<string, { total: number; correct: number }> = {
+    easy: { total: 0, correct: 0 },
+    medium: { total: 0, correct: 0 },
+    hard: { total: 0, correct: 0 },
+  }
+  for (const sq of sessionQuestions) {
+    const d = sq.questions.difficulty
+    if (diffMap[d]) {
+      diffMap[d].total++
+      if (sq.is_correct) diffMap[d].correct++
+    }
+  }
+  const hasDiffData = ['easy', 'medium', 'hard'].some(l => diffMap[l].total > 0)
+
+  // ── Question filter ────────────────────────────────────────────────────────
   const filtered = sessionQuestions.filter(sq => {
     if (filter === 'correct') return sq.is_correct === true
     if (filter === 'wrong') return sq.is_correct === false && !!sq.answer_given
@@ -136,68 +226,228 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
   }
 
   return (
-    <div className="space-y-8 animate-in-up pb-16">
-      {/* SCORE HERO */}
-      <div className="rounded-2xl surface-glass-strong p-6 space-y-5 border border-white/[0.07]">
+    <div className="space-y-6 animate-in-up pb-20">
+
+      {/* ── SCORE HERO ───────────────────────────────────────────────────── */}
+      <div className={`rounded-2xl bg-gradient-to-br ${heroBg} border-2 p-6 space-y-5 shadow-sm`}>
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Trophy className="h-5 w-5 text-amber-400" />
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="h-5 w-5 text-amber-500" />
               <span className="text-xs font-bold uppercase tracking-wider text-muted">
                 {session.mode === 'jee_mains' ? 'JEE Mains Mock' : session.mode === 'weekly_exam' ? 'Weekly Exam' : 'Custom Test'}
               </span>
             </div>
-            <p className="text-base text-muted mt-1">{remark}</p>
+            <p className="text-sm text-muted">{remark}</p>
           </div>
-          <div className={`text-5xl font-extrabold stat-number ${scoreColor}`}>
+          <div className={`text-5xl font-extrabold stat-number ${scoreColor} text-right`}>
             {session.score}
-            <span className="text-2xl text-muted font-bold">/{session.max_score}</span>
+            <span className="text-xl text-muted font-semibold">/{session.max_score}</span>
+            <p className="text-sm font-semibold text-muted mt-1 text-right">{pct}%</p>
           </div>
         </div>
 
-        {/* Stat pills */}
-        <div className={`grid grid-cols-2 ${userRank > 0 ? 'sm:grid-cols-3 md:grid-cols-6' : 'sm:grid-cols-5'} gap-3`}>
+        {/* Stat pills — 4-up grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            ...(userRank > 0 ? [{ icon: <Medal className="h-4 w-4" />, label: 'Rank', value: `#${userRank}`, color: 'text-amber-400' }] : []),
-            { icon: <Target className="h-4 w-4" />, label: 'Accuracy', value: `${accuracy}%`, color: 'text-accent-electric' },
-            { icon: <CheckCircle2 className="h-4 w-4" />, label: 'Correct', value: session.correct, color: 'text-emerald-400' },
-            { icon: <XCircle className="h-4 w-4" />, label: 'Wrong', value: session.incorrect, color: 'text-red-400' },
-            { icon: <MinusCircle className="h-4 w-4" />, label: 'Skipped', value: session.unattempted, color: 'text-muted' },
-            { icon: <Clock className="h-4 w-4" />, label: 'Time', value: formatDuration(session.time_taken ?? 0), color: 'text-muted' },
+            {
+              icon: <Target className="h-4 w-4" />,
+              label: 'Accuracy',
+              value: `${accuracy}%`,
+              sub: 'of attempted',
+              color: 'text-blue-700',
+              bg: 'bg-white border-blue-200',
+            },
+            {
+              icon: <CheckCircle2 className="h-4 w-4" />,
+              label: 'Correct',
+              value: session.correct,
+              sub: `+${session.correct * 4} marks`,
+              color: 'text-emerald-700',
+              bg: 'bg-white border-emerald-200',
+            },
+            {
+              icon: <XCircle className="h-4 w-4" />,
+              label: 'Wrong',
+              value: session.incorrect,
+              sub: `${session.incorrect} attempts`,
+              color: 'text-red-600',
+              bg: 'bg-white border-red-200',
+            },
+            {
+              icon: <MinusCircle className="h-4 w-4" />,
+              label: 'Skipped',
+              value: session.unattempted,
+              sub: 'unattempted',
+              color: 'text-slate-500',
+              bg: 'bg-white border-slate-200',
+            },
           ].map(item => (
-            <div key={item.label} className="rounded-xl border border-white/[0.07] bg-surface-2/70 backdrop-blur-sm p-3 flex items-center gap-2">
-              <span className={item.color}>{item.icon}</span>
-              <div>
-                <p className={`text-sm font-bold ${item.color}`}>{item.value}</p>
-                <p className="text-[10px] text-muted">{item.label}</p>
+            <div key={item.label} className={`rounded-xl border ${item.bg} px-4 py-3 flex items-center gap-3 shadow-sm`}>
+              <span className={`${item.color} shrink-0`}>{item.icon}</span>
+              <div className="min-w-0">
+                <p className={`text-xl font-extrabold leading-none ${item.color}`}>{item.value}</p>
+                <p className="text-[10px] text-muted mt-1 font-medium uppercase tracking-wide">{item.label}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* SUBJECT BREAKDOWN */}
+      {/* ── RANK SECTION — Weekly exams only ─────────────────────────────── */}
+      {isWeeklyExam && (
+        examEnded ? (
+          rankData ? (
+            /* ✅ Exam over, rank revealed */
+            <div className="rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 via-indigo-50 to-white p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-5">
+                <Medal className="h-5 w-5 text-violet-600" />
+                <h2 className="font-bold text-violet-700 text-sm uppercase tracking-wider">
+                  Your All India Rank (AIR)
+                </h2>
+              </div>
+              <div className="flex items-end gap-8 flex-wrap">
+                {/* Rank */}
+                <div>
+                  <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Rank</p>
+                  <div className="text-7xl font-black text-violet-600 leading-none stat-number">
+                    #{rankData.rank}
+                  </div>
+                </div>
+                {/* Percentile */}
+                <div className="pb-1">
+                  <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Percentile</p>
+                  <div className="text-4xl font-extrabold text-indigo-600 stat-number">{rankData.percentile}</div>
+                  <p className="text-xs text-muted mt-0.5">out of 100</p>
+                </div>
+                {/* Participants */}
+                <div className="pb-1">
+                  <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Participants</p>
+                  <div className="text-3xl font-bold text-foreground stat-number">{rankData.totalParticipants}</div>
+                  <p className="text-xs text-muted mt-0.5">total students</p>
+                </div>
+              </div>
+              <p className="text-xs text-violet-600 mt-4 font-medium">
+                🎯 You scored better than {rankData.percentile}% of all {rankData.totalParticipants} participants
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-surface p-5 text-center">
+              <p className="text-sm text-muted">Rank data could not be loaded. Please refresh.</p>
+            </div>
+          )
+        ) : (
+          /* ⏳ Exam still open — rank pending */
+          <div className="rounded-2xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50 p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="size-12 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center flex-shrink-0">
+                <Lock className="h-6 w-6 text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <h2 className="font-bold text-foreground text-base">Rank & Percentile will be released soon</h2>
+                <p className="text-sm text-muted mt-1">
+                  Like Allen, Narayana, and nlearn — rankings are calculated <strong>only after the exam window closes</strong> so every student gets a fair shot regardless of when they started.
+                </p>
+                {examEndsAt && (
+                  <div className="mt-3 inline-flex items-center gap-2 bg-white border border-blue-200 rounded-xl px-4 py-2">
+                    <Clock className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-semibold text-blue-700">
+                      Releasing on {formatDateTime(examEndsAt)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      )}
+
+      {/* ── SUBJECT BREAKDOWN ─────────────────────────────────────────────── */}
       {isMultiSubject && (
-        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
-          <h2 className="font-bold text-foreground">Subject Breakdown</h2>
-          <div className="space-y-4">
+        <div className="rounded-2xl bg-surface border border-border p-6 space-y-4 shadow-sm">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-accent-electric" />
+            <h2 className="font-bold text-foreground">Subject Breakdown</h2>
+          </div>
+          <div className="space-y-3">
             {subjects.map(([name, data]) => {
-              const subPct = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0
+              const s = getSubjectStyle(name)
+              const maxScore = data.total * 4
+              const correctPct = data.total > 0 ? (data.correct / data.total) * 100 : 0
+              const incorrectPct = data.total > 0 ? (data.incorrect / data.total) * 100 : 0
+              const subAcc = data.correct + data.incorrect > 0
+                ? Math.round((data.correct / (data.correct + data.incorrect)) * 100)
+                : 0
               return (
-                <div key={name}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-semibold text-foreground">{name}</span>
+                <div key={name} className={`rounded-xl border-l-4 ${s.border} bg-surface-2 border border-border p-4`}>
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <span className={`font-bold text-sm ${s.text}`}>{name}</span>
                     <div className="flex items-center gap-3 text-xs">
-                      <span className="text-emerald-400">{data.correct}✓</span>
-                      <span className="text-red-400">{data.incorrect}✗</span>
-                      <span className="text-muted">{data.unattempted}–</span>
-                      <span className="font-bold text-accent-electric">{data.score} pts</span>
+                      <span className="text-emerald-600 font-semibold">{data.correct} ✓</span>
+                      <span className="text-red-500 font-semibold">{data.incorrect} ✗</span>
+                      <span className="text-muted">{data.unattempted} –</span>
+                      <span className={`font-black text-base ${data.score >= 0 ? 'text-foreground' : 'text-red-500'}`}>
+                        {data.score > 0 ? '+' : ''}{data.score}
+                        <span className="text-xs font-medium text-muted">/{maxScore}</span>
+                      </span>
                     </div>
                   </div>
-                  <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
+                  {/* Segmented bar: correct (green) + wrong (red) + skipped (grey) */}
+                  <div className="h-3 rounded-full bg-border overflow-hidden flex">
                     <div
-                      className="h-full rounded-full bg-gradient-primary transition-all"
-                      style={{ width: `${subPct}%` }}
+                      className="h-full bg-emerald-400 transition-all duration-700"
+                      style={{ width: `${correctPct}%` }}
+                    />
+                    <div
+                      className="h-full bg-red-400 transition-all duration-700"
+                      style={{ width: `${incorrectPct}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-4 mt-2 text-[11px]">
+                    <span className="text-emerald-600 font-medium">■ Correct {Math.round(correctPct)}%</span>
+                    <span className="text-red-500 font-medium">■ Wrong {Math.round(incorrectPct)}%</span>
+                    <span className="text-muted">■ Skipped {Math.round(100 - correctPct - incorrectPct)}%</span>
+                    <span className={`ml-auto font-bold ${s.text}`}>{subAcc}% accuracy</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── DIFFICULTY BREAKDOWN ──────────────────────────────────────────── */}
+      {hasDiffData && (
+        <div className="rounded-2xl bg-surface border border-border p-6 space-y-4 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-accent-electric" />
+            <h2 className="font-bold text-foreground">Difficulty Breakdown</h2>
+          </div>
+          <div className="space-y-3">
+            {(['easy', 'medium', 'hard'] as const).filter(l => diffMap[l].total > 0).map(level => {
+              const { total, correct } = diffMap[level]
+              const pct = Math.round((correct / total) * 100)
+              const styles = {
+                easy: { bar: 'bg-gradient-to-r from-emerald-400 to-emerald-500', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+                medium: { bar: 'bg-gradient-to-r from-amber-400 to-amber-500', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700 border-amber-200' },
+                hard: { bar: 'bg-gradient-to-r from-red-400 to-red-500', text: 'text-red-600', badge: 'bg-red-100 text-red-600 border-red-200' },
+              }
+              const { bar, text, badge } = styles[level]
+              return (
+                <div key={level}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-black uppercase tracking-wide px-2.5 py-0.5 rounded-full border ${badge}`}>
+                        {level}
+                      </span>
+                      <span className="text-xs text-muted">{correct}/{total} correct</span>
+                    </div>
+                    <span className={`text-sm font-bold ${text}`}>{pct}%</span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-surface-2 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${bar} transition-all duration-700`}
+                      style={{ width: `${pct}%` }}
                     />
                   </div>
                 </div>
@@ -207,24 +457,28 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
         </div>
       )}
 
-      {/* TOPICS TO REVIEW (WEAK CHAPTERS) */}
+      {/* ── TOPICS TO REVIEW ──────────────────────────────────────────────── */}
       {weakChapters.length > 0 && (
-        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-red-500/10 bg-red-500/5">
+        <div className="rounded-2xl bg-surface border-2 border-red-100 p-6 space-y-4 shadow-sm">
           <div className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-red-400" />
-            <h2 className="font-bold text-foreground">Topics to Review</h2>
+            <BookOpen className="h-5 w-5 text-red-500" />
+            <h2 className="font-bold text-foreground">Topics to Revise</h2>
           </div>
-          <p className="text-sm text-muted-2">These chapters had the most mistakes or lowest accuracy. Focus your post-mock analysis here.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+          <p className="text-sm text-muted">
+            These chapters had the most mistakes or lowest accuracy. Prioritise these before your next attempt.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {weakChapters.slice(0, 6).map(([name, data]) => {
-              const accuracy = Math.round((data.correct / data.total) * 100)
+              const acc = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0
               return (
-                <div key={name} className="bg-surface-2/80 rounded-xl p-4 border border-white/[0.04]">
+                <div key={name} className="bg-red-50 rounded-xl p-4 border border-red-100">
                   <h3 className="font-semibold text-sm text-foreground line-clamp-1 mb-2">{name}</h3>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-red-400 font-bold">{data.incorrect} mistakes</span>
+                    <span className="text-red-500 font-bold">{data.incorrect} wrong</span>
                     <span className="text-muted">{data.unattempted} skipped</span>
-                    <span className={`font-bold ${accuracy >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{accuracy}% accuracy</span>
+                    <span className={`font-bold ${acc >= 50 ? 'text-amber-600' : 'text-red-500'}`}>
+                      {acc}% accuracy
+                    </span>
                   </div>
                 </div>
               )
@@ -233,285 +487,137 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
         </div>
       )}
 
-      {/* TIME MANAGEMENT PANEL */}
-      {(() => {
-        const correctSqs = sessionQuestions.filter(sq => sq.is_correct === true)
-        const wrongSqs = sessionQuestions.filter(sq => sq.is_correct === false && !!sq.answer_given)
-        const avgTime = sessionQuestions.length > 0
-          ? Math.round(sessionQuestions.reduce((s, sq) => s + (sq.time_taken ?? 0), 0) / sessionQuestions.length)
-          : 0
-        const avgCorrectTime = correctSqs.length > 0
-          ? Math.round(correctSqs.reduce((s, sq) => s + (sq.time_taken ?? 0), 0) / correctSqs.length)
-          : 0
-        const avgWrongTime = wrongSqs.length > 0
-          ? Math.round(wrongSqs.reduce((s, sq) => s + (sq.time_taken ?? 0), 0) / wrongSqs.length)
-          : 0
-        const maxAvg = Math.max(avgCorrectTime, avgWrongTime, 1)
-
-        return (
-          <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
-            <div className="flex items-center gap-2">
-              <Timer className="h-4 w-4 text-accent-electric" />
-              <h2 className="font-bold text-foreground">Time Management</h2>
+      {/* ── TIME ANALYSIS ─────────────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-surface border border-border p-6 space-y-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <Timer className="h-5 w-5 text-accent-electric" />
+          <h2 className="font-bold text-foreground">Time Analysis</h2>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            {
+              label: 'Avg per question',
+              value: formatDuration(avgTime),
+              sub: `Total: ${formatDuration(session.time_taken ?? 0)}`,
+              color: 'text-blue-700',
+              bg: 'bg-blue-50 border-blue-200',
+            },
+            {
+              label: 'Avg on correct',
+              value: correctSqs.length > 0 ? formatDuration(avgCorrectTime) : '—',
+              sub: `${correctSqs.length} questions`,
+              color: 'text-emerald-700',
+              bg: 'bg-emerald-50 border-emerald-200',
+            },
+            {
+              label: 'Avg on wrong',
+              value: wrongSqs.length > 0 ? formatDuration(avgWrongTime) : '—',
+              sub: `${wrongSqs.length} questions`,
+              color: 'text-red-600',
+              bg: 'bg-red-50 border-red-200',
+            },
+          ].map(item => (
+            <div key={item.label} className={`rounded-xl border ${item.bg} p-4 text-center shadow-sm`}>
+              <p className={`text-2xl font-extrabold stat-number ${item.color}`}>{item.value}</p>
+              <p className="text-[11px] font-medium text-muted mt-1">{item.label}</p>
+              <p className="text-[10px] text-muted mt-0.5">{item.sub}</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          ))}
+        </div>
+        {/* Correct vs Wrong visual bar */}
+        {(correctSqs.length > 0 || wrongSqs.length > 0) && (() => {
+          const maxAvg = Math.max(avgCorrectTime, avgWrongTime, 1)
+          return (
+            <div className="space-y-2 pt-1">
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider">Correct vs Wrong — time spent</p>
               {[
-                { label: 'Avg per question', value: formatDuration(avgTime), color: 'text-accent-electric' },
-                { label: 'Avg on correct', value: correctSqs.length > 0 ? formatDuration(avgCorrectTime) : '—', color: 'text-emerald-400' },
-                { label: 'Avg on wrong', value: wrongSqs.length > 0 ? formatDuration(avgWrongTime) : '—', color: 'text-red-400' },
-              ].map(item => (
-                <div key={item.label} className="rounded-xl border border-white/[0.07] bg-surface-2/70 p-3 text-center">
-                  <p className={`text-lg font-extrabold ${item.color}`}>{item.value}</p>
-                  <p className="text-[11px] text-muted mt-0.5">{item.label}</p>
+                { label: 'Correct', time: avgCorrectTime, color: 'bg-emerald-400', textColor: 'text-emerald-700' },
+                { label: 'Wrong', time: avgWrongTime, color: 'bg-red-400', textColor: 'text-red-600' },
+              ].map(bar => (
+                <div key={bar.label}>
+                  <div className="flex items-center justify-between text-xs mb-0.5">
+                    <span className={`font-semibold ${bar.textColor}`}>{bar.label}</span>
+                    <span className={bar.textColor}>{formatDuration(bar.time)}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${bar.color} transition-all duration-700`}
+                      style={{ width: `${(bar.time / maxAvg) * 100}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
-            {(correctSqs.length > 0 || wrongSqs.length > 0) && (
-              <div className="space-y-2">
-                <p className="text-xs text-muted-2 font-medium">Correct vs Wrong — time comparison</p>
-                <div className="space-y-1.5">
-                  <div>
-                    <div className="flex justify-between text-xs mb-0.5">
-                      <span className="text-emerald-400 font-medium">Correct</span>
-                      <span className="text-emerald-400">{formatDuration(avgCorrectTime)}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
-                      <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${(avgCorrectTime / maxAvg) * 100}%` }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-0.5">
-                      <span className="text-red-400 font-medium">Wrong</span>
-                      <span className="text-red-400">{formatDuration(avgWrongTime)}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
-                      <div className="h-full rounded-full bg-red-500 transition-all" style={{ width: `${(avgWrongTime / maxAvg) * 100}%` }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )
-      })()}
+          )
+        })()}
+      </div>
 
-      {/* DIFFICULTY BREAKDOWN PANEL */}
-      {(() => {
-        const levels = ['easy', 'medium', 'hard'] as const
-        const diffMap: Record<string, { total: number; correct: number }> = {
-          easy: { total: 0, correct: 0 },
-          medium: { total: 0, correct: 0 },
-          hard: { total: 0, correct: 0 },
-        }
-        for (const sq of sessionQuestions) {
-          const d = sq.questions.difficulty
-          if (diffMap[d]) {
-            diffMap[d].total++
-            if (sq.is_correct) diffMap[d].correct++
-          }
-        }
-        const hasData = levels.some(l => diffMap[l].total > 0)
-        if (!hasData) return null
-
-        const diffColors: Record<string, { bar: string; text: string; badge: string }> = {
-          easy: { bar: 'bg-emerald-500', text: 'text-emerald-400', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-          medium: { bar: 'bg-amber-500', text: 'text-amber-400', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-          hard: { bar: 'bg-red-500', text: 'text-red-400', badge: 'bg-red-500/10 text-red-400 border-red-500/20' },
-        }
-
-        return (
-          <div className="rounded-2xl surface-glass p-6 space-y-4 border border-white/[0.06]">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-accent-electric" />
-              <h2 className="font-bold text-foreground">Difficulty Breakdown</h2>
-            </div>
-            <div className="space-y-3">
-              {levels.filter(l => diffMap[l].total > 0).map(level => {
-                const { total, correct } = diffMap[level]
-                const pct = Math.round((correct / total) * 100)
-                const { bar, text, badge } = diffColors[level]
-                return (
-                  <div key={level}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${badge}`}>
-                          {level}
-                        </span>
-                        <span className="text-xs text-muted">{correct}/{total} correct</span>
-                      </div>
-                      <span className={`text-sm font-bold ${text}`}>{pct}%</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
-                      <div className={`h-full rounded-full ${bar} transition-all`} style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* LEADERBOARD (weekly exams only) */}
-      {(() => {
-        if (!leaderboard || leaderboard.length === 0) return null
-
-        const totalParticipants = leaderboard.length
-        const myEntry = leaderboard.find(e => e.user_id === currentUserId)
-        const myRank = myEntry?.rank
-        const percentile = totalParticipants > 1 && myRank 
-          ? (((totalParticipants - myRank + 1) / totalParticipants) * 100).toFixed(2) 
-          : '100.00'
-        const displayLeaderboard = leaderboard.slice(0, 20)
-
-        return (
-          <div className="space-y-4">
-            {myEntry && (
-              <div className="rounded-2xl surface-glass-strong p-6 space-y-2 border border-violet-500/30 bg-violet-500/5">
-                <h2 className="text-sm font-bold text-violet-300 uppercase tracking-wider">Your All India Rank (AIR)</h2>
-                <div className="flex items-baseline gap-4">
-                  <div className="text-5xl font-extrabold text-violet-400">#{myRank}</div>
-                  <div className="text-xl font-medium text-muted-2">
-                    {percentile} <span className="text-sm text-muted">Percentile</span>
-                  </div>
-                </div>
-                <p className="text-xs text-muted mt-2">Based on {totalParticipants} total participants</p>
-              </div>
-            )}
-
-            <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
-              <div className="flex items-center gap-2 p-5 border-b border-white/[0.06]">
-                <Medal className="h-5 w-5 text-amber-400" />
-                <h2 className="font-bold text-foreground">Leaderboard</h2>
-                <span className="text-xs text-muted ml-auto">Top {displayLeaderboard.length} of {totalParticipants} students</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-white/[0.06] bg-surface-2/40">
-                      <th className="text-left py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Rank</th>
-                      <th className="text-left py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Name</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Score</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Math</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Phy</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Chem</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-muted-2">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.05]">
-                    {displayLeaderboard.map((entry, idx) => {
-                      const isMe = entry.user_id === currentUserId
-                      const rankIcons: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
-                      const displayRank = rankIcons[entry.rank] ?? `#${entry.rank}`
-                      
-                      return (
-                        <tr
-                          key={entry.id}
-                          className={`transition-colors ${
-                            isMe
-                              ? 'bg-violet-500/10 border-l-2 border-l-violet-400'
-                              : 'hover:bg-surface-2/40'
-                          }`}
-                        >
-                          <td className="py-3 px-4">
-                            <span className="font-bold text-muted-2 text-xs">
-                              {displayRank}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`font-medium text-sm ${
-                              isMe ? 'text-violet-300 font-bold' : 'text-foreground'
-                            }`}>
-                              {entry.name ?? 'Anonymous'}
-                              {isMe && <span className="ml-1.5 text-[10px] font-bold bg-violet-500/20 text-violet-400 rounded px-1.5 py-0.5">You</span>}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className={`font-bold text-sm ${
-                              entry.rank === 1 ? 'text-amber-400' : isMe ? 'text-violet-300' : 'text-foreground'
-                            }`}>
-                              {entry.score}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className="text-muted text-xs">{entry.math_score}</span>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className="text-muted text-xs">{entry.physics_score}</span>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className="text-muted text-xs">{entry.chem_score}</span>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className="text-muted text-xs">{formatDuration(entry.time_taken ?? 0)}</span>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* QUESTION REVIEW */}
-      <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
-        <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
+      {/* ── QUESTION REVIEW ───────────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-surface border border-border overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between p-5 border-b border-border flex-wrap gap-3">
           <h2 className="font-bold text-foreground">Question Review</h2>
-          <div className="flex gap-1">
-            {(['all', 'correct', 'wrong', 'skipped'] as Filter[]).map(f => (
+          <div className="flex flex-wrap gap-1.5">
+            {([
+              { f: 'all', label: `All (${sessionQuestions.length})`, activeClass: 'bg-slate-100 border-slate-300 text-slate-700' },
+              { f: 'correct', label: `Correct (${session.correct})`, activeClass: 'bg-emerald-100 border-emerald-300 text-emerald-700' },
+              { f: 'wrong', label: `Wrong (${session.incorrect})`, activeClass: 'bg-red-100 border-red-300 text-red-700' },
+              { f: 'skipped', label: `Skipped (${session.unattempted})`, activeClass: 'bg-amber-100 border-amber-300 text-amber-700' },
+            ] as { f: Filter; label: string; activeClass: string }[]).map(({ f, label, activeClass }) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all border ${
-                  filter === f
-                    ? 'bg-accent-electric/15 border-accent-electric/40 text-accent-electric'
-                    : 'border-white/[0.08] text-muted hover:text-foreground hover:border-white/15'
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                  filter === f ? activeClass : 'border-border text-muted hover:text-foreground'
                 }`}
               >
-                {f} {f === 'all' ? `(${sessionQuestions.length})` :
-                  f === 'correct' ? `(${session.correct})` :
-                  f === 'wrong' ? `(${session.incorrect})` :
-                  `(${session.unattempted})`}
+                {label}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="divide-y divide-white/[0.06]">
+        <div className="divide-y divide-border">
           {filtered.map(sq => {
             const q = sq.questions
             const isExp = expanded.has(sq.id)
             const isMcq = q.type === 'mcq'
-            const statusIcon = !sq.answer_given
-              ? <MinusCircle className="h-4 w-4 text-muted flex-shrink-0" />
-              : sq.is_correct
-                ? <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                : <XCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
+            const subjectName = q.chapters.subjects.name
+            const sStyle = getSubjectStyle(subjectName)
 
-            const marksColor = sq.marks_awarded > 0 ? 'text-emerald-400' : sq.marks_awarded < 0 ? 'text-red-400' : 'text-muted'
+            const statusIcon = !sq.answer_given
+              ? <MinusCircle className="h-4 w-4 text-slate-400 flex-shrink-0" />
+              : sq.is_correct
+                ? <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                : <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+
+            const marksColor = sq.marks_awarded > 0 ? 'text-emerald-600' : sq.marks_awarded < 0 ? 'text-red-500' : 'text-muted'
+            const rowBg = !sq.answer_given ? '' : sq.is_correct ? 'hover:bg-emerald-50/40' : 'hover:bg-red-50/40'
 
             return (
               <div key={sq.id}>
                 <button
                   onClick={() => toggleExpand(sq.id)}
-                  className="w-full flex items-center gap-3 px-5 py-4 hover:bg-surface-2 transition-colors text-left"
+                  className={`w-full flex items-center gap-3 px-5 py-4 ${rowBg} transition-colors text-left`}
                 >
                   {statusIcon}
-                  <span className="text-xs text-muted-2 flex-shrink-0 w-6">Q{sq.order_index + 1}</span>
+                  <span className="text-xs text-muted flex-shrink-0 w-6">Q{sq.order_index + 1}</span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${sStyle.statBg} ${sStyle.statText} border ${sStyle.statBorder}`}>
+                    {subjectName.slice(0, 3).toUpperCase()}
+                  </span>
                   <span className="text-sm text-foreground flex-1 line-clamp-1">
                     <Latex>{q.statement.slice(0, 100)}</Latex>
                   </span>
                   <span className={`text-xs font-bold ${marksColor} flex-shrink-0`}>
                     {sq.marks_awarded > 0 ? '+' : ''}{sq.marks_awarded}
                   </span>
-                  {isExp ? <ChevronUp className="h-4 w-4 text-muted-2 flex-shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-2 flex-shrink-0" />}
+                  {isExp
+                    ? <ChevronUp className="h-4 w-4 text-muted flex-shrink-0" />
+                    : <ChevronDown className="h-4 w-4 text-muted flex-shrink-0" />
+                  }
                 </button>
 
                 {isExp && (
-                  <div className="px-5 pb-5 bg-surface-2 border-t border-border space-y-4">
+                  <div className="px-5 pb-6 bg-surface-2 border-t border-border space-y-4">
                     {/* Full statement */}
                     <div className="pt-4 text-sm leading-relaxed text-foreground">
                       <Latex>{q.statement}</Latex>
@@ -528,38 +634,37 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
                               key={opt.id}
                               className={`flex items-start gap-2 p-3 rounded-xl border text-sm ${
                                 isCorrectOpt
-                                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                                   : isUserAnswer && !isCorrectOpt
-                                    ? 'bg-red-500/10 border-red-500/30 text-red-300'
+                                    ? 'bg-red-50 border-red-200 text-red-800'
                                     : 'bg-surface border-border text-muted'
                               }`}
                             >
                               <span className="font-bold flex-shrink-0">{letter}.</span>
                               <Latex>{opt.text}</Latex>
-                              {isCorrectOpt && <CheckCircle2 className="h-3.5 w-3.5 ml-auto flex-shrink-0 mt-0.5" />}
-                              {isUserAnswer && !isCorrectOpt && <XCircle className="h-3.5 w-3.5 ml-auto flex-shrink-0 mt-0.5" />}
+                              {isCorrectOpt && <CheckCircle2 className="h-3.5 w-3.5 ml-auto flex-shrink-0 mt-0.5 text-emerald-600" />}
+                              {isUserAnswer && !isCorrectOpt && <XCircle className="h-3.5 w-3.5 ml-auto flex-shrink-0 mt-0.5 text-red-500" />}
                             </div>
                           )
                         })}
                       </div>
                     ) : (
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="rounded-xl border border-white/[0.07] bg-surface-2/50 px-4 py-2 backdrop-blur-sm">
-                          <p className="text-[10px] text-muted mb-0.5">Your answer</p>
-                          <p className={sq.is_correct ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                      <div className="flex items-center gap-4 text-sm flex-wrap">
+                        <div className="rounded-xl border border-border bg-surface px-4 py-2.5">
+                          <p className="text-[10px] text-muted mb-0.5 font-medium uppercase tracking-wide">Your answer</p>
+                          <p className={sq.is_correct ? 'text-emerald-600 font-bold' : 'text-red-500 font-bold'}>
                             {sq.answer_given ?? '—'}
                           </p>
                         </div>
-                        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2">
-                          <p className="text-[10px] text-muted mb-0.5">Correct answer</p>
-                          <p className="text-emerald-400 font-bold">{q.correct_answer}</p>
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5">
+                          <p className="text-[10px] text-muted mb-0.5 font-medium uppercase tracking-wide">Correct answer</p>
+                          <p className="text-emerald-600 font-bold">{q.correct_answer}</p>
                         </div>
                       </div>
                     )}
 
-                    {/* Solution */}
                     {q.solution && (
-                      <div className="rounded-xl border border-white/[0.07] bg-surface-2/40 p-4 backdrop-blur-sm">
+                      <div className="rounded-xl border border-border bg-surface p-4">
                         <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-2">Solution</p>
                         <div className="text-sm text-muted leading-relaxed">
                           <Latex>{q.solution}</Latex>
@@ -573,24 +678,25 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
           })}
 
           {filtered.length === 0 && (
-            <div className="py-10 text-center text-muted text-sm">No questions match this filter.</div>
+            <div className="py-12 text-center text-muted text-sm">No questions match this filter.</div>
           )}
         </div>
       </div>
 
-      {/* ACTION BUTTONS */}
+      {/* ── ACTION BUTTONS ────────────────────────────────────────────────── */}
       <div className="flex gap-3">
         <Link
-          href="/tests/new"
-          className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-center bg-gradient-primary text-black hover:opacity-90 transition-all flex items-center justify-center gap-2"
+          href={session.weekly_exam_id ? '/exams' : '/tests/new'}
+          className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-center bg-gradient-primary text-white hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-md"
         >
-          Take Another Test <ArrowRight className="h-4 w-4" />
+          {session.weekly_exam_id ? 'Back to Exams' : 'Take Another Test'}
+          <ArrowRight className="h-4 w-4" />
         </Link>
         <Link
-          href="/tests"
-          className="px-6 py-3.5 rounded-2xl font-bold text-sm border border-white/[0.1] bg-surface-2/50 text-muted hover:text-foreground hover:border-accent-electric/35 transition-all backdrop-blur-sm"
+          href={session.weekly_exam_id ? '/exams' : '/tests'}
+          className="px-6 py-3.5 rounded-2xl font-bold text-sm border border-border bg-surface text-muted hover:text-foreground hover:border-border-strong transition-all"
         >
-          Back to Tests
+          {session.weekly_exam_id ? 'Home' : 'All Tests'}
         </Link>
       </div>
     </div>

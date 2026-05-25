@@ -23,7 +23,7 @@ export default async function ResultPage({
 
   if (sErr || !session) redirect('/tests')
 
-  // If this is an exam session, redirect to the exam result page
+  // Weekly exam sessions are always handled by /exams/[examId]/result
   if (session.weekly_exam_id) {
     redirect(`/exams/${session.weekly_exam_id}/result`)
   }
@@ -62,31 +62,11 @@ export default async function ResultPage({
     options: (allOptions ?? []).filter(o => o.question_id === (sq.questions as any).id),
   }))
 
-  // ── Leaderboard (weekly exams only) ──────────────────────────────────────
-  let leaderboard: any[] | null = null
-
-  if (session.weekly_exam_id && session.status === 'submitted') {
-    const { data: exam } = await supabase
-      .from('weekly_exams')
-      .select('ends_at')
-      .eq('id', session.weekly_exam_id)
-      .single()
-
-    if (exam && new Date() > new Date(exam.ends_at)) {
-      const { data: lb } = await supabase
-        .rpc('get_jee_leaderboard', { p_weekly_exam_id: session.weekly_exam_id })
-
-      leaderboard = lb ?? null
-    }
-  }
-
   return (
     <ResultClient
       session={session}
       sessionQuestions={enriched}
-      leaderboard={leaderboard}
       currentUserId={user.id}
     />
   )
 }
-
