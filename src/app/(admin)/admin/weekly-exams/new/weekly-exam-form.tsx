@@ -14,6 +14,7 @@ type Question = {
   statement: string
   type: string
   difficulty: string
+  visibility: string
   chapters: { name: string; subjects: { id: string, name: string } } | null
 }
 
@@ -47,6 +48,7 @@ export function WeeklyExamForm({ initialSubjects }: { initialSubjects: { id: str
   const [activeSubjectId, setActiveSubjectId] = useState<string>('all')
   const [typeFilter, setTypeFilter]     = useState<'all' | 'mcq' | 'numerical'>('all')
   const [diffFilter, setDiffFilter]     = useState<'all' | 'easy' | 'medium' | 'hard'>('all')
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'exam' | 'public' | 'hidden'>('exam')
   const [collapsedChapters, setCollapsedChapters] = useState<Set<string>>(new Set())
   const [error, setError]               = useState<string | null>(null)
   const [isPending, startTransition]    = useTransition()
@@ -58,16 +60,17 @@ export function WeeklyExamForm({ initialSubjects }: { initialSubjects: { id: str
       difficulty: diffFilter !== 'all' ? diffFilter : undefined,
       type: typeFilter !== 'all' ? typeFilter : undefined,
       subjectId: activeSubjectId !== 'all' ? activeSubjectId : undefined,
+      visibility: visibilityFilter !== 'all' ? visibilityFilter : 'all',
     })
     setQuestions((result.data as any[]) || [])
     setTotalCount(result.count || 0)
     setLoading(false)
-  }, [page, search, diffFilter, typeFilter, activeSubjectId])
+  }, [page, search, diffFilter, typeFilter, activeSubjectId, visibilityFilter])
 
   useEffect(() => {
     // Reset to page 1 when filters change
     setPage(1)
-  }, [search, diffFilter, typeFilter, activeSubjectId])
+  }, [search, diffFilter, typeFilter, activeSubjectId, visibilityFilter])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -227,6 +230,19 @@ export function WeeklyExamForm({ initialSubjects }: { initialSubjects: { id: str
 
               {/* Filters row */}
               <div className="flex gap-2 flex-wrap">
+                {/* Source filter */}
+                <div className="flex items-center gap-1 bg-surface-2 p-1 rounded-lg border border-border">
+                  {(['exam', 'public', 'hidden', 'all'] as const).map(v => (
+                    <button key={v} type="button" onClick={() => setVisibilityFilter(v)}
+                      className={`px-3 py-1 rounded-md text-[11px] font-bold capitalize transition-all ${
+                        visibilityFilter === v
+                          ? 'bg-gradient-primary text-white shadow-sm'
+                          : 'text-muted hover:text-foreground'
+                      }`}>
+                      {v === 'exam' ? 'Exam Bank' : v === 'public' ? 'PYQs' : v}
+                    </button>
+                  ))}
+                </div>
                 {/* Search */}
                 <div className="relative flex-1 min-w-[180px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
@@ -328,13 +344,24 @@ export function WeeklyExamForm({ initialSubjects }: { initialSubjects: { id: str
                                   {q.statement}
                                 </span>
                                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-                                    q.type === 'mcq'
-                                      ? 'bg-accent-electric/10 text-accent-electric'
-                                      : 'bg-purple-500/10 text-purple-400'
-                                  }`}>
-                                    {q.type === 'mcq' ? 'MCQ' : 'Num'}
-                                  </span>
+                                  <div className="flex gap-1">
+                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                      q.visibility === 'public'
+                                        ? 'bg-blue-500/10 text-blue-400'
+                                        : q.visibility === 'hidden'
+                                        ? 'bg-gray-500/10 text-gray-400'
+                                        : 'bg-indigo-500/10 text-indigo-400'
+                                    }`}>
+                                      {q.visibility === 'public' ? 'PYQ' : q.visibility === 'hidden' ? 'Hidden' : 'Bank'}
+                                    </span>
+                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                      q.type === 'mcq'
+                                        ? 'bg-accent-electric/10 text-accent-electric'
+                                        : 'bg-purple-500/10 text-purple-400'
+                                    }`}>
+                                      {q.type === 'mcq' ? 'MCQ' : 'Num'}
+                                    </span>
+                                  </div>
                                   <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold capitalize ${diffColor[q.difficulty]}`}>
                                     {q.difficulty}
                                   </span>

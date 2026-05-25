@@ -29,6 +29,7 @@ export async function getExamQuestions(
     type?: string
     subjectId?: string
     chapterId?: string
+    visibility?: string
   }
 ) {
   const supabase = createAdminClient()
@@ -37,10 +38,15 @@ export async function getExamQuestions(
   let query = supabase
     .from('questions')
     .select(
-      'id, statement, type, difficulty, image_url, correct_answer, hint, solution, chapters!inner(name, subjects!inner(id, name)), options:question_options(id, text, is_correct)',
+      'id, statement, type, difficulty, image_url, correct_answer, hint, solution, visibility, chapters!inner(name, subjects!inner(id, name)), options:question_options(id, text, is_correct)',
       { count: 'exact' }
     )
-    .eq('visibility', 'exam')
+
+  if (filters?.visibility && filters.visibility !== 'all') {
+    query = query.eq('visibility', filters.visibility)
+  } else if (!filters?.visibility) {
+    query = query.eq('visibility', 'exam')
+  }
 
   if (filters?.search) query = query.ilike('statement', `%${filters.search}%`)
   if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty)
