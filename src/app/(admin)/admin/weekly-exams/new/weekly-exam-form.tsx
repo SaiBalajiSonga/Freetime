@@ -50,14 +50,23 @@ function CustomDateTimePicker({ name, required, label }: { name: string, require
     }
   }
 
+  let isoValue = ''
+  if (value) {
+    try {
+      isoValue = new Date(value).toISOString()
+    } catch (e) {
+      // ignore invalid dates
+    }
+  }
+
   return (
     <div className="space-y-2 relative group" onClick={handleOpenPicker}>
       <label className="text-sm font-medium text-foreground">{label} {required && <span className="text-red-400">*</span>}</label>
       <div className="relative">
+        <input type="hidden" name={name} value={isoValue} />
         <input 
           ref={inputRef}
           type="datetime-local" 
-          name={name} 
           required={required}
           value={value}
           onChange={e => setValue(e.target.value)}
