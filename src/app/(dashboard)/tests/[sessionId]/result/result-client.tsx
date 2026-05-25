@@ -95,6 +95,23 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
   const subjects = Object.entries(subjectMap)
   const isMultiSubject = subjects.length > 1
 
+  // Chapter breakdown for Weak Topics
+  const chapterMap: Record<string, { correct: number; incorrect: number; unattempted: number; total: number }> = {}
+  for (const sq of sessionQuestions) {
+    const chName = sq.questions.chapters?.name || 'Uncategorised'
+    if (!chapterMap[chName]) chapterMap[chName] = { correct: 0, incorrect: 0, unattempted: 0, total: 0 }
+    chapterMap[chName].total++
+    if (!sq.answer_given) chapterMap[chName].unattempted++
+    else if (sq.is_correct) chapterMap[chName].correct++
+    else chapterMap[chName].incorrect++
+  }
+
+  const weakChapters = Object.entries(chapterMap)
+    .filter(([_, data]) => data.incorrect > 0 || (data.correct / data.total < 0.5))
+    .sort((a, b) => b[1].incorrect - a[1].incorrect || (a[1].correct / a[1].total) - (b[1].correct / b[1].total))
+
+  const userRank = leaderboard ? leaderboard.findIndex(lb => lb.user_id === currentUserId) + 1 : 0
+
   // Filter questions
   const filtered = sessionQuestions.filter(sq => {
     if (filter === 'correct') return sq.is_correct === true
@@ -132,8 +149,9 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
         </div>
 
         {/* Stat pills */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className={`grid grid-cols-2 ${userRank > 0 ? 'sm:grid-cols-3 md:grid-cols-6' : 'sm:grid-cols-5'} gap-3`}>
           {[
+            ...(userRank > 0 ? [{ icon: <Medal className="h-4 w-4" />, label: 'Rank', value: `#${userRank}`, color: 'text-amber-400' }] : []),
             { icon: <Target className="h-4 w-4" />, label: 'Accuracy', value: `${accuracy}%`, color: 'text-accent-electric' },
             { icon: <CheckCircle2 className="h-4 w-4" />, label: 'Correct', value: session.correct, color: 'text-emerald-400' },
             { icon: <XCircle className="h-4 w-4" />, label: 'Wrong', value: session.incorrect, color: 'text-red-400' },
@@ -174,6 +192,32 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
                       className="h-full rounded-full bg-gradient-primary transition-all"
                       style={{ width: `${subPct}%` }}
                     />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TOPICS TO REVIEW (WEAK CHAPTERS) */}
+      {weakChapters.length > 0 && (
+        <div className="rounded-2xl surface-glass p-6 space-y-4 border border-red-500/10 bg-red-500/5">
+          <div className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-red-400" />
+            <h2 className="font-bold text-foreground">Topics to Review</h2>
+          </div>
+          <p className="text-sm text-muted-2">These chapters had the most mistakes or lowest accuracy. Focus your post-mock analysis here.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+            {weakChapters.slice(0, 6).map(([name, data]) => {
+              const accuracy = Math.round((data.correct / data.total) * 100)
+              return (
+                <div key={name} className="bg-surface-2/80 rounded-xl p-4 border border-white/[0.04]">
+                  <h3 className="font-semibold text-sm text-foreground line-clamp-1 mb-2">{name}</h3>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-red-400 font-bold">{data.incorrect} mistakes</span>
+                    <span className="text-muted">{data.unattempted} skipped</span>
+                    <span className={`font-bold ${accuracy >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{accuracy}% accuracy</span>
                   </div>
                 </div>
               )
@@ -301,7 +345,7 @@ export default function ResultClient({ session, sessionQuestions, leaderboard, c
         )
       })()}
 
-      {/* LEADERBOARD (weekly exams only, after exam ends) */}
+      {/* LEADERBOARD (weekly exams only) */}
       {leaderboard && leaderboard.length > 0 && (
         <div className="rounded-2xl surface-glass-strong overflow-hidden border border-white/[0.07]">
           <div className="flex items-center gap-2 p-5 border-b border-white/[0.06]">
