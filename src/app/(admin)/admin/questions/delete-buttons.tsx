@@ -81,6 +81,13 @@ export function DeleteAllQuestionsButton({ count }: { count: number }) {
   const handleDeleteAll = async () => {
     if (!confirm(`Delete ALL ${count} questions? This cannot be undone.`)) return
     if (!confirm(`FINAL WARNING: This will permanently delete ${count} questions, their options, and all student attempts.`)) return
+    
+    const confirmation = prompt('Type "DELETE ALL" to permanently delete everything:')
+    if (confirmation !== 'DELETE ALL') {
+      alert('Deletion cancelled. You did not type "DELETE ALL".')
+      return
+    }
+
     setIsDeleting(true)
     await deleteAllQuestions()
     setIsDeleting(false)
