@@ -14,7 +14,7 @@ const initialState = {
 }
 
 const inputClass =
-  'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-foreground placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all font-medium text-sm'
+  'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all font-medium text-sm'
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {

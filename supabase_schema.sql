@@ -6,7 +6,7 @@ CREATE TABLE public.profiles (
   id uuid REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   name text,
   is_admin boolean DEFAULT false,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+  created_at date DEFAULT CURRENT_DATE NOT NULL
 );
 
 -- Table: subjects

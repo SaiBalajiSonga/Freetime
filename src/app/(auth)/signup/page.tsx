@@ -14,7 +14,7 @@ const initialState = {
 }
 
 const inputClass =
-  'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-foreground placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all font-medium text-sm'
+  'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 focus:border-[var(--color-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--color-primary)]/10 transition-all font-medium text-sm'
 
 export default function SignupPage() {
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
@@ -61,6 +61,18 @@ export default function SignupPage() {
               Email Address
             </Label>
             <input id="email" name="email" type="email" placeholder="you@example.com" required className={inputClass} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-sm font-bold text-slate-700">
+              Phone Number
+            </Label>
+            <input id="phone" name="phone" type="tel" placeholder="+91 XXXXX XXXXX" required className={inputClass} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="target_jee_year" className="text-sm font-bold text-slate-700">
+              Target JEE Year
+            </Label>
+            <input id="target_jee_year" name="target_jee_year" type="number" min="2024" max="2035" placeholder="e.g. 2026" required className={inputClass} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-bold text-slate-700">
