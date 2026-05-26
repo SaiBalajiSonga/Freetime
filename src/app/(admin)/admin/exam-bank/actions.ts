@@ -15,7 +15,7 @@ export async function moveQuestionVisibility(questionId: string, visibility: 'pu
     return { error: error.message }
   }
 
-  revalidatePath('/admin')
+  revalidatePath('/admin/questions')
   revalidatePath('/admin/exam-bank')
   return { success: true }
 }

@@ -96,7 +96,7 @@ export async function updateQuestion(questionId: string, formData: FormData) {
       }
     }
 
-    revalidatePath('/admin', 'layout')
+    revalidatePath('/admin/questions', 'layout')
     revalidatePath(`/questions/${questionId}`, 'layout')
     return { success: true }
   } catch (err: any) {

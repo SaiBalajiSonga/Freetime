@@ -75,6 +75,7 @@ export async function createQuestion(formData: FormData) {
     }
   }
 
-  revalidatePath('/admin')
+  revalidatePath('/admin/questions')
+  revalidatePath('/dashboard')
   redirect('/admin')
 }
