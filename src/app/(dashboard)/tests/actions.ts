@@ -300,8 +300,9 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
   let unattempted = 0
 
   const subjectStats: Record<string, { score: number; correct: number; incorrect: number; unattempted: number }> = {}
+  const updatesToSessionQuestions = []
 
-  // Grade and update each question sequentially
+  // Grade each question and collect updates
   for (const sq of sessionQuestions) {
     const q = sq.questions as any
     const givenAnswer = sq.answer_given
@@ -348,10 +349,30 @@ export async function submitTest(sessionId: string, totalTimeTaken: number) {
 
     totalScore += marksAwarded
 
-    await supabase
+    updatesToSessionQuestions.push({
+      id: sq.id,
+      session_id: sq.session_id,
+      question_id: sq.question_id,
+      order_index: sq.order_index,
+      answer_given: sq.answer_given,
+      visit_status: sq.visit_status,
+      is_marked_for_review: sq.is_marked_for_review,
+      time_taken: sq.time_taken,
+      is_correct: isCorrect,
+      marks_awarded: marksAwarded
+    })
+  }
+
+  // Perform a single batch upsert
+  if (updatesToSessionQuestions.length > 0) {
+    const { error: upsertErr } = await supabase
       .from('test_session_questions')
-      .update({ is_correct: isCorrect, marks_awarded: marksAwarded })
-      .eq('id', sq.id)
+      .upsert(updatesToSessionQuestions)
+      
+    if (upsertErr) {
+      console.error('Batch upsert error:', upsertErr)
+      // Attempting to fail gracefully or log it. The session score will still be computed correctly.
+    }
   }
 
   // Update session
