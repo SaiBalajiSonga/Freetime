@@ -181,18 +181,25 @@ export async function insertQuestions(questions: ImportQuestion[]) {
           .eq('is_correct', true)
         
         if (correctOpts) {
-          // Unfortunately supabase doesn't support bulk update with different values easily.
-          // We can do it sequentially here because it's only for the batch.
-          for (const opt of correctOpts) {
-            await supabase.from('questions').update({ correct_answer: opt.id }).eq('id', opt.question_id)
+          const updates = correctOpts.map(opt => ({
+            id: opt.question_id,
+            correct_answer: opt.id
+          }))
+          
+          if (updates.length > 0) {
+            const { error: rpcError } = await supabase.rpc('update_questions_correct_answers', { updates })
+            if (rpcError) {
+              console.error(`[Insert] Bulk correct_answer update error:`, rpcError.message)
+            }
           }
         }
       }
     }
 
     if (correctAnswersToUpdate.length > 0) {
-      for (const update of correctAnswersToUpdate) {
-        await supabase.from('questions').update({ correct_answer: update.correct_answer }).eq('id', update.id)
+      const { error: rpcError } = await supabase.rpc('update_questions_correct_answers', { updates: correctAnswersToUpdate })
+      if (rpcError) {
+        console.error(`[Insert] Bulk correct_answer update error for numericals:`, rpcError.message)
       }
     }
 
