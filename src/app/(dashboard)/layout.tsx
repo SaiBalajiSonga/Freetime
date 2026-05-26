@@ -6,6 +6,7 @@ import { BookOpen, LayoutDashboard, FlaskConical, ClipboardList, Bell, Sparkles,
 import { SidebarLink } from '@/components/site/sidebar-link'
 import { MobileSidebarToggle } from '@/components/site/mobile-sidebar'
 import { MobileBottomNav } from '@/components/site/mobile-bottom-nav'
+import { NavAuth } from '@/components/site/nav-auth'
 
 export default async function DashboardLayout({
   children,
@@ -87,7 +88,7 @@ export default async function DashboardLayout({
             <div className="hidden md:block" />
 
             {/* Right actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button
                 type="button"
                 className="relative p-2 rounded-xl text-muted hover:text-foreground hover:bg-surface-2 transition-colors"
@@ -97,17 +98,9 @@ export default async function DashboardLayout({
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--color-primary)] rounded-full" />
               </button>
               <div className="h-6 w-px bg-[var(--color-border)] hidden sm:block" />
-              <div className="flex items-center gap-2.5">
-                <div className="size-8 rounded-full bg-gradient-primary flex items-center justify-center text-white text-sm font-bold">
-                  {initial}
-                </div>
-                <span className="text-sm font-medium text-foreground hidden sm:inline max-w-[160px] truncate capitalize">{username}</span>
-              </div>
-              <form action={logout}>
-                <Button type="submit" variant="outline" size="sm" className="text-muted border-[var(--color-border)] hover:text-foreground">
-                  Log out
-                </Button>
-              </form>
+              
+              {/* Profile Dropdown */}
+              <NavAuth />
             </div>
           </header>
 

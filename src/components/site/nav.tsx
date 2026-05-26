@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
+import { NavAuth } from './nav-auth'
 
 export function Nav() {
   return (
@@ -29,13 +30,8 @@ export function Nav() {
           </Link>
         </div>
 
-        {/* CTA */}
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center justify-center h-11 px-7 text-[15px] font-bold rounded-full bg-blue-600 text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-[0.98]"
-        >
-          Start Practicing
-        </Link>
+        {/* CTA / User Profile */}
+        <NavAuth />
       </div>
     </nav>
   )

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { AdminSidebarClient } from '@/components/admin/admin-sidebar-client'
 import { MobileAdminNav } from '@/components/admin/mobile-admin-nav'
 import { AmbientBackdrop } from '@/components/site/ambient-backdrop'
+import { NavAuth } from '@/components/site/nav-auth'
 
 export default async function AdminLayout({
   children,
@@ -48,21 +49,11 @@ export default async function AdminLayout({
             <span className="hidden md:block font-semibold text-xs text-[#64748b] uppercase tracking-widest">Admin Console</span>
             <span className="md:hidden font-semibold text-sm text-white tracking-tight">Admin Console</span>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-            <span className="text-[13px] font-medium text-[#64748b] hidden sm:inline max-w-[220px] truncate">
-              {user.email}
-            </span>
-            <div className="h-6 w-px bg-[#2a3142] hidden sm:block" />
-            <form action={logout}>
-              <Button
-                type="submit"
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs border-[#2a3142] bg-transparent text-[#94a3b8] hover:bg-[#1c2333] hover:text-white"
-              >
-                Log out
-              </Button>
-            </form>
+          <div className="flex items-center gap-4 ml-auto">
+            {/* Profile Dropdown */}
+            <div className="scale-90 origin-right">
+              <NavAuth />
+            </div>
           </div>
         </header>
 
