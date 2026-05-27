@@ -18,7 +18,7 @@ export default async function AdminLayout({
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
   if (!profile?.is_admin) {
     redirect('/')
@@ -52,7 +52,7 @@ export default async function AdminLayout({
           <div className="flex items-center gap-4 ml-auto">
             {/* Profile Dropdown */}
             <div className="scale-90 origin-right">
-              <NavAuth />
+              <NavAuth initialUser={user} initialProfile={profile} />
             </div>
           </div>
         </header>

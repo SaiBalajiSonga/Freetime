@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Settings, LayoutDashboard, LogOut, User, Loader2 } from 'lucide-react'
 
-export function NavAuth() {
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+export function NavAuth({ initialUser, initialProfile }: { initialUser?: any, initialProfile?: any }) {
+  const [user, setUser] = useState<any>(initialUser || null)
+  const [profile, setProfile] = useState<any>(initialProfile || null)
+  const [loading, setLoading] = useState(initialUser === undefined)
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -46,11 +46,11 @@ export function NavAuth() {
       }
     }
 
-    if (!fetchedRef.current) {
+    // Only fetch client-side if we didn't get data from the server
+    if (initialUser === undefined && !fetchedRef.current) {
       fetchedRef.current = true
       loadUser()
     } else {
-      // If already fetched, just ensure loading is false
       setLoading(false)
     }
 
@@ -69,7 +69,7 @@ export function NavAuth() {
       mounted = false
       authListener.subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, initialUser])
 
   // Click outside to close dropdown
   useEffect(() => {

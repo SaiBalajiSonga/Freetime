@@ -76,7 +76,7 @@ export default async function DashboardLayout({
             <div className="h-6 w-px bg-[var(--color-border)] hidden sm:block" />
             
             {/* Profile Dropdown */}
-            <NavAuth />
+            <NavAuth initialUser={user} initialProfile={profile} />
           </div>
         </header>
 
