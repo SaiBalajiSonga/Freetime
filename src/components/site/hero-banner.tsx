@@ -98,10 +98,10 @@ export function HeroBanner() {
             <span className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-primary)] bg-white/60 rounded-full px-3 py-0.5 mb-3">
               {slide.tag}
             </span>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-[#0f172a] leading-tight whitespace-pre-line">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight whitespace-pre-line">
               {slide.headline}
             </h2>
-            <p className="text-sm text-[#475569] mt-2 font-medium">{slide.sub}</p>
+            <p className="text-sm text-slate-700 mt-2 font-semibold">{slide.sub}</p>
           </motion.div>
         </AnimatePresence>
 
