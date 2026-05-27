@@ -22,11 +22,18 @@ export function NavAuth() {
 
     async function loadUser() {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { session } } = await supabase.auth.getSession()
         if (!mounted) return
-        setUser(user)
-        if (user) {
-          const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        
+        const currentUser = session?.user || null
+        setUser(currentUser)
+        
+        // Stop the loading spinner immediately once we have the auth session
+        setLoading(false)
+        
+        if (currentUser) {
+          // Fetch profile details in the background so it doesn't block the avatar
+          const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single()
           if (!error && data && mounted) {
             setProfile(data)
           }
@@ -35,7 +42,6 @@ export function NavAuth() {
         if (e.name !== 'AbortError' && !e.message?.includes('Lock')) {
           console.error('Error loading user profile:', e)
         }
-      } finally {
         if (mounted) setLoading(false)
       }
     }
