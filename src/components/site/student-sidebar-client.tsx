@@ -52,19 +52,18 @@ export function StudentSidebarClient({
 
   return (
     <aside
-      className="hidden md:flex flex-col sticky top-[64px] z-30 transition-all duration-200 shrink-0 bg-background"
+      className="hidden md:flex flex-col sticky top-[64px] z-30 transition-all duration-300 ease-in-out shrink-0 bg-background"
       style={{ width: collapsed ? 72 : 220, height: 'calc(100vh - 64px)' }}
     >
       {/* Nav links */}
-      <nav className="flex flex-col gap-0.5 px-3 mt-4 flex-1 overflow-x-hidden overflow-y-auto">
-        {!collapsed && <p className="px-3 mb-2 section-label">Main</p>}
-        {collapsed && <div className="h-6" />}
+      <nav className={`flex flex-col gap-0.5 mt-2 flex-1 overflow-x-hidden overflow-y-auto ${collapsed ? 'px-1.5' : 'px-3'}`}>
+        {!collapsed && <p className="px-3 mb-1 section-label">Main</p>}
         
-        <SidebarLink collapsed={collapsed} href="/dashboard" exact icon={<LayoutDashboard className="h-[18px] w-[18px]" />} label="Home" />
-        <SidebarLink collapsed={collapsed} href="/learn" icon={<BookOpen className="h-[18px] w-[18px]" />} label="Learn" />
-        <SidebarLink collapsed={collapsed} href="/subjects" icon={<FlaskConical className="h-[18px] w-[18px]" />} label="Practice" />
-        <SidebarLink collapsed={collapsed} href="/tests" icon={<ClipboardList className="h-[18px] w-[18px]" />} label="Tests" />
-        <SidebarLink collapsed={collapsed} href="/exams" icon={<Calendar className="h-[18px] w-[18px]" />} label="Exams" />
+        <SidebarLink collapsed={collapsed} href="/dashboard" exact icon={<LayoutDashboard className={collapsed ? "h-[26px] w-[26px]" : "h-[22px] w-[22px]"} />} label="Home" />
+        <SidebarLink collapsed={collapsed} href="/learn" icon={<BookOpen className={collapsed ? "h-[26px] w-[26px]" : "h-[22px] w-[22px]"} />} label="Learn" />
+        <SidebarLink collapsed={collapsed} href="/subjects" icon={<FlaskConical className={collapsed ? "h-[26px] w-[26px]" : "h-[22px] w-[22px]"} />} label="Practice" />
+        <SidebarLink collapsed={collapsed} href="/tests" icon={<ClipboardList className={collapsed ? "h-[26px] w-[26px]" : "h-[22px] w-[22px]"} />} label="Tests" />
+        <SidebarLink collapsed={collapsed} href="/exams" icon={<Calendar className={collapsed ? "h-[26px] w-[26px]" : "h-[22px] w-[22px]"} />} label="Exams" />
         
         <div className="h-px bg-[var(--color-border)] mx-1 my-3" />
         
@@ -73,12 +72,12 @@ export function StudentSidebarClient({
       </nav>
 
       {/* Footer block */}
-      <div className="px-3 pb-5 border-t border-[var(--color-border)] pt-3 shrink-0 flex flex-col gap-3">
+      <div className={`pb-5 border-t border-[var(--color-border)] pt-3 shrink-0 flex flex-col gap-3 ${collapsed ? 'px-1.5' : 'px-3'}`}>
         {/* Settings link */}
         <SidebarLink 
           collapsed={collapsed} 
           href="/settings" 
-          icon={<Settings className="h-[18px] w-[18px]" />} 
+          icon={<Settings className={collapsed ? "h-[26px] w-[26px]" : "h-[22px] w-[22px]"} />} 
           label="Settings" 
         />
       </div>

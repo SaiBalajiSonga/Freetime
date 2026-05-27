@@ -32,13 +32,19 @@ export function SidebarLink({
     return (
       <div 
         className={cn(
-          "flex items-center gap-3 rounded-xl py-2.5 text-muted-2/40 text-[15px] cursor-not-allowed select-none transition-all duration-200",
-          collapsed ? "px-0 justify-center" : "px-3"
+          "flex cursor-not-allowed select-none transition-colors duration-200 rounded-xl opacity-50",
+          collapsed 
+            ? "flex-col items-center justify-center gap-1.5 py-3.5 px-1 mx-1" 
+            : "flex-row items-center gap-4 py-3 px-4 mx-2 text-[15px]"
         )}
         title={collapsed ? label : undefined}
       >
-        <span className={cn("opacity-40 transition-all", collapsed && "mx-auto")}>{icon}</span>
-        {!collapsed && <span>{label}</span>}
+        <span className="flex items-center justify-center text-slate-400">{icon}</span>
+        {collapsed ? (
+          <span className="text-[10.5px] leading-none tracking-tight font-medium text-center truncate w-full px-0.5 text-slate-400">{label}</span>
+        ) : (
+          <span className="leading-none text-slate-400">{label}</span>
+        )}
       </div>
     )
   }
@@ -48,25 +54,27 @@ export function SidebarLink({
       href={href}
       title={collapsed ? label : undefined}
       className={cn(
-        'group relative flex items-center gap-3 rounded-xl py-2.5 text-[15px] font-medium transition-all duration-200',
-        collapsed ? "px-0 justify-center" : "px-3",
+        'group relative flex transition-colors duration-200 rounded-xl w-full',
+        collapsed 
+          ? "flex-col items-center justify-center gap-1.5 py-3" 
+          : "flex-row items-center gap-3.5 py-3 px-4",
         active
-          ? 'bg-blue-100 text-blue-900 font-bold'
-          : 'text-[var(--color-sidebar-text)] hover:bg-[var(--color-surface-2)] hover:text-foreground'
+          ? 'bg-blue-100 text-blue-700 font-bold'
+          : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900 font-medium'
       )}
     >
-      {/* Active left bar */}
-      {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-[var(--color-primary)]" />
-      )}
       <span className={cn(
-        'transition-transform duration-200 group-hover:scale-110',
-        active ? 'text-[var(--color-primary)]' : 'group-hover:text-[var(--color-primary)]',
-        collapsed && "mx-auto"
+        'transition-transform duration-200 group-hover:scale-110 flex items-center justify-center',
+        active ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-900'
       )}>
         {icon}
       </span>
-      {!collapsed && <span>{label}</span>}
+
+      {collapsed ? (
+        <span className="text-[10px] leading-none tracking-tight font-semibold text-center w-full px-0.5">{label}</span>
+      ) : (
+        <span className="text-[14px] leading-none">{label}</span>
+      )}
     </Link>
   )
 }
