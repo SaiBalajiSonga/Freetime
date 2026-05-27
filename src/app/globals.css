@@ -5,10 +5,6 @@
 @source "../";
 
 @theme {
-  /* ── Shell & Page ── */
-  --color-shell: #1d4ed8;          /* outer blue page background */
-  --color-shell-dark: #1e40af;
-
   /* ── Surfaces (light) ── */
   --color-background: #f0f4ff;     /* page bg inside shell */
   --color-foreground: #0f172a;     /* near-black text */
@@ -81,7 +77,7 @@
     scroll-behavior: smooth;
   }
   html, body {
-    background: var(--color-shell);
+    background: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: 15px; /* Base size bumped slightly for readability */
@@ -115,7 +111,7 @@
   /* ── App Shell ── */
   .app-shell {
     min-height: 100vh;
-    background: var(--color-shell);
+    background: var(--color-background);
     display: flex;
     align-items: stretch;
     padding: 0;
@@ -123,7 +119,7 @@
 
   .app-container {
     flex: 1;
-    background: #f0f4ff;
+    background: var(--color-background);
     border-radius: 0;
     display: flex;
     min-height: 100vh;
@@ -131,13 +127,13 @@
 
   @media (min-width: 768px) {
     .app-shell {
-      padding: 16px;
+      padding: 0;
       gap: 0;
     }
     .app-container {
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: var(--shadow-float);
+      border-radius: 0;
+      overflow: visible;
+      box-shadow: none;
     }
   }
 
