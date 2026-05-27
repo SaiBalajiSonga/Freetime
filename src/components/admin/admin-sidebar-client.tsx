@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  Megaphone,
 } from 'lucide-react'
 
 // ── Sidebar collapse context ───────────────────────────────────────
@@ -26,6 +27,13 @@ const NAV_ITEMS = [
     icon: LayoutDashboard,
     activeColor: 'text-blue-400',
     exact: true,
+  },
+  {
+    href: '/admin/announcements',
+    label: 'Announcements',
+    icon: Megaphone,
+    activeColor: 'text-rose-400',
+    exact: false,
   },
   {
     href: '/admin/questions',
