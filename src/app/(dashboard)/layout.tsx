@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { logout } from '@/app/(auth)/actions'
 import { Button } from '@/components/ui/button'
 import { Bell, Sparkles } from 'lucide-react'
 import { MobileSidebarToggle } from '@/components/site/mobile-sidebar'
 import { MobileBottomNav } from '@/components/site/mobile-bottom-nav'
 import { NavAuth } from '@/components/site/nav-auth'
-import { StudentSidebarClient } from '@/components/site/student-sidebar-client'
+import { StudentSidebarClient, StudentSidebarProvider, DesktopSidebarToggle } from '@/components/site/student-sidebar-client'
 import { AnnouncementsDropdown } from '@/components/site/announcements-dropdown'
 
 export default async function DashboardLayout({
@@ -48,45 +49,52 @@ export default async function DashboardLayout({
   const username = profile?.name || user.email?.split('@')[0] || 'student'
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* ── Sidebar (desktop) ── */}
-      <StudentSidebarClient initial={initial} email={user.email ?? ''} username={username} />
-
-      {/* ── Main column ── */}
-      <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        {/* ── Top header ── */}
-        <header className="nav-light sticky top-0 z-30 h-[64px] flex items-center justify-between px-5 sm:px-6">
-          {/* Mobile: hamburger + logo */}
-          <div className="flex items-center gap-3 md:hidden">
-            <MobileSidebarToggle initial={initial} email={user.email || ''} />
-            <div className="flex items-center gap-2">
-              <div className="size-7 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Sparkles className="h-3.5 w-3.5 text-white" />
-              </div>
-              <span className="font-bold text-sm text-foreground">JEE Practice</span>
+    <StudentSidebarProvider>
+      <div className="flex flex-col min-h-screen bg-background">
+        
+        {/* ── Top header (Full Width) ── */}
+        <header className="sticky top-0 z-40 h-[64px] flex items-center justify-between px-4 sm:px-6 w-full shrink-0 bg-background">
+          {/* Left side: Hamburger + Logo */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <DesktopSidebarToggle />
+            <div className="md:hidden">
+              <MobileSidebarToggle initial={initial} email={user.email || ''} />
             </div>
+            
+            <Link href="/dashboard" className="flex items-center gap-3 ml-1 sm:ml-0 hover:opacity-90 transition-opacity">
+              <div className="size-8 rounded-xl bg-gradient-primary flex items-center justify-center shadow-sm">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div className="leading-none">
+                 <span className="font-extrabold text-[15px] text-foreground tracking-tight block">JEE Practice</span>
+                 <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-blue-500 block mt-0.5">Study OS</span>
+              </div>
+            </Link>
           </div>
-
-          {/* Desktop: spacer so right side is flush */}
-          <div className="hidden md:block" />
-
+          
           {/* Right actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <AnnouncementsDropdown initialUnread={hasUnreadAnnouncements} userId={user.id} />
             <div className="h-6 w-px bg-[var(--color-border)] hidden sm:block" />
-            
-            {/* Profile Dropdown */}
             <NavAuth initialUser={user} initialProfile={profile} />
           </div>
         </header>
 
-        {/* ── Page content ── */}
-        <main className="flex-1 p-5 pb-28 sm:p-6 sm:pb-8 max-w-[1100px] w-full mx-auto">
-          {children}
-        </main>
-      </div>
+        {/* ── Main Layout Area ── */}
+        <div className="flex flex-1 items-stretch min-h-0">
+          {/* ── Sidebar (desktop) ── */}
+          <StudentSidebarClient initial={initial} email={user.email ?? ''} username={username} />
 
-      <MobileBottomNav />
-    </div>
+          {/* ── Main column ── */}
+          <main className="flex-1 w-full min-w-0">
+            <div className="p-5 pb-28 sm:p-6 sm:pb-8 max-w-[1100px] w-full mx-auto">
+              {children}
+            </div>
+          </main>
+        </div>
+
+        <MobileBottomNav />
+      </div>
+    </StudentSidebarProvider>
   )
 }

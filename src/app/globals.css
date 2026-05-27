@@ -139,17 +139,14 @@
 
   /* ── Sidebar ── */
   .sidebar-light {
-    background: var(--color-sidebar-bg);
-    border-right: 1px solid var(--color-sidebar-border);
-    box-shadow: var(--shadow-sidebar);
+    background: var(--color-background);
+    border-right: 1px solid transparent;
   }
 
   /* ── Top nav ── */
   .nav-light {
-    background: rgba(255, 255, 255, 0.96);
-    border-bottom: 1px solid var(--color-border);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--color-background);
+    border-bottom: 1px solid transparent;
   }
 
   /* ── Cards (light) ── */
