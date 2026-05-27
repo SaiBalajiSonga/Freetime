@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Atom, Sigma, FlaskConical, Target, Timer, TrendingUp, CheckCircle2, ChevronRight, BookOpen } from 'lucide-react'
+import { Atom, Sigma, FlaskConical, Target, Timer, TrendingUp, CheckCircle2, ChevronRight, BookOpen, Flame, CheckSquare, Hourglass } from 'lucide-react'
 import { Card, DifficultyBadge, FloatingButton, SectionHeader, PageHeader } from '@/components/site/dashboard-ui'
 import { HeroBanner } from '@/components/site/hero-banner'
 import { SubjectTile, SubjectTileRow } from '@/components/site/subject-tile'
@@ -23,6 +23,9 @@ type DashboardClientProps = {
   display: string
   inProgress: number
   streak: number
+  bestStreak: number
+  avgMinPerDay: number
+  thisWeekSolved: number
   weekDays: Array<{ label: string; date: string; count: number }>
   maxBar: number
   dcm: Record<string, number>
@@ -45,6 +48,9 @@ export default function DashboardClient({
   display,
   inProgress,
   streak,
+  bestStreak,
+  avgMinPerDay,
+  thisWeekSolved,
   weekDays,
   maxBar,
   todayKey,
@@ -78,47 +84,42 @@ export default function DashboardClient({
         subtitle="Central hub for all your learning needs"
       />
 
-      {/* ── Hero Banner ── */}
-      <motion.section variants={itemVariants}>
-        <HeroBanner />
-      </motion.section>
-
       {/* ── Stats Row ── */}
       <motion.section variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard 
           tone="blue"
-          icon={<CheckCircle2 className="h-5 w-5 text-white" />}
+          icon={<CheckSquare fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
           value={totalSolved}
           label="Questions Solved"
-          sub="Keep up the pace!"
+          sub={`+${thisWeekSolved} this week`}
         />
         <StatCard 
           tone="green"
-          icon={<Target className="h-5 w-5 text-white" />}
+          icon={<Target fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
           value={`${accuracy}%`}
           label="Avg. Accuracy"
-          sub="Based on recent attempts"
+          sub={`from ${userAttempts.length} attempts`}
         />
         <StatCard 
           tone="orange"
-          icon={<TrendingUp className="h-5 w-5 text-white" />}
+          icon={<Flame fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
           value={`${streak} days`}
           label="Current Streak"
-          sub="Don't break the chain"
+          sub={`Best: ${bestStreak} days`}
         />
         <StatCard 
           tone="purple"
-          icon={<Timer className="h-5 w-5 text-white" />}
+          icon={<Hourglass fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
           value={hrs > 0 ? `${hrs}h ${mns}m` : `${mns}m`}
           label="Time Spent"
-          sub="Total practice time"
+          sub={`Avg ${avgMinPerDay}m per day`}
         />
       </motion.section>
 
       {/* ── Pick A Subject ── */}
       <motion.section variants={itemVariants} className="space-y-4">
         <SectionHeader
-          title="Pick A Subject To Learn"
+          title="Pick A Subject To Practice"
           action={
             <Link href="/subjects" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
               View All
@@ -132,6 +133,7 @@ export default function DashboardClient({
             icon={<Sigma className="h-6 w-6" />}
             color="green"
             count={sp['Mathematics']?.total || 0}
+            pct={sp['Mathematics']?.total ? Math.round((sp['Mathematics'].solved / sp['Mathematics'].total) * 100) : 0}
           />
           <SubjectTile 
             href="/subjects?filter=Physics"
@@ -139,6 +141,7 @@ export default function DashboardClient({
             icon={<Atom className="h-6 w-6" />}
             color="blue"
             count={sp['Physics']?.total || 0}
+            pct={sp['Physics']?.total ? Math.round((sp['Physics'].solved / sp['Physics'].total) * 100) : 0}
           />
           <SubjectTile 
             href="/subjects?filter=Chemistry"
@@ -146,8 +149,16 @@ export default function DashboardClient({
             icon={<FlaskConical className="h-6 w-6" />}
             color="orange"
             count={sp['Chemistry']?.total || 0}
+            pct={sp['Chemistry']?.total ? Math.round((sp['Chemistry'].solved / sp['Chemistry'].total) * 100) : 0}
           />
         </SubjectTileRow>
+      </motion.section>
+
+      {/* ── Hero Banner ── */}
+      <motion.section variants={itemVariants}>
+        <div className="overflow-hidden rounded-2xl">
+          <HeroBanner />
+        </div>
       </motion.section>
 
       {/* ── Core Progress & Activity ── */}
@@ -164,36 +175,49 @@ export default function DashboardClient({
             </div>
             
             <div className="grid grid-cols-7 gap-3 items-end h-[160px] pb-6 border-b border-[var(--color-border)]">
-              {weekDays.map((day) => (
-                <div key={day.date} className="flex flex-col items-center gap-2 h-full justify-end group">
-                  <div className="w-full flex items-end justify-center h-[120px]">
-                    <div
-                      className="w-full max-w-[32px] rounded-t-md bg-blue-100 group-hover:bg-blue-200 transition-colors relative"
-                      style={{ height: `${Math.max(10, (day.count / maxBar) * 100)}%` }}
-                    >
-                      {day.count > 0 && (
-                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {day.count}
+              {weekDays.map((day) => {
+                const isZero = day.count === 0;
+                return (
+                  <div key={day.date} className="flex flex-col items-center gap-2 h-full justify-end group cursor-pointer">
+                    <div className="w-full flex items-end justify-center h-[120px] relative">
+                      
+                      {/* Floating Tooltip */}
+                      {!isZero && (
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-200 pointer-events-none z-10 flex flex-col items-center">
+                          <div className="bg-slate-800 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg shadow-xl whitespace-nowrap">
+                            {day.count} {day.count === 1 ? 'Question' : 'Questions'}
+                          </div>
+                          <div className="w-2 h-2 bg-slate-800 rotate-45 -mt-1.5 rounded-sm" />
                         </div>
+                      )}
+
+                      {/* Bar Shape */}
+                      <div
+                        className={`w-full max-w-[32px] rounded-t-xl transition-all duration-300 relative ${
+                          isZero 
+                            ? 'bg-slate-100/80 group-hover:bg-slate-200' 
+                            : 'bg-gradient-to-t from-blue-600 to-blue-400 opacity-90 group-hover:opacity-100 shadow-[var(--shadow-blue-glow)]'
+                        }`}
+                        style={{ height: isZero ? '8px' : `${Math.max(15, (day.count / maxBar) * 100)}%` }}
+                      />
+                    </div>
+                    
+                    {/* X-Axis Label */}
+                    <div className="flex flex-col items-center justify-center h-4 relative mt-1">
+                      <span className={`text-[12px] font-bold z-10 transition-colors ${day.date === todayKey ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                        {day.label}
+                      </span>
+                      {day.date === todayKey && (
+                        <div className="absolute -inset-x-2 -inset-y-1 bg-blue-100 rounded-md -z-0" />
                       )}
                     </div>
                   </div>
-                  <span className={`text-[11px] font-semibold ${day.date === todayKey ? 'text-[var(--color-primary)]' : 'text-muted-2'}`}>
-                    {day.label}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
             
-            <div className="mt-4 grid grid-cols-2 gap-4">
-               <div>
-                 <p className="text-xs uppercase tracking-wider text-muted-2 font-semibold">Total Solved</p>
-                 <p className="text-2xl font-bold text-foreground mt-1">{totalSolved}</p>
-               </div>
-               <div>
-                 <p className="text-xs uppercase tracking-wider text-muted-2 font-semibold">Total Time</p>
-                 <p className="text-2xl font-bold text-foreground mt-1">{hrs > 0 ? `${hrs}h ${mns}m` : `${mns}m`}</p>
-               </div>
+            <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+               <p className="text-sm text-muted">You solved <strong className="text-foreground">{thisWeekSolved}</strong> questions this week across <strong className="text-foreground">{weekDays.filter(d => d.count > 0).length}</strong> days.</p>
             </div>
           </Card>
         </motion.section>
@@ -203,43 +227,63 @@ export default function DashboardClient({
             title="Recent Activity" 
             action={
               userAttempts.length > 0 && (
-                <Link href="/subjects" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
+                <Link href="/tests" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
                   View All
                 </Link>
               )
             }
           />
           <Card variant="white" className="p-0 overflow-hidden">
-            <div className="divide-y divide-[var(--color-border)]">
-              {userAttempts.slice(0, 5).map((attempt: any, index: number) => (
-                <div
-                  key={attempt.id || index}
-                  className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+            {userAttempts.length === 0 ? (
+              <div className="p-10 text-center flex flex-col items-center justify-center min-h-[300px]">
+                <div className="size-20 rounded-full bg-blue-50 flex items-center justify-center mb-5">
+                  <BookOpen className="h-10 w-10 text-[var(--color-primary)]" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-1">Start your first practice session</h3>
+                <p className="text-sm text-muted mb-6 max-w-xs">Pick a subject above or take a custom test to begin your journey.</p>
+                <Link 
+                  href="/subjects" 
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] text-white px-6 py-2.5 font-bold hover:-translate-y-0.5 transition-transform shadow-[var(--shadow-blue-glow)]"
                 >
-                  <div className="min-w-0 pr-4">
-                    <p className="text-sm font-bold text-foreground truncate">{attempt.questions?.chapters?.name || 'Practice session'}</p>
-                    <p className="text-[11px] font-medium text-muted mt-1">
-                      {new Date(attempt.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                  Start Practising <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-[var(--color-border)]">
+                {userAttempts.slice(0, 5).map((attempt: any, index: number) => (
+                  <div
+                    key={attempt.id || index}
+                    className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="min-w-0 pr-4">
+                      <p className="text-sm font-bold text-foreground truncate">{attempt.questions?.chapters?.name || 'Practice session'}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-[11px] font-medium text-muted">
+                          {new Date(attempt.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <span className="text-muted-2">•</span>
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-muted-2 bg-slate-100 px-1.5 py-0.5 rounded">
+                          {attempt.questions?.type === 'mcq' ? 'MCQ' : 'NUM'}
+                        </span>
+                        {!attempt.is_correct && attempt.questions?.chapters?.subjects?.name && (
+                          <>
+                            <span className="text-muted-2">•</span>
+                            <span className="text-[11px] font-medium text-muted-2">{attempt.questions.chapters.subjects.name}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        attempt.is_correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {attempt.is_correct ? 'Correct' : 'Wrong'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="shrink-0">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                      attempt.is_correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {attempt.is_correct ? 'Correct' : 'Wrong'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {!userAttempts.length && (
-                <div className="p-8 text-center text-sm text-muted">
-                  <div className="size-12 rounded-full bg-slate-100 mx-auto flex items-center justify-center mb-3">
-                    <Timer className="h-5 w-5 text-slate-400" />
-                  </div>
-                  No recent attempts yet.<br/>Start a practice set!
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </Card>
         </motion.section>
       </div>

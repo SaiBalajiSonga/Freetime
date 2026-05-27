@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, createContext, useContext } from 'react'
-import { BookOpen, LayoutDashboard, FlaskConical, ClipboardList, Sparkles, Bookmark, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { BookOpen, LayoutDashboard, FlaskConical, ClipboardList, Sparkles, Bookmark, Calendar, ChevronLeft, ChevronRight, Settings, Menu } from 'lucide-react'
 import { SidebarLink } from '@/components/site/sidebar-link'
 
 const SidebarContext = createContext<{ collapsed: boolean }>({ collapsed: false })
@@ -39,19 +39,27 @@ export function StudentSidebarClient({
         className="sidebar-light hidden md:flex flex-col fixed top-0 left-0 h-screen z-40 transition-all duration-200"
         style={{ width: collapsed ? 72 : 220 }}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-3 h-[68px] border-b border-[var(--color-border)] shrink-0 transition-all duration-200" style={{
-            paddingLeft: collapsed ? 0 : 20,
-            paddingRight: collapsed ? 0 : 20,
+        {/* Logo & Toggle */}
+        <div className="flex items-center h-[68px] shrink-0 transition-all duration-200 px-4" style={{
             justifyContent: collapsed ? 'center' : 'flex-start',
         }}>
-          <div className="size-9 rounded-xl flex items-center justify-center shrink-0 bg-gradient-primary shadow-[var(--shadow-blue-glow)]">
-            <Sparkles className="h-4 w-4 text-white" />
-          </div>
+          <button
+            onClick={toggle}
+            className="size-10 flex items-center justify-center rounded-full hover:bg-[var(--color-surface-2)] text-slate-500 hover:text-slate-900 transition-colors shrink-0"
+            title="Toggle sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          
           {!collapsed && (
-            <div className="min-w-0">
-              <span className="font-bold text-[15px] text-foreground tracking-tight block leading-tight">JEE Practice</span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-2">Study OS</span>
+            <div className="ml-3 flex items-center gap-3 min-w-0">
+              <div className="size-8 rounded-xl flex items-center justify-center shrink-0 bg-gradient-primary shadow-[var(--shadow-blue-glow)]">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-extrabold text-[15px] text-foreground tracking-tight block leading-tight truncate">JEE Practice</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-blue-500 block mt-0.5">Study OS</span>
+              </div>
             </div>
           )}
         </div>
@@ -62,59 +70,26 @@ export function StudentSidebarClient({
           {collapsed && <div className="h-6" />}
           
           <SidebarLink collapsed={collapsed} href="/dashboard" exact icon={<LayoutDashboard className="h-[18px] w-[18px]" />} label="Home" />
-          <SidebarLink collapsed={collapsed} href="/subjects" icon={<BookOpen className="h-[18px] w-[18px]" />} label="Learn" />
+          <SidebarLink collapsed={collapsed} href="/learn" icon={<BookOpen className="h-[18px] w-[18px]" />} label="Learn" />
           <SidebarLink collapsed={collapsed} href="/subjects" icon={<FlaskConical className="h-[18px] w-[18px]" />} label="Practice" />
           <SidebarLink collapsed={collapsed} href="/tests" icon={<ClipboardList className="h-[18px] w-[18px]" />} label="Tests" />
           <SidebarLink collapsed={collapsed} href="/exams" icon={<Calendar className="h-[18px] w-[18px]" />} label="Exams" />
           
           <div className="h-px bg-[var(--color-border)] mx-1 my-3" />
           
-          {!collapsed && <p className="px-3 mb-2 section-label">Library</p>}
-          {collapsed && <div className="h-6" />}
-          
-          <SidebarLink collapsed={collapsed} href="/subjects" icon={<Bookmark className="h-[18px] w-[18px]" />} label="Bookmarks" disabled />
+          {!collapsed && <p className="px-3 mb-2 mt-4 section-label">Library</p>}
+          {collapsed && <div className="h-6 mt-4" />}
         </nav>
 
-        {/* Footer block (Collapse + User) */}
+        {/* Footer block */}
         <div className="px-3 pb-5 border-t border-[var(--color-border)] pt-3 shrink-0 flex flex-col gap-3">
-          {/* Toggle Collapse Button */}
-          <button
-            type="button"
-            onClick={toggle}
-            title={collapsed ? 'Expand sidebar' : undefined}
-            className="w-full flex items-center gap-2 rounded-xl text-muted-2 hover:bg-[var(--color-surface-2)] hover:text-foreground text-[13px] font-medium transition-colors"
-            style={{
-              height: 36,
-              paddingLeft: collapsed ? 0 : 12,
-              paddingRight: collapsed ? 0 : 12,
-              justifyContent: collapsed ? 'center' : 'flex-start',
-            }}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4 mx-auto" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 shrink-0" />
-                <span>Collapse</span>
-              </>
-            )}
-          </button>
-
-          {/* User card */}
-          <div className="flex items-center rounded-xl bg-[var(--color-surface-2)] transition-all duration-200" style={{
-            padding: collapsed ? '8px 0' : '10px 12px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-          }}>
-            <div className="size-8 rounded-full bg-gradient-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
-              {initial}
-            </div>
-            {!collapsed && (
-              <div className="flex-1 min-w-0 ml-3">
-                <p className="text-sm font-semibold text-foreground truncate capitalize">{username}</p>
-                <p className="text-[10px] text-muted-2 truncate">{email}</p>
-              </div>
-            )}
-          </div>
+          {/* Settings link */}
+          <SidebarLink 
+            collapsed={collapsed} 
+            href="/settings" 
+            icon={<Settings className="h-[18px] w-[18px]" />} 
+            label="Settings" 
+          />
         </div>
       </aside>
 

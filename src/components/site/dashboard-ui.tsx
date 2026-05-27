@@ -21,7 +21,7 @@ export function Card({ variant = 'white', tone = 'blue', className, children, ..
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl transition-all duration-250',
+        'relative overflow-hidden rounded-2xl transition-all duration-250 p-5',
         variant === 'colored'
           ? `bg-gradient-to-br ${toneGradients[tone]} text-white shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5`
           : variant === 'blue'
@@ -31,7 +31,7 @@ export function Card({ variant = 'white', tone = 'blue', className, children, ..
       )}
       {...props}
     >
-      <div className="relative z-10 p-5">{children}</div>
+      {children}
       {/* Subtle sheen overlay on colored variants */}
       {(variant === 'colored' || variant === 'blue') && (
         <div
@@ -95,7 +95,7 @@ export function SectionHeader({ label, title, subtitle, action }: SectionHeaderP
     <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div>
         {label && <p className="section-label mb-1">{label}</p>}
-        <h2 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">{title}</h2>
+        <h2 className="text-lg font-bold text-foreground tracking-tight">{title}</h2>
         {subtitle && <p className="text-sm text-muted mt-1 max-w-xl">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}

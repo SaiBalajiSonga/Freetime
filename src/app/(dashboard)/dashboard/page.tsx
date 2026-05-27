@@ -26,8 +26,9 @@ export default async function DashboardPage() {
   userAttempts.filter(a => a.is_correct).filter((v,i,a)=>a.findIndex(v2=>v2.question_id===v.question_id)===i)
     .forEach(a => { const n = (a as any).questions?.chapters?.subjects?.name; if (n && sp[n]) sp[n].solved++ })
 
-  const userName = (authUser.user?.email?.split('@')[0] || 'student')
-  const display = userName.charAt(0).toUpperCase() + userName.slice(1)
+  const { data: profile } = await supabase.from('profiles').select('name').eq('id', authUser.user?.id).single()
+  
+  const display = profile?.name ? profile.name : (authUser.user?.email?.split('@')[0] || 'Student').replace(/^\w/, c => c.toUpperCase())
 
   const attemptedIds = new Set(userAttempts.map(a => a.question_id))
   const totalAttempted = attemptedIds.size
@@ -45,21 +46,51 @@ export default async function DashboardPage() {
   })
 
   let streak = 0; 
+  let bestStreak = 0;
+  let currentStreakCounter = 0;
+  
+  // Calculate best streak
+  const sortedDates = Object.keys(dcm).sort((a,b) => new Date(b).getTime() - new Date(a).getTime())
+  if (sortedDates.length > 0) {
+    let tempDate = new Date(sortedDates[0])
+    let tempStreak = 0
+    let tempBest = 0
+    
+    for (const dateStr of sortedDates) {
+      if (dcm[dateStr]) {
+        tempStreak++
+        tempBest = Math.max(tempBest, tempStreak)
+      } else {
+        tempStreak = 0
+      }
+    }
+    bestStreak = tempBest
+  }
+
   const cd = new Date(today)
   if (dcm[todayKey]) { streak = 1; cd.setUTCDate(cd.getUTCDate()-1) }
   while (true) { 
     const k = cd.toISOString().split('T')[0]
     if (dcm[k]) { streak++; cd.setUTCDate(cd.getUTCDate()-1) } else break 
   }
+  
+  const totalDaysActive = Object.keys(dcm).length
+  const avgMinPerDay = totalDaysActive > 0 ? Math.round((totalSec / 60) / totalDaysActive) : 0
+
 
   // Week days for bar chart
   const weekDays: { label: string; date: string; count: number; isToday: boolean }[] = []
+  let thisWeekSolved = 0
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today); d.setUTCDate(d.getUTCDate() - i)
     const k = d.toISOString().split('T')[0]
-    weekDays.push({ label: d.toLocaleDateString('en', { weekday: 'short', timeZone: 'UTC' }).charAt(0), date: String(d.getUTCDate()), count: dcm[k]||0, isToday: i===0 })
+    const count = dcm[k] || 0
+    thisWeekSolved += count
+    weekDays.push({ label: d.toLocaleDateString('en', { weekday: 'short', timeZone: 'UTC' }).charAt(0), date: k, count, isToday: i===0 })
   }
-  const maxBar = Math.max(...weekDays.map(d => d.count), 1)
+  // Use a minimum scale of 10 so that 1 or 2 questions don't fill the entire bar height.
+  // Once they solve more than 10, it will auto-scale to the highest day.
+  const maxBar = Math.max(...weekDays.map(d => d.count), 10)
 
   // Heatmap 12 weeks (ending on Saturday of current week)
   const startDate = new Date(today); 
@@ -99,6 +130,9 @@ export default async function DashboardPage() {
       display={display}
       inProgress={inProgress}
       streak={streak}
+      bestStreak={bestStreak}
+      avgMinPerDay={avgMinPerDay}
+      thisWeekSolved={thisWeekSolved}
       weekDays={weekDays}
       maxBar={maxBar}
       dcm={dcm}

@@ -15,36 +15,52 @@ export function NavAuth() {
   const router = useRouter()
   const supabase = createClient()
 
+  const fetchedRef = useRef(false)
+
   useEffect(() => {
+    let mounted = true
+
     async function loadUser() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
+        if (!mounted) return
         setUser(user)
         if (user) {
           const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-          if (!error && data) {
+          if (!error && data && mounted) {
             setProfile(data)
           }
         }
-      } catch (e) {
-        console.error('Error loading user profile:', e)
+      } catch (e: any) {
+        if (e.name !== 'AbortError' && !e.message?.includes('Lock')) {
+          console.error('Error loading user profile:', e)
+        }
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
-    loadUser()
+
+    if (!fetchedRef.current) {
+      fetchedRef.current = true
+      loadUser()
+    } else {
+      // If already fetched, just ensure loading is false
+      setLoading(false)
+    }
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
       setUser(session?.user || null)
       if (session?.user) {
         const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
-        setProfile(data)
+        if (mounted) setProfile(data)
       } else {
-        setProfile(null)
+        if (mounted) setProfile(null)
       }
     })
 
     return () => {
+      mounted = false
       authListener.subscription.unsubscribe()
     }
   }, [supabase])
@@ -74,9 +90,10 @@ export function NavAuth() {
     return (
       <Link
         href="/login"
-        className="inline-flex items-center justify-center h-11 px-7 text-[15px] font-bold rounded-full bg-blue-600 text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-[0.98]"
+        className="flex items-center justify-center size-11 rounded-full bg-slate-100 border border-slate-200 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+        title="Log in"
       >
-        Start Practicing
+        <User className="w-5 h-5" />
       </Link>
     )
   }

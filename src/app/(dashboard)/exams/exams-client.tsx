@@ -57,9 +57,9 @@ function groupByDate(exams: ExamItem[]) {
 
 // ── Badge ───────────────────────────────────────────────────────────────────
 const badgeCfg: Record<Tab, { label: string; cls: string }> = {
-  upcoming: { label: 'UPCOMING', cls: 'bg-cyan-500 text-white' },
-  active:   { label: 'LIVE NOW', cls: 'bg-emerald-500 text-white' },
-  attempted:{ label: 'ATTEMPTED', cls: 'bg-violet-500 text-white' },
+  upcoming: { label: 'UPCOMING', cls: 'bg-blue-500 text-white' },
+  active:   { label: 'LIVE NOW', cls: 'bg-green-500 text-white' },
+  attempted:{ label: 'COMPLETED', cls: 'bg-gray-500 text-white' },
   missed:   { label: 'MISSED', cls: 'bg-slate-400 text-white' },
 }
 

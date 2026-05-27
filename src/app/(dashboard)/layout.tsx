@@ -7,6 +7,7 @@ import { MobileSidebarToggle } from '@/components/site/mobile-sidebar'
 import { MobileBottomNav } from '@/components/site/mobile-bottom-nav'
 import { NavAuth } from '@/components/site/nav-auth'
 import { StudentSidebarClient } from '@/components/site/student-sidebar-client'
+import { AnnouncementsDropdown } from '@/components/site/announcements-dropdown'
 
 export default async function DashboardLayout({
   children,
@@ -20,8 +21,31 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  // Fetch profile to get real name and last_read_announcement
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, last_read_announcement')
+    .eq('id', user.id)
+    .single()
+
+  const { data: latestAnnouncement } = await supabase
+    .from('announcements')
+    .select('created_at')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  let hasUnreadAnnouncements = false
+  if (latestAnnouncement) {
+    if (!profile?.last_read_announcement) {
+      hasUnreadAnnouncements = true
+    } else {
+      hasUnreadAnnouncements = new Date(latestAnnouncement.created_at) > new Date(profile.last_read_announcement)
+    }
+  }
+
   const initial = (user.email?.[0] || 'U').toUpperCase()
-  const username = user.email?.split('@')[0] || 'student'
+  const username = profile?.name || user.email?.split('@')[0] || 'student'
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -48,14 +72,7 @@ export default async function DashboardLayout({
 
           {/* Right actions */}
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              className="relative p-2 rounded-xl text-muted hover:text-foreground hover:bg-surface-2 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--color-primary)] rounded-full" />
-            </button>
+            <AnnouncementsDropdown initialUnread={hasUnreadAnnouncements} userId={user.id} />
             <div className="h-6 w-px bg-[var(--color-border)] hidden sm:block" />
             
             {/* Profile Dropdown */}

@@ -51,7 +51,7 @@ export function SidebarLink({
         'group relative flex items-center gap-3 rounded-xl py-2.5 text-[15px] font-medium transition-all duration-200',
         collapsed ? "px-0 justify-center" : "px-3",
         active
-          ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
+          ? 'bg-blue-100 text-blue-900 font-bold'
           : 'text-[var(--color-sidebar-text)] hover:bg-[var(--color-surface-2)] hover:text-foreground'
       )}
     >
