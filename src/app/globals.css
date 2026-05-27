@@ -6,10 +6,10 @@
 
 @theme {
   /* ── Surfaces (light) ── */
-  --color-background: #f0f4ff;     /* page bg inside shell */
+  --color-background: #f1f5f9;     /* professional slate-100 for less eye strain */
   --color-foreground: #0f172a;     /* near-black text */
   --color-surface: #ffffff;        /* card surface */
-  --color-surface-2: #f0f5ff;      /* secondary surface / hover bg */
+  --color-surface-2: #f8fafc;      /* slate-50 for secondary surface */
   --color-surface-elevated: #ffffff;
 
   /* ── Borders ── */
