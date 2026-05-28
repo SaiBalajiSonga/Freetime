@@ -28,53 +28,94 @@ export function SidebarLink({
   const pathname = usePathname()
   const active = !disabled && isHrefActive(pathname, href, exact)
 
-  if (disabled) {
+  // ─── COLLAPSED — YouTube mini sidebar ───────────────────────────────────────
+  //
+  //  YouTube's actual design:
+  //  • NO background on active — just bold icon + bold text
+  //  • Hover only: very subtle bg appears, disappears on leave
+  //  • Each item = vertically stacked icon + tiny label
+  //  • ~72px wide sidebar, items centered
+  //
+  if (collapsed) {
+    const content = (
+      <>
+        <span
+          style={{ color: active ? '#0f0f0f' : '#606060' }}
+          className="flex items-center justify-center transition-colors duration-100"
+        >
+          {icon}
+        </span>
+        <span
+          className="text-[10px] leading-tight text-center w-full truncate"
+          style={{
+            color: active ? '#0f0f0f' : '#606060',
+            fontWeight: active ? 600 : 400,
+          }}
+        >
+          {label}
+        </span>
+      </>
+    )
+
+    const wrapperCls = cn(
+      'flex flex-col items-center justify-center gap-[4px]',
+      'w-[56px] py-[16px] rounded-[10px]',
+      'transition-colors duration-100 select-none',
+      // NO persistent bg — only on hover
+      'hover:bg-[#dbeafe]',
+      disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
+    )
+
+    if (disabled) return <div className={wrapperCls}>{content}</div>
+
     return (
-      <div 
-        className={cn(
-          "flex cursor-not-allowed select-none transition-colors duration-200 rounded-xl opacity-50",
-          collapsed 
-            ? "flex-col items-center justify-center gap-1.5 py-3.5 px-1 mx-1" 
-            : "flex-row items-center gap-4 py-3 px-4 mx-2 text-[15px]"
-        )}
-        title={collapsed ? label : undefined}
+      <Link
+        href={href}
+        style={{ color: 'inherit', textDecoration: 'none' }}
+        className={wrapperCls}
       >
-        <span className="flex items-center justify-center text-slate-400">{icon}</span>
-        {collapsed ? (
-          <span className="text-[10.5px] leading-none tracking-tight font-medium text-center truncate w-full px-0.5 text-slate-400">{label}</span>
-        ) : (
-          <span className="leading-none text-slate-400">{label}</span>
-        )}
-      </div>
+        {content}
+      </Link>
     )
   }
+
+  // ─── EXPANDED — full-width row ──────────────────────────────────────────────
+  const content = (
+    <>
+      <span
+        className="flex items-center justify-center shrink-0 transition-colors duration-100"
+        style={{ color: active ? '#0f0f0f' : '#606060' }}
+      >
+        {icon}
+      </span>
+      <span
+        className="text-sm leading-none truncate transition-colors duration-100"
+        style={{
+          color: active ? '#0f0f0f' : '#0f0f0f',
+          fontWeight: active ? 600 : 400,
+        }}
+      >
+        {label}
+      </span>
+    </>
+  )
+
+  const rowCls = cn(
+    'flex flex-row items-center gap-5 mx-1',
+    'rounded-md px-2 py-[10px] transition-colors duration-100 select-none',
+    active ? 'bg-[#dbeafe]' : 'hover:bg-[#dbeafe]',
+    disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
+  )
+
+  if (disabled) return <div className={rowCls}>{content}</div>
 
   return (
     <Link
       href={href}
-      title={collapsed ? label : undefined}
-      className={cn(
-        'group relative flex transition-colors duration-200 rounded-xl w-full',
-        collapsed 
-          ? "flex-col items-center justify-center gap-1.5 py-3" 
-          : "flex-row items-center gap-3.5 py-3 px-4",
-        active
-          ? 'bg-blue-100 text-blue-700 font-bold'
-          : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900 font-medium'
-      )}
+      style={{ color: 'inherit', textDecoration: 'none' }}
+      className={rowCls}
     >
-      <span className={cn(
-        'transition-transform duration-200 group-hover:scale-110 flex items-center justify-center',
-        active ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-900'
-      )}>
-        {icon}
-      </span>
-
-      {collapsed ? (
-        <span className="text-[10px] leading-none tracking-tight font-semibold text-center w-full px-0.5">{label}</span>
-      ) : (
-        <span className="text-[14px] leading-none">{label}</span>
-      )}
+      {content}
     </Link>
   )
 }
