@@ -74,12 +74,12 @@ export default function Latex({ children, className }: LatexProps) {
           return p.content
         }
 
-        try {
-          // Pre-process common chemistry typos:
-          // Authors often accidentally close \ce{} early before an arrow, e.g. \ce{\text{...}} ->[...]
-          // This causes the arrow to render as '- >' outside of mhchem.
-          let content = p.content.replace(/}}\s*->/g, '} ->')
+        // Pre-process common chemistry typos:
+        // Authors often accidentally close \ce{} early before an arrow, e.g. \ce{\text{...}} ->[...]
+        // This causes the arrow to render as '- >' outside of mhchem.
+        let content = p.content.replace(/}}\s*->/g, '} ->')
 
+        try {
           const html = katex.renderToString(content, {
             throwOnError: true,
             displayMode: p.type === 'display',
