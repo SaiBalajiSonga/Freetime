@@ -75,7 +75,12 @@ export default function Latex({ children, className }: LatexProps) {
         }
 
         try {
-          const html = katex.renderToString(p.content, {
+          // Pre-process common chemistry typos:
+          // Authors often accidentally close \ce{} early before an arrow, e.g. \ce{\text{...}} ->[...]
+          // This causes the arrow to render as '- >' outside of mhchem.
+          let content = p.content.replace(/}}\s*->/g, '} ->')
+
+          const html = katex.renderToString(content, {
             throwOnError: true,
             displayMode: p.type === 'display',
             trust: true,
@@ -88,7 +93,7 @@ export default function Latex({ children, className }: LatexProps) {
           // Auto-fix: author accidentally added an extra closing brace at the end
           if (err.message && err.message.includes("Expected 'EOF', got '}'")) {
             try {
-              const fixedContent = p.content.trim().replace(/}+$/, '')
+              const fixedContent = content.trim().replace(/}+$/, '')
               const fixedHtml = katex.renderToString(fixedContent, {
                 throwOnError: true,
                 displayMode: p.type === 'display',
@@ -99,15 +104,15 @@ export default function Latex({ children, className }: LatexProps) {
               return `<span class="latex-${p.type}" key="${i}">${fixedHtml}</span>`
             } catch (e2: any) {
               // Auto-fix failed, fallback to raw
-              console.error('KaTeX auto-fix failed for:', p.content, 'Error:', e2.message)
+              console.error('KaTeX auto-fix failed for:', content, 'Error:', e2.message)
             }
           }
 
           // If we reach here, it's a genuine failure we couldn't fix
-          console.warn('KaTeX rendering error for:', p.content, err.message)
+          console.warn('KaTeX rendering error for:', content, err.message)
           
           // Fallback: render the raw string gracefully without bright red error colors
-          return `<span class="latex-fallback font-mono opacity-80" key="${i}">${p.content}</span>`
+          return `<span class="latex-fallback font-mono opacity-80" key="${i}">${content}</span>`
         }
       }).join('')
     } catch {
