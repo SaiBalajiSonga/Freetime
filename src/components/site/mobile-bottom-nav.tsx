@@ -1,40 +1,36 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
-import { LayoutDashboard, BookOpen, ClipboardList, BarChart3 } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { LayoutDashboard, BookOpen, FlaskConical, ClipboardList, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const items = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-  { href: '/subjects', label: 'Learn', icon: BookOpen },
+  { href: '/learn', label: 'Learn', icon: BookOpen },
+  { href: '/subjects', label: 'Practice', icon: FlaskConical },
   { href: '/tests', label: 'Tests', icon: ClipboardList },
-  { href: '/dashboard?section=analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/exams', label: 'Exams', icon: Calendar },
 ]
 
 export function MobileBottomNav() {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const hideOnTests = pathname.startsWith('/tests')
-  const analyticsActive = pathname === '/dashboard' && searchParams.get('section') === 'analytics'
+  const hideOnTests = pathname.startsWith('/tests') || pathname.startsWith('/exams')
 
   if (hideOnTests) return null
 
   return (
-    <nav className="fixed bottom-4 left-1/2 z-50 w-[min(92vw,400px)] -translate-x-1/2 rounded-2xl bg-white border border-[var(--color-border)] px-3 py-2 shadow-[0_8px_32px_rgba(15,23,42,0.14)] md:hidden">
-      <div className="grid grid-cols-4 gap-1">
+    <nav className="fixed bottom-4 left-1/2 z-50 w-[min(96vw,420px)] -translate-x-1/2 rounded-2xl bg-white border border-[var(--color-border)] px-2 py-2 shadow-[0_8px_32px_rgba(15,23,42,0.14)] md:hidden">
+      <div className="grid grid-cols-5 gap-1">
         {items.map((item) => {
-          const isAnalytics = item.href.includes('section=analytics')
-          const active = isAnalytics
-            ? analyticsActive
-            : pathname === item.href || (item.href === '/subjects' && pathname.startsWith('/subjects'))
+          const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           const Icon = item.icon
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition-all',
+                'flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold transition-all',
                 active
                   ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-primary)]'
                   : 'text-muted hover:text-foreground hover:bg-surface-2'

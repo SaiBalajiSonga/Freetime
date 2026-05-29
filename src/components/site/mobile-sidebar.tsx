@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, LayoutDashboard, Bookmark, FlaskConical, ClipboardList, Sparkles, Menu, X } from 'lucide-react'
+import { BookOpen, LayoutDashboard, Bookmark, FlaskConical, ClipboardList, Sparkles, Menu, X, Calendar } from 'lucide-react'
 import { SidebarLink } from './sidebar-link'
 
 interface MobileSidebarProps {
@@ -72,9 +72,10 @@ export function MobileSidebarToggle({ initial, email }: MobileSidebarProps) {
               <nav className="flex flex-col gap-0.5 px-3 mt-4 flex-1" onClick={() => setOpen(false)}>
                 <p className="px-3 mb-2 section-label">Main</p>
                 <SidebarLink href="/dashboard" exact icon={<LayoutDashboard className="h-[18px] w-[18px]" />} label="Home" />
-                <SidebarLink href="/subjects" icon={<BookOpen className="h-[18px] w-[18px]" />} label="Learn" />
+                <SidebarLink href="/learn" icon={<BookOpen className="h-[18px] w-[18px]" />} label="Learn" />
                 <SidebarLink href="/subjects" icon={<FlaskConical className="h-[18px] w-[18px]" />} label="Practice" />
                 <SidebarLink href="/tests" icon={<ClipboardList className="h-[18px] w-[18px]" />} label="Tests" />
+                <SidebarLink href="/exams" icon={<Calendar className="h-[18px] w-[18px]" />} label="Exams" />
                 <div className="h-px bg-[var(--color-border)] mx-1 my-3" />
                 <p className="px-3 mb-2 section-label">Library</p>
                 <SidebarLink href="/subjects" icon={<Bookmark className="h-[18px] w-[18px]" />} label="Bookmarks" disabled />
