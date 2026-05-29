@@ -24,8 +24,8 @@ export default function Latex({ children, className }: LatexProps) {
       const parts: { type: 'text' | 'inline' | 'display'; content: string }[] = []
       let remaining = children
 
-      // Regex: match $$...$$ (display) or $...$ (inline), non-greedy
-      const regex = /(\$\$[\s\S]*?\$\$|\$(?!\$)[\s\S]*?\$)/g
+      // Regex: match $$...$$, \[...\], $...$ (inline), or \(...\)
+      const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\$)[\s\S]*?\$|\\\([\s\S]*?\\\))/g
       let lastIndex = 0
       let match
 
@@ -36,11 +36,26 @@ export default function Latex({ children, className }: LatexProps) {
         }
 
         const raw = match[0]
+        let type: 'display' | 'inline' = 'inline'
+        let content = ''
+
         if (raw.startsWith('$$') && raw.endsWith('$$')) {
-          parts.push({ type: 'display', content: raw.slice(2, -2) })
+          type = 'display'
+          content = raw.slice(2, -2)
+        } else if (raw.startsWith('\\[') && raw.endsWith('\\]')) {
+          type = 'display'
+          content = raw.slice(2, -2)
+        } else if (raw.startsWith('\\(') && raw.endsWith('\\)')) {
+          type = 'inline'
+          content = raw.slice(2, -2)
+        } else if (raw.startsWith('$') && raw.endsWith('$')) {
+          type = 'inline'
+          content = raw.slice(1, -1)
         } else {
-          parts.push({ type: 'inline', content: raw.slice(1, -1) })
+          content = raw
         }
+
+        parts.push({ type, content })
 
         lastIndex = match.index + raw.length
       }
