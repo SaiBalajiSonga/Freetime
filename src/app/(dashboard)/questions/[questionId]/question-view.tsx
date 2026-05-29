@@ -71,7 +71,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
       {/* Left: Question, Hint, Explanation */}
       <div className="contents lg:flex lg:flex-1 lg:flex-col lg:space-y-5">
         <div className="order-1 lg:order-none w-full">
-          <Card variant="white" className="p-7 rounded-b-none border-b-0 lg:rounded-3xl lg:border-b lg:border-slate-200/60 pb-4 lg:pb-7">
+          <Card variant="white" className="p-7 rounded-b-none border-b-0 lg:rounded-lg lg:border-b lg:border-slate-200/60 pb-4 lg:pb-7">
             <div className="flex items-start justify-between mb-5">
               <div>
                 <h1 className="text-xl font-extrabold text-foreground tracking-[-0.03em]">
@@ -113,7 +113,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
         <div className="order-3 lg:order-none w-full mt-6 lg:mt-0 flex flex-col gap-6 lg:gap-5">
           {/* Hint */}
           {question.hint && (
-            <div className="rounded-2xl surface-glass border border-white/[0.06] overflow-hidden">
+            <div className="rounded-lg surface-glass border border-white/[0.06] overflow-hidden">
               <button onClick={() => setShowHint(!showHint)} className="w-full flex items-center justify-between p-5 text-left hover:bg-surface-2 transition-colors">
                 <div className="flex items-center gap-2 font-bold text-accent-electric">
                   {showHint ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -131,7 +131,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
 
           {/* Explanation */}
           {showSolution && (
-            <div className="rounded-2xl surface-glass border border-white/[0.06] overflow-hidden">
+            <div className="rounded-lg surface-glass border border-white/[0.06] overflow-hidden">
               <button onClick={() => setShowExplanation(!showExplanation)} className="w-full flex items-center justify-between p-5 text-left hover:bg-surface-2 transition-colors">
                 <span className="font-bold text-foreground">Explanation</span>
                 {showExplanation ? <ChevronUp className="h-4 w-4 text-muted-2" /> : <ChevronDown className="h-4 w-4 text-muted-2" />}
@@ -149,7 +149,7 @@ export default function QuestionView({ question, options, attempts: initialAttem
       {/* Right: Answer Panel */}
       <div className="contents lg:flex lg:w-[380px] lg:shrink-0 lg:flex-col lg:space-y-5">
         <div className="order-2 lg:order-none w-full">
-          <Card variant="white" className="p-6 pt-2 lg:pt-6 sticky top-[90px] rounded-t-none border-t-0 lg:rounded-3xl lg:border-t lg:border-slate-200/60">
+          <Card variant="white" className="p-6 pt-2 lg:pt-6 sticky top-[90px] rounded-t-none border-t-0 lg:rounded-lg lg:border-t lg:border-slate-200/60">
             {/* Timer */}
             {practiceMode && (
               <div className="flex items-center justify-end gap-2 mb-5">

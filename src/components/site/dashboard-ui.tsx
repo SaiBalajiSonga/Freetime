@@ -21,7 +21,7 @@ export function Card({ variant = 'white', tone = 'blue', className, children, ..
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl transition-all duration-250 p-5',
+        'relative overflow-hidden rounded-lg transition-all duration-250 p-5',
         variant === 'colored'
           ? `bg-gradient-to-br ${toneGradients[tone]} text-white shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5`
           : variant === 'blue'
@@ -35,7 +35,7 @@ export function Card({ variant = 'white', tone = 'blue', className, children, ..
       {/* Subtle sheen overlay on colored variants */}
       {(variant === 'colored' || variant === 'blue') && (
         <div
-          className="pointer-events-none absolute inset-0 rounded-2xl"
+          className="pointer-events-none absolute inset-0 rounded-lg"
           style={{ background: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18) 0%, transparent 60%)' }}
         />
       )}
@@ -67,7 +67,7 @@ export function GridItem({ href, label, icon, description, tone = 'blue' }: Grid
     <Link
       href={href}
       className={cn(
-        'group flex flex-col gap-3 rounded-2xl bg-white border border-[var(--color-border)] p-4 shadow-[var(--shadow-card)] transition-all duration-250 hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]',
+        'group flex flex-col gap-3 rounded-lg bg-white border border-[var(--color-border)] p-4 shadow-[var(--shadow-card)] transition-all duration-250 hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]',
         styles.ring
       )}
     >
