@@ -76,20 +76,34 @@ export default function Latex({ children, className }: LatexProps) {
 
         try {
           const html = katex.renderToString(p.content, {
-            throwOnError: false,
+            throwOnError: true,
             displayMode: p.type === 'display',
             trust: true,
             macros: {
               '\\cf': '\\ce{#1}',
             }
           })
-          if (html.includes('katex-error')) {
-            console.error('KaTeX rendering error for:', p.content, 'HTML:', html)
-          }
           return `<span class="latex-${p.type}" key="${i}">${html}</span>`
-        } catch {
-          // If KaTeX fails entirely, show the raw LaTeX
-          return p.content
+        } catch (err: any) {
+          console.warn('KaTeX rendering error for:', p.content, err.message)
+          
+          // Auto-fix: author accidentally added an extra closing brace at the end
+          if (err.message && err.message.includes("Expected 'EOF', got '}'")) {
+            try {
+              const fixedHtml = katex.renderToString(p.content.replace(/}+$/, '').trim(), {
+                throwOnError: true,
+                displayMode: p.type === 'display',
+                trust: true,
+                macros: { '\\cf': '\\ce{#1}' }
+              })
+              return `<span class="latex-${p.type}" key="${i}">${fixedHtml}</span>`
+            } catch (e2) {
+              // Auto-fix failed, fallback to raw
+            }
+          }
+
+          // Fallback: render the raw string gracefully without bright red error colors
+          return `<span class="latex-fallback font-mono opacity-80" key="${i}">${p.content}</span>`
         }
       }).join('')
     } catch {
