@@ -53,7 +53,7 @@ export default async function DashboardLayout({
       <div className="flex flex-col min-h-screen bg-background">
         
         {/* ── Top header (Full Width) ── */}
-        <header className="sticky top-0 z-40 h-[64px] flex items-center justify-between px-4 sm:px-6 w-full shrink-0 bg-background">
+        <header className="sticky top-0 z-[60] h-[64px] flex items-center justify-between px-4 sm:px-6 w-full shrink-0 bg-background">
           {/* Left side: Hamburger + Logo */}
           <div className="flex items-center gap-2 sm:gap-4">
             <DesktopSidebarToggle />
