@@ -58,7 +58,7 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-2 sm:gap-4">
             <DesktopSidebarToggle />
             <div className="md:hidden">
-              <MobileSidebarToggle initial={initial} email={user.email || ''} />
+              <MobileSidebarToggle initial={initial} email={user.email || ''} username={username} />
             </div>
             
             <Link href="/dashboard" className="flex items-center gap-3 ml-1 sm:ml-0 hover:opacity-90 transition-opacity">

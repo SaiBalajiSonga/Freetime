@@ -8,9 +8,10 @@ import { SidebarLink } from './sidebar-link'
 interface MobileSidebarProps {
   initial: string
   email: string
+  username: string
 }
 
-export function MobileSidebarToggle({ initial, email }: MobileSidebarProps) {
+export function MobileSidebarToggle({ initial, email, username }: MobileSidebarProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -91,7 +92,7 @@ export function MobileSidebarToggle({ initial, email }: MobileSidebarProps) {
                     {initial}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate capitalize">{email.split('@')[0]}</p>
+                    <p className="text-sm font-semibold text-foreground truncate capitalize">{username}</p>
                     <p className="text-[11px] text-muted-2 truncate">{email}</p>
                   </div>
                 </div>
