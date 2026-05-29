@@ -79,7 +79,7 @@ export default async function ChapterQuestionsPage({ params }: { params: Promise
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     <p className="text-sm text-muted truncate font-medium">
-                      <Latex>{q.statement.substring(0, 120)}</Latex>
+                      <Latex>{q.statement}</Latex>
                     </p>
                   </div>
 
