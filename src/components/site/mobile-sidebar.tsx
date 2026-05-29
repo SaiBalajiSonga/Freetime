@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, LayoutDashboard, Bookmark, FlaskConical, ClipboardList, Sparkles, Menu, X, Calendar } from 'lucide-react'
+import { BookOpen, LayoutDashboard, Bookmark, FlaskConical, ClipboardList, Sparkles, Menu, X, Calendar, Settings } from 'lucide-react'
 import { SidebarLink } from './sidebar-link'
 
 interface MobileSidebarProps {
@@ -83,6 +83,9 @@ export function MobileSidebarToggle({ initial, email }: MobileSidebarProps) {
 
               {/* User */}
               <div className="px-3 pb-5 border-t border-[var(--color-border)] pt-4">
+                <div className="mb-2">
+                  <SidebarLink href="/settings" icon={<Settings className="h-[18px] w-[18px]" />} label="Settings" />
+                </div>
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-2">
                   <div className="size-8 rounded-full bg-gradient-primary flex items-center justify-center text-white text-sm font-bold">
                     {initial}
