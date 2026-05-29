@@ -88,7 +88,8 @@ export default function Latex({ children, className }: LatexProps) {
           // Auto-fix: author accidentally added an extra closing brace at the end
           if (err.message && err.message.includes("Expected 'EOF', got '}'")) {
             try {
-              const fixedHtml = katex.renderToString(p.content.replace(/}+$/, '').trim(), {
+              const fixedContent = p.content.trim().replace(/}+$/, '')
+              const fixedHtml = katex.renderToString(fixedContent, {
                 throwOnError: true,
                 displayMode: p.type === 'display',
                 trust: true,
@@ -96,8 +97,9 @@ export default function Latex({ children, className }: LatexProps) {
               })
               // Successfully auto-fixed, no need to warn!
               return `<span class="latex-${p.type}" key="${i}">${fixedHtml}</span>`
-            } catch (e2) {
+            } catch (e2: any) {
               // Auto-fix failed, fallback to raw
+              console.error('KaTeX auto-fix failed for:', p.content, 'Error:', e2.message)
             }
           }
 
