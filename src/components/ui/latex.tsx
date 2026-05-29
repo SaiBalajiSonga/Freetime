@@ -85,8 +85,6 @@ export default function Latex({ children, className }: LatexProps) {
           })
           return `<span class="latex-${p.type}" key="${i}">${html}</span>`
         } catch (err: any) {
-          console.warn('KaTeX rendering error for:', p.content, err.message)
-          
           // Auto-fix: author accidentally added an extra closing brace at the end
           if (err.message && err.message.includes("Expected 'EOF', got '}'")) {
             try {
@@ -96,12 +94,16 @@ export default function Latex({ children, className }: LatexProps) {
                 trust: true,
                 macros: { '\\cf': '\\ce{#1}' }
               })
+              // Successfully auto-fixed, no need to warn!
               return `<span class="latex-${p.type}" key="${i}">${fixedHtml}</span>`
             } catch (e2) {
               // Auto-fix failed, fallback to raw
             }
           }
 
+          // If we reach here, it's a genuine failure we couldn't fix
+          console.warn('KaTeX rendering error for:', p.content, err.message)
+          
           // Fallback: render the raw string gracefully without bright red error colors
           return `<span class="latex-fallback font-mono opacity-80" key="${i}">${p.content}</span>`
         }
