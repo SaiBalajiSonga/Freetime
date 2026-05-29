@@ -3,14 +3,7 @@
 import { useMemo } from 'react'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
-
-// Fix mhchem loading in bundlers by exposing katex globally before it evaluates
-if (typeof globalThis !== 'undefined' && !(globalThis as any).katex) {
-  (globalThis as any).katex = katex;
-}
-if (typeof require !== 'undefined') {
-  require('katex/contrib/mhchem');
-}
+import 'katex/dist/contrib/mhchem.mjs'
 
 type LatexProps = {
   children: string
