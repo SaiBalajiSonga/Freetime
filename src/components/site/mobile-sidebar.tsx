@@ -35,7 +35,7 @@ export function MobileSidebarToggle({ initial, email }: MobileSidebarProps) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm md:hidden"
             />
 
             {/* Drawer */}
@@ -45,7 +45,7 @@ export function MobileSidebarToggle({ initial, email }: MobileSidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="fixed top-0 left-0 h-full w-[280px] z-50 flex flex-col sidebar-light border-r border-[var(--color-border)] md:hidden"
+              className="fixed top-0 left-0 h-full w-[280px] z-[60] flex flex-col sidebar-light border-r border-[var(--color-border)] md:hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 h-[64px] border-b border-[var(--color-border)]">

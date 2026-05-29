@@ -164,7 +164,7 @@ export function FloatingButton({ href, label, icon, className }: FloatingButtonP
     <Link
       href={href}
       className={cn(
-        'fixed bottom-20 right-5 z-40 flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-blue-glow)] transition-transform hover:-translate-y-1 md:hidden',
+        'fixed bottom-28 right-5 z-40 flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-blue-glow)] transition-transform hover:-translate-y-1 md:hidden',
         className
       )}
     >

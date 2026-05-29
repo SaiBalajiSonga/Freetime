@@ -20,8 +20,8 @@ export function MobileBottomNav() {
   if (hideOnTests) return null
 
   return (
-    <nav className="fixed bottom-4 left-1/2 z-50 w-[min(96vw,420px)] -translate-x-1/2 rounded-2xl bg-white border border-[var(--color-border)] px-2 py-2 shadow-[0_8px_32px_rgba(15,23,42,0.14)] md:hidden">
-      <div className="grid grid-cols-5 gap-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[var(--color-border)] pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_24px_rgba(0,0,0,0.04)] md:hidden">
+      <div className="grid grid-cols-5 gap-1 px-2 py-1.5 max-w-md mx-auto">
         {items.map((item) => {
           const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           const Icon = item.icon
@@ -30,14 +30,14 @@ export function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold transition-all',
+                'flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-semibold transition-all min-w-0',
                 active
                   ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-primary)]'
                   : 'text-muted hover:text-foreground hover:bg-surface-2'
               )}
             >
-              <Icon className={cn('h-[18px] w-[18px]', active ? 'text-[var(--color-primary)]' : '')} />
-              {item.label}
+              <Icon className={cn('h-[18px] w-[18px] shrink-0', active ? 'text-[var(--color-primary)]' : '')} />
+              <span className="truncate w-full text-center">{item.label}</span>
             </Link>
           )
         })}
