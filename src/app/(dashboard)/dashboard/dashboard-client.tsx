@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Atom, Sigma, FlaskConical, Target, Timer, TrendingUp, CheckCircle2, ChevronRight, BookOpen, Flame, CheckSquare, Hourglass } from 'lucide-react'
-import { Card, DifficultyBadge, FloatingButton, SectionHeader, PageHeader } from '@/components/site/dashboard-ui'
+import { Card, DifficultyBadge, SectionHeader, PageHeader } from '@/components/site/dashboard-ui'
 import { HeroBanner } from '@/components/site/hero-banner'
 import { SubjectTile, SubjectTileRow } from '@/components/site/subject-tile'
 import { StatCard } from '@/components/site/stat-card'
@@ -288,7 +288,6 @@ export default function DashboardClient({
         </motion.section>
       </div>
 
-      <FloatingButton href="/subjects" label="Practice" icon={<FlaskConical className="h-4 w-4" />} />
     </motion.div>
   )
 }
