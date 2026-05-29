@@ -1,9 +1,12 @@
 'use client'
 
 import { useMemo } from 'react'
-import katex from 'katex'
 import 'katex/dist/katex.min.css'
-import 'katex/dist/contrib/mhchem.mjs'
+
+// Use require to force Next.js to use the CommonJS version consistently
+// avoiding the dual-package hazard where mhchem extends the wrong katex instance.
+const katex = require('katex')
+require('katex/dist/contrib/mhchem.js')
 
 type LatexProps = {
   children: string
