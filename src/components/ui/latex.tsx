@@ -61,10 +61,16 @@ export default function Latex({ children, className }: LatexProps) {
             throwOnError: false,
             displayMode: p.type === 'display',
             trust: true,
+            macros: {
+              '\\cf': '\\ce{#1}',
+            }
           })
+          if (html.includes('katex-error')) {
+            console.error('KaTeX rendering error for:', p.content, 'HTML:', html)
+          }
           return `<span class="latex-${p.type}" key="${i}">${html}</span>`
         } catch {
-          // If KaTeX fails, show the raw LaTeX
+          // If KaTeX fails entirely, show the raw LaTeX
           return p.content
         }
       }).join('')
