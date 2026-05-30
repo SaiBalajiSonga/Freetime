@@ -38,7 +38,7 @@ export default async function TestSessionPage({
     .select(`
       *,
       questions (
-        id, type, statement, difficulty, correct_answer, hint, solution, image_url,
+        id, type, statement, difficulty, image_url,
         chapters (
           id, name,
           subjects (id, name)
@@ -54,7 +54,7 @@ export default async function TestSessionPage({
   const questionIds = sessionQuestions.map(sq => (sq.questions as any).id)
   const { data: allOptions } = await supabase
     .from('question_options')
-    .select('id, question_id, text, is_correct')
+    .select('id, question_id, text')
     .in('question_id', questionIds)
     .order('id')
 
