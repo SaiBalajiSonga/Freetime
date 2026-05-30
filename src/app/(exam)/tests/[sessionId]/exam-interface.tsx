@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import Latex from '@/components/ui/latex'
 import type { SessionQuestion } from './test-client'
-import { ChevronRight, ChevronLeft, ArrowDownCircle, Delete } from 'lucide-react'
+import { ChevronRight, ChevronLeft, ArrowDownCircle, Delete, Cloud, CloudOff, RefreshCw } from 'lucide-react'
 
 function formatTime(s: number) {
   const h = Math.floor(s / 3600)
@@ -248,15 +249,31 @@ export default function ExamInterface({
         {/* Right: Timer & Sync Status */}
         <div className="w-1/3 flex justify-end items-center gap-3">
           
-          {/* Offline / Sync Indicator */}
-          {(isOffline || (pendingCount && pendingCount > 0)) && (
-            <div className="px-3 py-1.5 bg-yellow-500/20 border border-yellow-500/50 rounded flex items-center gap-2 shadow-sm animate-pulse">
-              <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
-              <span className="text-yellow-200 text-[11px] font-bold uppercase tracking-wider">
-                {isOffline ? 'Offline' : 'Syncing'} ({pendingCount || 0})
-              </span>
-            </div>
-          )}
+          {/* Cloud Sync Status (Google Docs style) */}
+          <div className="flex items-center">
+            {isOffline ? (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#ffc107]/20 border border-[#ffc107]/50 rounded-full" title="You are offline. Answers are queued safely on your device.">
+                <CloudOff className="w-3.5 h-3.5 text-[#ffc107]" />
+                <span className="text-[#ffc107] text-[10px] font-bold uppercase tracking-wider">
+                  Offline ({pendingCount || 0} queued)
+                </span>
+              </div>
+            ) : pendingCount && pendingCount > 0 ? (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-400/20 border border-blue-400/30 rounded-full" title="Syncing changes to server...">
+                <RefreshCw className="w-3.5 h-3.5 text-blue-200 animate-spin" />
+                <span className="text-blue-200 text-[10px] font-bold uppercase tracking-wider">
+                  Saving...
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full opacity-70 hover:opacity-100 transition-opacity" title="All changes are safely stored in the cloud.">
+                <Cloud className="w-3.5 h-3.5 text-blue-200" />
+                <span className="text-blue-200 text-[10px] font-bold uppercase tracking-wider">
+                  Saved to Cloud
+                </span>
+              </div>
+            )}
+          </div>
 
           <div className={`px-4 py-1.5 border flex items-center gap-2 rounded-[4px] shadow-sm ${
             timeCritical ? 'bg-red-500 border-red-600 text-white animate-pulse' : 'bg-white/10 border-white/20 text-white'
@@ -290,9 +307,15 @@ export default function ExamInterface({
           </div>
 
           {/* Scrollable Question Body */}
-          <div className="flex-1 overflow-y-auto p-5">
-            <div className="bg-white p-5 rounded-[4px] text-[15px] leading-relaxed text-[#222] mb-6 border border-[#c5d0e0] shadow-sm">
-              <Latex>{currentQ.statement}</Latex>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 relative">
+            <motion.div
+              key={currentIdx}
+              initial={{ opacity: 0, x: 15 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              <div className="bg-white p-5 rounded-[4px] text-[15px] leading-relaxed text-[#222] mb-6 border border-[#c5d0e0] shadow-sm">
+                <Latex>{currentQ.statement}</Latex>
 
               {/* Question diagram — only rendered when image_url exists */}
               {currentQ.image_url && (
@@ -380,6 +403,7 @@ export default function ExamInterface({
                 </div>
               </div>
             )}
+            </motion.div>
           </div>
 
           {/* Bottom Action Row — two rows: primary buttons on top, nav on bottom */}
