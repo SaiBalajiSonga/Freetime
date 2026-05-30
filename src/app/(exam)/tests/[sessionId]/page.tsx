@@ -64,10 +64,24 @@ export default async function TestSessionPage({
     options: (allOptions ?? []).filter(o => o.question_id === (sq.questions as any).id),
   }))
 
+  // Fetch user profile name and display_id
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, display_id')
+    .eq('id', user.id)
+    .single()
+    
+  const userName = profile?.name || user.email?.split('@')[0] || 'Candidate Name'
+  const rollNo = profile?.display_id || user.id
+  const avatarUrl = user.user_metadata?.avatar_url || null
+
   return (
     <TestClient
       session={session}
       sessionQuestions={enrichedSqs}
+      userName={userName}
+      rollNo={rollNo}
+      avatarUrl={avatarUrl}
     />
   )
 }

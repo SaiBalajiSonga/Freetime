@@ -21,27 +21,26 @@ function getShapeClasses(status: string, isActive = false) {
         ? 'bg-white text-black border-2 border-[#1a6fc4] rounded' 
         : 'bg-[#e2e2e2] text-[#555] border border-[#ccc] rounded'
     case 'not_answered':
-      return isActive 
-        ? 'bg-[#ff6b6b] text-white [clip-path:polygon(0_0,100%_15%,100%_85%,0_100%)]' 
-        : 'bg-[#e53e3e] text-white [clip-path:polygon(0_0,100%_15%,100%_85%,0_100%)]'
+      // Red: slopes down to the right
+      return 'bg-[#e53e3e] text-white [clip-path:polygon(0_0,100%_15%,100%_85%,0_100%)]'
     case 'answered':
-      return isActive 
-        ? 'bg-[#48c774] text-white [clip-path:polygon(0_0,100%_15%,100%_85%,0_100%)]' 
-        : 'bg-[#38a169] text-white [clip-path:polygon(0_0,100%_15%,100%_85%,0_100%)]'
+      // Green: slopes up to the right
+      return 'bg-[#38a169] text-white [clip-path:polygon(0_15%,100%_0,100%_100%,0_85%)]'
     case 'marked':
     case 'answered_marked':
-      return isActive 
-        ? 'bg-[#9f7aea] text-white rounded-full' 
-        : 'bg-[#805ad5] text-white rounded-full'
+      return 'bg-[#805ad5] text-white rounded-full'
     default:
       return isActive 
-        ? 'bg-white text-black border border-[#ccc] rounded' 
+        ? 'bg-white text-black border-2 border-[#1a6fc4] rounded' 
         : 'bg-[#e2e2e2] text-[#555] border border-[#ccc] rounded'
   }
 }
 
 type SharedProps = {
   session: any
+  userName: string
+  rollNo: string
+  avatarUrl: string | null
   sq: SessionQuestion[]
   currentIdx: number
   currentSq: SessionQuestion
@@ -72,7 +71,7 @@ function groupBySubject(sq: SessionQuestion[]) {
 }
 
 export default function ExamInterface({
-  session, sq, currentIdx, currentSq, currentQ, localAnswer, timeLeft,
+  session, userName, rollNo, avatarUrl, sq, currentIdx, currentSq, currentQ, localAnswer, timeLeft,
   showSubmitModal, isSubmitting, stats,
   onNavigate, onAnswerChange, onClear, onSetMark, onShowSubmit, onHideSubmit, onSubmit,
 }: SharedProps) {
@@ -184,21 +183,27 @@ export default function ExamInterface({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#1a1a1a] text-[#e0e0e0] select-none" style={{ fontFamily: 'system-ui, Arial, sans-serif' }}>
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#eef2f5] text-[#333] select-none" style={{ fontFamily: 'Arial, sans-serif' }}>
       
       {/* TOP HEADER BAR */}
-      <div className="flex items-center justify-between px-4 h-14 bg-[#1c2333] border-b border-[#333] flex-shrink-0">
+      <div className="flex items-center justify-between px-4 h-14 bg-[#1a4b93] border-b border-[#12366b] flex-shrink-0 shadow-sm z-10">
         
         {/* Left: Candidate Info */}
         <div className="flex items-center gap-3 w-1/3">
-          <div className="w-9 h-9 rounded-full bg-[#444] border border-[#555] flex items-center justify-center overflow-hidden shrink-0">
-            <svg className="w-5 h-5 text-gray-300 mt-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-            </svg>
+          <div className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden shrink-0">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-bold text-sm uppercase">
+                {userName.charAt(0)}
+              </span>
+            )}
           </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-[13px] font-bold text-white">Candidate Name</span>
-            <span className="text-[11px] text-gray-400">Roll No: 123456789</span>
+          <div className="flex flex-col leading-tight overflow-hidden">
+            <span className="text-[13px] font-bold text-white truncate" title={userName}>
+              {userName}
+            </span>
+            <span className="text-[11px] text-blue-200 truncate" title={rollNo}>Roll No: {rollNo}</span>
           </div>
         </div>
 
@@ -210,8 +215,8 @@ export default function ExamInterface({
               <button
                 key={sub.name}
                 onClick={() => onNavigate(sub.items[0].globalIdx)}
-                className={`px-6 h-full text-[13px] font-bold transition-colors ${
-                  isActive ? 'bg-[#1a6fc4] text-white' : 'text-[#a0a0a0] hover:bg-[#252f44] hover:text-white'
+                className={`px-6 h-full text-[13px] font-bold transition-colors border-b-[3px] ${
+                  isActive ? 'bg-[#153e7a] text-white border-white' : 'border-transparent text-blue-200 hover:bg-[#153e7a]/50 hover:text-white'
                 }`}
               >
                 {sub.name}
@@ -222,10 +227,10 @@ export default function ExamInterface({
 
         {/* Right: Timer */}
         <div className="w-1/3 flex justify-end">
-          <div className={`px-4 py-1.5 border flex items-center gap-2 rounded-[4px] bg-[#1a1a1a] ${
-            timeCritical ? 'border-red-500 text-red-400 animate-pulse' : 'border-[#444] text-white'
+          <div className={`px-4 py-1.5 border flex items-center gap-2 rounded-[4px] shadow-sm ${
+            timeCritical ? 'bg-red-500 border-red-600 text-white animate-pulse' : 'bg-white/10 border-white/20 text-white'
           }`}>
-            <span className="text-[11px] font-bold uppercase text-gray-400">Time Left</span>
+            <span className={`text-[11px] font-bold uppercase ${timeCritical ? 'text-white' : 'text-blue-200'}`}>Time Left</span>
             <span className="font-mono text-[15px] font-bold tracking-wider">{formatTime(timeLeft)}</span>
           </div>
         </div>
@@ -235,19 +240,19 @@ export default function ExamInterface({
       <div className="flex flex-1 overflow-hidden">
         
         {/* LEFT COLUMN: QUESTION AREA */}
-        <div className="flex-1 flex flex-col bg-[#1a1a1a] transition-all duration-300">
+        <div className="flex-1 flex flex-col bg-[#eef2f5] transition-all duration-300">
           
           {/* Question Top Bar */}
-          <div className="flex items-center justify-between px-5 h-12 border-b border-[#333] bg-[#242424] flex-shrink-0">
+          <div className="flex items-center justify-between px-5 h-12 border-b border-[#d1d9e6] bg-[#dbe4f0] flex-shrink-0">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-[15px] text-white">Question {qNum}:</span>
-              <ArrowDownCircle className="w-5 h-5 text-[#1a6fc4] ml-1" />
+              <span className="font-bold text-[15px] text-[#222]">Question {qNum}:</span>
+              <ArrowDownCircle className="w-5 h-5 text-[#1a4b93] ml-1" />
             </div>
             <div className="flex items-center gap-2 text-[12px] font-bold">
-              <span className="text-gray-400 mr-1">Marking Scheme:</span>
-              <span className="bg-[#28a745]/20 text-[#28a745] px-2 py-0.5 rounded border border-[#28a745]/30">+4</span>
-              <span className="text-[#666]">|</span>
-              <span className={`px-2 py-0.5 rounded border ${isMcq ? 'bg-[#dc3545]/20 text-[#dc3545] border-[#dc3545]/30' : 'bg-gray-700 text-gray-300 border-gray-600'}`}>
+              <span className="text-[#555] mr-1">Marking Scheme:</span>
+              <span className="bg-[#28a745]/10 text-[#28a745] px-2 py-0.5 rounded border border-[#28a745]/30">+4</span>
+              <span className="text-[#999]">|</span>
+              <span className={`px-2 py-0.5 rounded border ${isMcq ? 'bg-[#dc3545]/10 text-[#dc3545] border-[#dc3545]/30' : 'bg-white text-[#555] border-[#ccc]'}`}>
                 {isMcq ? '-1' : '0'}
               </span>
             </div>
@@ -255,12 +260,12 @@ export default function ExamInterface({
 
           {/* Scrollable Question Body */}
           <div className="flex-1 overflow-y-auto p-5">
-            <div className="bg-[#2a2a2a] p-5 rounded-[4px] text-[15px] leading-relaxed text-[#e0e0e0] mb-6">
+            <div className="bg-white p-5 rounded-[4px] text-[15px] leading-relaxed text-[#222] mb-6 border border-[#c5d0e0] shadow-sm">
               <Latex>{currentQ.statement}</Latex>
 
               {/* Question diagram — only rendered when image_url exists */}
               {currentQ.image_url && (
-                <div className="flex justify-center my-6 bg-[#2a2a2a] p-3 rounded-lg border border-gray-700">
+                <div className="flex justify-center my-6 p-3 rounded-lg border border-[#e1e6ed] bg-[#f8f9fa]">
                   <Image
                     src={currentQ.image_url}
                     alt="Question diagram"
@@ -282,21 +287,21 @@ export default function ExamInterface({
                     <button
                       key={opt.id}
                       onClick={() => onAnswerChange(opt.id)}
-                      className={`w-full flex items-center gap-4 px-4 py-3 border text-left transition-colors rounded-[4px] ${
+                      className={`w-full flex items-center gap-4 px-4 py-3 border text-left transition-colors rounded-[4px] shadow-sm ${
                         selected
-                          ? 'bg-[#1a6fc4]/10 border-[#1a6fc4]'
-                          : 'bg-[#242424] border-[#333] hover:bg-[#333]'
+                          ? 'bg-[#eef5fc] border-[#1a4b93]'
+                          : 'bg-white border-[#d1d9e6] hover:bg-[#f4f7f9] hover:border-[#b0c4de]'
                       }`}
                     >
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        selected ? 'border-[#1a6fc4]' : 'border-[#666]'
+                        selected ? 'border-[#1a4b93]' : 'border-[#aaa]'
                       }`}>
-                        {selected && <div className="w-2.5 h-2.5 rounded-full bg-[#1a6fc4]" />}
+                        {selected && <div className="w-2.5 h-2.5 rounded-full bg-[#1a4b93]" />}
                       </div>
-                      <span className={`font-bold text-[14px] shrink-0 ${selected ? 'text-[#1a6fc4]' : 'text-gray-400'}`}>
+                      <span className={`font-bold text-[14px] shrink-0 ${selected ? 'text-[#1a4b93]' : 'text-[#666]'}`}>
                         ({letter})
                       </span>
-                      <span className="text-[14px] text-[#e0e0e0]">
+                      <span className={`text-[14px] ${selected ? 'text-[#111]' : 'text-[#333]'}`}>
                         <Latex>{opt.text}</Latex>
                       </span>
                     </button>
@@ -304,7 +309,7 @@ export default function ExamInterface({
                 })}
               </div>
             ) : (
-              <div className="mt-4">
+              <div className="mt-4 bg-white p-5 border border-[#d1d9e6] rounded-[4px] shadow-sm inline-block">
                 <input
                   type="text"
                   inputMode="decimal"
@@ -316,7 +321,7 @@ export default function ExamInterface({
                     }
                   }}
                   placeholder="Enter value"
-                  className="w-48 px-3 py-2 bg-[#2a2a2a] border border-[#444] rounded-[4px] text-white text-sm focus:outline-none focus:border-[#1a6fc4]"
+                  className="w-48 px-3 py-2 bg-white border border-[#ccc] rounded-[4px] text-[#333] text-sm focus:outline-none focus:border-[#1a4b93] focus:ring-1 focus:ring-[#1a4b93]"
                 />
                 
                 {/* Virtual Keypad (Visual only for real keyboard support) */}
@@ -330,16 +335,16 @@ export default function ExamInterface({
                           onAnswerChange(val);
                         }
                       }}
-                      className="h-10 bg-[#333] border border-[#444] rounded-[4px] hover:bg-[#444] font-bold text-[#e0e0e0] transition-colors"
+                      className="h-10 bg-[#f4f7f9] border border-[#d1d9e6] rounded-[4px] hover:bg-[#eef2f5] font-bold text-[#444] transition-colors shadow-sm"
                     >
                       {btn}
                     </button>
                   ))}
                   <button
                     onClick={() => onAnswerChange(localAnswer.slice(0, -1))}
-                    className="h-10 bg-[#333] border border-[#444] rounded-[4px] hover:bg-[#444] flex items-center justify-center transition-colors"
+                    className="h-10 bg-[#f4f7f9] border border-[#d1d9e6] rounded-[4px] hover:bg-[#eef2f5] flex items-center justify-center transition-colors shadow-sm"
                   >
-                    <Delete className="w-4 h-4 text-gray-400" />
+                    <Delete className="w-4 h-4 text-[#666]" />
                   </button>
                 </div>
               </div>
@@ -347,33 +352,38 @@ export default function ExamInterface({
           </div>
 
           {/* Bottom Action Row — two rows: primary buttons on top, nav on bottom */}
-          <div className="px-5 py-3 border-t border-[#333] bg-[#242424] flex-shrink-0 space-y-2">
+          <div className="px-5 py-3 border-t border-[#c5d0e0] bg-[#dbe4f0] flex-shrink-0 space-y-2">
             {/* Row 1: Save & Next + Clear + Mark buttons */}
             <div className="flex items-center gap-2">
               <button
                 onClick={onClear}
-                className="px-4 py-2 bg-transparent text-white font-bold text-[12px] rounded-[4px] border border-[#666] hover:bg-[#333] transition-colors uppercase whitespace-nowrap"
+                disabled={localAnswer.trim() === ''}
+                className={`px-4 py-2 font-bold text-[13px] rounded-[4px] border transition-colors uppercase whitespace-nowrap shadow-sm ${
+                  localAnswer.trim() !== ''
+                    ? 'bg-white text-[#222] border-[#999] hover:bg-[#e9ecef]'
+                    : 'bg-[#f4f7f9] text-[#999] border-[#d1d9e6] cursor-not-allowed'
+                }`}
               >
                 Clear Response
               </button>
               <button
                 onClick={handleMarkAndNext}
-                className="px-4 py-2 bg-[#6f42c1] text-white font-bold text-[12px] rounded-[4px] hover:bg-[#5a32a3] transition-colors uppercase border border-[#5a32a3] whitespace-nowrap"
+                className="px-4 py-2 bg-[#6f42c1] text-white font-bold text-[13px] rounded-[4px] hover:bg-[#5a32a3] transition-colors uppercase border border-[#5a32a3] whitespace-nowrap shadow-sm"
               >
                 Mark for Review &amp; Next
               </button>
               <button
                 onClick={handleSaveMarkAndNext}
-                className="px-4 py-2 bg-[#fd7e14] text-white font-bold text-[12px] rounded-[4px] hover:bg-[#e36c0a] transition-colors uppercase border border-[#e36c0a] whitespace-nowrap"
+                className="px-4 py-2 bg-[#fd7e14] text-white font-bold text-[13px] rounded-[4px] hover:bg-[#e36c0a] transition-colors uppercase border border-[#e36c0a] whitespace-nowrap shadow-sm"
               >
                 Save &amp; Mark for Review
               </button>
               <button
                 onClick={handleSaveAndNext}
-                className={`ml-auto py-2 min-w-[130px] px-4 text-white font-bold text-[12px] rounded-[4px] transition-colors uppercase border whitespace-nowrap text-center ${
+                className={`ml-auto py-2 min-w-[130px] px-4 font-bold text-[13px] rounded-[4px] transition-colors uppercase border whitespace-nowrap text-center shadow-sm ${
                   localAnswer.trim() !== ''
-                    ? 'bg-[#28a745] hover:bg-[#218838] border-[#218838]'
-                    : 'bg-[#555] hover:bg-[#666] border-[#555]'
+                    ? 'bg-[#28a745] text-white hover:bg-[#218838] border-[#218838]'
+                    : 'bg-white text-[#222] hover:bg-[#e9ecef] border-[#999]'
                 }`}
               >
                 {localAnswer.trim() !== '' ? 'Save & Next' : 'Next'}
@@ -384,9 +394,9 @@ export default function ExamInterface({
               <button
                 onClick={handleBack}
                 disabled={currentIdx === 0}
-                className="px-6 py-1.5 bg-[#333] text-white font-bold text-[12px] rounded-[4px] border border-[#444] hover:bg-[#444] disabled:opacity-50 transition-colors uppercase"
+                className="px-6 py-1.5 bg-white text-[#222] font-bold text-[13px] rounded-[4px] border border-[#999] hover:bg-[#e9ecef] disabled:opacity-50 transition-colors uppercase shadow-sm"
               >
-                &lt;&lt; Back
+                Back
               </button>
             </div>
           </div>
@@ -395,61 +405,61 @@ export default function ExamInterface({
         {/* SIDEBAR TOGGLE */}
         <div 
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="w-5 bg-[#2a2a2a] border-l border-[#333] cursor-pointer flex items-center justify-center hover:bg-[#333] transition-colors z-10"
+          className="w-5 bg-[#dbe4f0] border-x border-[#c5d0e0] cursor-pointer flex items-center justify-center hover:bg-[#c5d0e0] transition-colors z-10 shadow-sm"
         >
-          {sidebarOpen ? <ChevronRight className="w-4 h-4 text-gray-400" /> : <ChevronLeft className="w-4 h-4 text-gray-400" />}
+          {sidebarOpen ? <ChevronRight className="w-4 h-4 text-[#555]" /> : <ChevronLeft className="w-4 h-4 text-[#555]" />}
         </div>
 
         {/* RIGHT COLUMN: QUESTION PALETTE SIDEBAR */}
         <div 
-          className={`bg-[#242424] border-l border-[#333] flex flex-col overflow-hidden transition-all duration-300 shrink-0 ${
-            sidebarOpen ? 'w-[320px]' : 'w-0 border-l-0'
+          className={`bg-[#eef2f5] flex flex-col overflow-hidden transition-all duration-300 shrink-0 ${
+            sidebarOpen ? 'w-[320px]' : 'w-0'
           }`}
         >
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             
             {/* Legend Box */}
-            <div className="border border-dashed border-[#555] p-3 rounded-[4px] bg-[#1f1f1f]">
+            <div className="border border-[#c5d0e0] p-3 rounded-[4px] bg-white shadow-sm">
               <div className="grid grid-cols-2 gap-y-2.5 gap-x-1">
                 <div className="flex items-center gap-2">
                   <div className={`w-[26px] h-[26px] text-[11px] font-bold flex items-center justify-center shrink-0 ${getShapeClasses('not_visited')}`}>
                     {stats.notVisited}
                   </div>
-                  <span className="text-[11px] text-gray-300 leading-tight">Not Visited</span>
+                  <span className="text-[11px] text-[#444] leading-tight">Not Visited</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className={`w-[26px] h-[26px] text-[11px] font-bold flex items-center justify-center shrink-0 ${getShapeClasses('not_answered')}`}>
                     {stats.notAnswered}
                   </div>
-                  <span className="text-[11px] text-gray-300 leading-tight">Not Answered</span>
+                  <span className="text-[11px] text-[#444] leading-tight">Not Answered</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className={`w-[26px] h-[26px] text-[11px] font-bold flex items-center justify-center shrink-0 ${getShapeClasses('answered')}`}>
                     <span className="mr-0.5">{stats.answered}</span>
                   </div>
-                  <span className="text-[11px] text-gray-300 leading-tight">Answered</span>
+                  <span className="text-[11px] text-[#444] leading-tight">Answered</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className={`w-[26px] h-[26px] text-[11px] font-bold flex items-center justify-center shrink-0 ${getShapeClasses('marked')}`}>
                     {stats.marked}
                   </div>
-                  <span className="text-[11px] text-gray-300 leading-tight">Marked for Review</span>
+                  <span className="text-[11px] text-[#444] leading-tight">Marked for Review</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-dashed border-[#555]">
+              <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-[#e1e6ed]">
                 <div className={`w-[26px] h-[26px] text-[11px] font-bold flex items-center justify-center shrink-0 relative ${getShapeClasses('answered_marked')}`}>
                   {stats.answeredMarked}
-                  <div className="absolute w-2 h-2 rounded-full bg-[#38a169] -bottom-[1px] -right-[1px] border border-[#242424]" />
+                  <div className="absolute w-2 h-2 rounded-full bg-[#38a169] -bottom-[1px] -right-[1px] border border-white" />
                 </div>
-                <span className="text-[11px] text-gray-300 leading-tight w-[200px]">
+                <span className="text-[11px] text-[#666] leading-tight w-[200px]">
                   Answered &amp; Marked for Review (will be considered for evaluation)
                 </span>
               </div>
             </div>
 
             {/* Grid Box */}
-            <div className="border border-dashed border-[#555] p-3 rounded-[4px] bg-[#1f1f1f] flex-1">
-              <div className="font-bold text-[13px] text-white mb-3">{activeSubjectName}</div>
+            <div className="border border-[#c5d0e0] p-3 rounded-[4px] bg-white flex-1 shadow-sm">
+              <div className="font-bold text-[13px] text-[#222] mb-3">{activeSubjectName}</div>
               <div className="grid grid-cols-5 gap-2">
                 {activeSubjectGroup.items.map((item, idx) => {
                   const s = item.sq
@@ -463,15 +473,12 @@ export default function ExamInterface({
                       onClick={() => onNavigate(i)}
                       title={`Question ${idx + 1}`}
                       className={`w-[42px] h-[36px] text-[13px] font-bold transition-all duration-200 flex items-center justify-center relative ${styleClasses} ${isActive ? 'z-10' : 'z-1 hover:brightness-110 hover:-translate-y-0.5'}`}
-                      style={{
-                        filter: isActive ? 'drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000) drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #000)' : 'none'
-                      }}
                     >
                       <span className={s.visit_status === 'answered' ? 'mr-0.5' : ''}>
                         {String(idx + 1).padStart(2, '0')}
                       </span>
                       {s.visit_status === 'answered_marked' && (
-                        <div className="absolute w-2.5 h-2.5 rounded-full bg-[#38a169] -bottom-[1px] -right-[1px] border border-[#242424]" />
+                        <div className="absolute w-2.5 h-2.5 rounded-full bg-[#38a169] -bottom-[1px] -right-[1px] border border-white" />
                       )}
                     </button>
                   )
@@ -481,10 +488,10 @@ export default function ExamInterface({
           </div>
 
           {/* Submit Button */}
-          <div className="p-3 bg-[#242424] border-t border-[#333]">
+          <div className="p-3 bg-[#dbe4f0] border-t border-[#c5d0e0]">
             <button
               onClick={onShowSubmit}
-              className="w-full py-3 bg-[#1a6fc4] hover:bg-[#155ba0] text-white font-bold text-[15px] rounded-[4px] transition-colors"
+              className="w-full py-3 bg-[#1a4b93] hover:bg-[#12366b] text-white font-bold text-[15px] rounded-[4px] transition-colors shadow-sm"
             >
               Submit
             </button>
@@ -494,20 +501,20 @@ export default function ExamInterface({
 
       {/* FULLSCREEN ALERT MODAL */}
       {isFullscreenAlert && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md">
-          <div className="bg-[#242424] border border-red-500/30 rounded-[8px] shadow-2xl w-full max-w-md mx-4 p-8 text-center space-y-6">
-            <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-2">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/80 backdrop-blur-md">
+          <div className="bg-white border border-slate-200 rounded-[8px] shadow-2xl w-full max-w-md mx-4 p-8 text-center space-y-6">
+            <div className="size-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-2">
               <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h3 className="font-bold text-[22px] text-white">Fullscreen Exited</h3>
-            <p className="text-[15px] text-gray-300">
+            <h3 className="font-bold text-[22px] text-slate-900">Fullscreen Exited</h3>
+            <p className="text-[15px] text-slate-600">
               You must remain in fullscreen mode while taking the exam. Please click the button below to resume your test.
             </p>
             <button
               onClick={resumeFullscreen}
-              className="w-full py-3.5 rounded-[4px] font-bold text-[15px] bg-[#1a6fc4] text-white hover:bg-[#155ba0] transition-colors shadow-lg"
+              className="w-full py-3.5 rounded-[4px] font-bold text-[15px] bg-[#1a6fc4] text-white hover:bg-[#155ba0] transition-colors shadow-sm"
             >
               Resume Exam
             </button>
@@ -517,26 +524,26 @@ export default function ExamInterface({
 
       {/* SUBMIT MODAL */}
       {showSubmitModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#242424] border border-[#444] rounded-[8px] shadow-2xl w-full max-w-sm mx-4 p-6 space-y-5">
-            <h3 className="font-bold text-[18px] text-white border-b border-[#444] pb-3">Confirm Submission</h3>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white border border-slate-200 rounded-[8px] shadow-2xl w-full max-w-sm mx-4 p-6 space-y-5">
+            <h3 className="font-bold text-[18px] text-slate-900 border-b border-slate-200 pb-3">Confirm Submission</h3>
             
             <div className="space-y-3 text-[14px]">
-              <div className="flex justify-between text-gray-300">
+              <div className="flex justify-between text-slate-700">
                 <span>Answered</span>
                 <span className="font-bold text-[#28a745]">{stats.answered}</span>
               </div>
-              <div className="flex justify-between text-gray-300">
+              <div className="flex justify-between text-slate-700">
                 <span>Not Answered</span>
                 <span className="font-bold text-[#dc3545]">{stats.notAnswered}</span>
               </div>
-              <div className="flex justify-between text-gray-300">
+              <div className="flex justify-between text-slate-700">
                 <span>Marked for Review</span>
                 <span className="font-bold text-[#6f42c1]">{stats.marked}</span>
               </div>
-              <div className="flex justify-between text-gray-300">
+              <div className="flex justify-between text-slate-700">
                 <span>Not Visited</span>
-                <span className="font-bold text-gray-500">{stats.notVisited}</span>
+                <span className="font-bold text-slate-500">{stats.notVisited}</span>
               </div>
             </div>
 
@@ -545,7 +552,7 @@ export default function ExamInterface({
             <div className="flex gap-3 pt-3">
               <button
                 onClick={onHideSubmit}
-                className="flex-1 py-2.5 rounded-[4px] border border-[#666] text-[14px] font-bold text-white hover:bg-[#333] transition-colors"
+                className="flex-1 py-2.5 rounded-[4px] border border-slate-300 text-[14px] font-bold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 Cancel
               </button>

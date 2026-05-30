@@ -30,9 +30,12 @@ export type SessionQuestion = {
 type Props = {
   session: any
   sessionQuestions: SessionQuestion[]
+  userName: string
+  rollNo: string
+  avatarUrl: string | null
 }
 
-export default function TestClient({ session, sessionQuestions: initial }: Props) {
+export default function TestClient({ session, sessionQuestions: initial, userName, rollNo, avatarUrl }: Props) {
   const router = useRouter()
   const isJee = session.mode === 'jee_mains'
 
@@ -206,6 +209,9 @@ export default function TestClient({ session, sessionQuestions: initial }: Props
 
   const sharedProps = {
     session,
+    userName,
+    rollNo,
+    avatarUrl,
     sq,
     currentIdx,
     currentSq,
