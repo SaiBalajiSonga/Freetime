@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { saveAnswer, submitTest } from '@/app/(dashboard)/tests/actions'
+import { submitTest } from '@/app/(dashboard)/tests/actions'
 import ExamInterface from './exam-interface'
+import { useOfflineSync } from './use-offline-sync'
 
 export type SessionQuestion = {
   id: string
@@ -46,6 +47,8 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
   const [showSubmitModal, setShowSubmitModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [, startTransition] = useTransition()
+
+  const { saveOrQueue, attemptSync, isOffline, pendingCount } = useOfflineSync(session.id)
 
   const questionTimerRef = useRef(0)
   const autoSubmitted = useRef(false)
@@ -112,8 +115,8 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
         : q
     ))
 
-    // Await the save to give the user the visual feel of "save/mark first, then move"
-    await saveAnswer({
+    // Await the local save/queueing to give the user the visual feel of "save/mark first, then move"
+    await saveOrQueue({
       sessionQuestionId: cur.id,
       answer: answer || null,
       isMarked,
@@ -143,7 +146,7 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
 
     // Persist the clear immediately
     startTransition(async () => {
-      await saveAnswer({
+      await saveOrQueue({
         sessionQuestionId: cur.id,
         answer: null,
         isMarked: false,
@@ -176,19 +179,27 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
     const visitStatus = computeVisitStatus(answer, isMarked)
     const timeTaken = cur.time_taken + questionTimerRef.current
 
-    await saveAnswer({
+    await saveOrQueue({
       sessionQuestionId: cur.id,
       answer: answer || null,
       isMarked,
       timeTaken,
     })
 
-    const elapsed = session.time_limit_minutes * 60 - timeLeft
-    const result = await submitTest(session.id, elapsed)
-
-    if (result?.error) {
+    // Try to flush offline queue before submitting
+    const syncSuccess = await attemptSync()
+    if (!syncSuccess) {
+      alert("You are currently offline. Your answers are saved locally. Please restore your internet connection to submit the test.")
       setIsSubmitting(false)
-      alert('Submit failed: ' + result.error)
+      return
+    }
+
+    const totalTimeTaken = session.time_limit_minutes * 60 - timeLeft
+    const res = await submitTest(session.id, totalTimeTaken)
+
+    if (res?.error) {
+      setIsSubmitting(false)
+      alert('Submit failed: ' + res.error)
       return
     }
 
@@ -222,6 +233,8 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
     showSubmitModal,
     isSubmitting,
     stats,
+    isOffline,
+    pendingCount,
     onNavigate: navigateTo,
     onAnswerChange: setLocalAnswer,
     onClear: handleClear,

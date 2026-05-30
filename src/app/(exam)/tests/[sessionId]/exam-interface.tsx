@@ -50,6 +50,8 @@ type SharedProps = {
   showSubmitModal: boolean
   isSubmitting: boolean
   stats: { answered: number; notAnswered: number; marked: number; notVisited: number; answeredMarked: number }
+  isOffline?: boolean
+  pendingCount?: number
   onNavigate: (idx: number, overrides?: { answer?: string; marked?: boolean }) => void
   onAnswerChange: (a: string) => void
   onClear: () => void
@@ -72,7 +74,7 @@ function groupBySubject(sq: SessionQuestion[]) {
 
 export default function ExamInterface({
   session, userName, rollNo, avatarUrl, sq, currentIdx, currentSq, currentQ, localAnswer, timeLeft,
-  showSubmitModal, isSubmitting, stats,
+  showSubmitModal, isSubmitting, stats, isOffline, pendingCount,
   onNavigate, onAnswerChange, onClear, onSetMark, onShowSubmit, onHideSubmit, onSubmit,
 }: SharedProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -123,10 +125,16 @@ export default function ExamInterface({
     const handleContextMenu = (e: MouseEvent) => e.preventDefault()
     const handleCopy = (e: ClipboardEvent) => e.preventDefault()
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent Alt + Left/Right Arrow (Browser Back/Forward)
+      if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        e.preventDefault()
+      }
+      // Prevent PrintScreen
       if (e.key === 'PrintScreen') {
         try { navigator.clipboard.writeText('').catch(() => {}) } catch {}
         e.preventDefault()
       }
+      // Prevent Ctrl/Cmd shortcuts
       if (e.ctrlKey || e.metaKey) {
         const k = e.key.toLowerCase()
         if (k === 'c' || k === 'v' || k === 'p' || k === 's' || k === 'x') {
@@ -135,14 +143,26 @@ export default function ExamInterface({
       }
     }
 
+    // Block trackpad swipe-to-go-back gestures
+    document.body.style.overscrollBehaviorX = 'none'
+
+    // Trap the back button
+    window.history.pushState(null, '', window.location.href)
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href)
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('popstate', handlePopState)
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     document.addEventListener('contextmenu', handleContextMenu)
     document.addEventListener('copy', handleCopy)
     document.addEventListener('keydown', handleKeyDown)
 
     return () => {
+      document.body.style.overscrollBehaviorX = ''
       window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('popstate', handlePopState)
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
       document.removeEventListener('contextmenu', handleContextMenu)
       document.removeEventListener('copy', handleCopy)
@@ -225,8 +245,19 @@ export default function ExamInterface({
           })}
         </div>
 
-        {/* Right: Timer */}
-        <div className="w-1/3 flex justify-end">
+        {/* Right: Timer & Sync Status */}
+        <div className="w-1/3 flex justify-end items-center gap-3">
+          
+          {/* Offline / Sync Indicator */}
+          {(isOffline || (pendingCount && pendingCount > 0)) && (
+            <div className="px-3 py-1.5 bg-yellow-500/20 border border-yellow-500/50 rounded flex items-center gap-2 shadow-sm animate-pulse">
+              <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+              <span className="text-yellow-200 text-[11px] font-bold uppercase tracking-wider">
+                {isOffline ? 'Offline' : 'Syncing'} ({pendingCount || 0})
+              </span>
+            </div>
+          )}
+
           <div className={`px-4 py-1.5 border flex items-center gap-2 rounded-[4px] shadow-sm ${
             timeCritical ? 'bg-red-500 border-red-600 text-white animate-pulse' : 'bg-white/10 border-white/20 text-white'
           }`}>
