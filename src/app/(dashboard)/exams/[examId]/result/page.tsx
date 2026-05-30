@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import ResultClient from '../../../tests/[sessionId]/result/result-client'
+import ResultClient from '@/app/(exam)/tests/[sessionId]/result/result-client'
 
 export default async function ExamResultPage({
   params,
