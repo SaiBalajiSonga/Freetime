@@ -306,9 +306,15 @@ export default function ExamInterface({
             ) : (
               <div className="mt-4">
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={localAnswer}
-                  onChange={e => onAnswerChange(e.target.value)}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (/^-?\d*\.?\d*$/.test(val)) {
+                      onAnswerChange(val);
+                    }
+                  }}
                   placeholder="Enter value"
                   className="w-48 px-3 py-2 bg-[#2a2a2a] border border-[#444] rounded-[4px] text-white text-sm focus:outline-none focus:border-[#1a6fc4]"
                 />
@@ -318,7 +324,12 @@ export default function ExamInterface({
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0].map(btn => (
                     <button
                       key={btn}
-                      onClick={() => onAnswerChange(localAnswer + btn)}
+                      onClick={() => {
+                        const val = localAnswer + btn;
+                        if (/^-?\d*\.?\d*$/.test(val)) {
+                          onAnswerChange(val);
+                        }
+                      }}
                       className="h-10 bg-[#333] border border-[#444] rounded-[4px] hover:bg-[#444] font-bold text-[#e0e0e0] transition-colors"
                     >
                       {btn}
