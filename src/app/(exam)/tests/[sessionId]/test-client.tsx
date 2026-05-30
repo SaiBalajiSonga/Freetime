@@ -115,20 +115,19 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
         : q
     ))
 
-    // Await the local save/queueing to give the user the visual feel of "save/mark first, then move"
-    await saveOrQueue({
+    // Perform the navigation IMMEDIATELY so UI feels lightning fast
+    setLocalAnswer(sq[idx]?.answer_given ?? '')
+    setCurrentIdx(idx)
+    questionTimerRef.current = 0
+
+    // Fire the save asynchronously in the background
+    saveOrQueue({
       sessionQuestionId: cur.id,
       answer: answer || null,
       isMarked,
       timeTaken,
-    })
-
-    // Perform the navigation
-
-    setLocalAnswer(sq[idx]?.answer_given ?? '')
-    setCurrentIdx(idx)
-    questionTimerRef.current = 0
-  }, [currentIdx, sq, localAnswer])
+    }).catch(() => {})
+  }, [currentIdx, sq, localAnswer, saveOrQueue])
 
   const handleClear = () => {
     setLocalAnswer('')
@@ -144,14 +143,14 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
       } : q
     ))
 
-    // Persist the clear immediately
-    startTransition(async () => {
-      await saveOrQueue({
+    // Persist the clear asynchronously
+    startTransition(() => {
+      saveOrQueue({
         sessionQuestionId: cur.id,
         answer: null,
         isMarked: false,
         timeTaken: cur.time_taken + questionTimerRef.current,
-      })
+      }).catch(() => {})
     })
   }
 
