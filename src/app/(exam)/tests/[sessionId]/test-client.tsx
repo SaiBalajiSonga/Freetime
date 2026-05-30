@@ -83,7 +83,7 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
   // Per-question timer
   useEffect(() => {
     questionTimerRef.current = 0
-    setQuestionTimer(0)
+    setTimeout(() => setQuestionTimer(0), 0)
     const interval = setInterval(() => {
       questionTimerRef.current += 1
       setQuestionTimer(questionTimerRef.current)
@@ -175,7 +175,6 @@ export default function TestClient({ session, sessionQuestions: initial, userNam
     const cur = sq[currentIdx]
     const answer = localAnswer
     const isMarked = cur.is_marked_for_review
-    const visitStatus = computeVisitStatus(answer, isMarked)
     const timeTaken = cur.time_taken + questionTimerRef.current
 
     await saveOrQueue({

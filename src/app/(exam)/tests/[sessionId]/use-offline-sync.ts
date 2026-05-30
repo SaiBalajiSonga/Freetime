@@ -16,7 +16,7 @@ export function useOfflineSync(sessionId: string) {
 
   // Load queue from localStorage. We use a Record/Map where key = sessionQuestionId
   // This naturally deduplicates rapid clicks on the same question!
-  const getQueue = (): Record<string, SavePayload> => {
+  const getQueue = useCallback((): Record<string, SavePayload> => {
     if (typeof window === 'undefined') return {}
     try {
       const data = localStorage.getItem(storageKey)
@@ -24,29 +24,15 @@ export function useOfflineSync(sessionId: string) {
     } catch {
       return {}
     }
-  }
+  }, [storageKey])
 
   // Save queue to localStorage
-  const setQueue = (queue: Record<string, SavePayload>) => {
+  const setQueue = useCallback((queue: Record<string, SavePayload>) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(storageKey, JSON.stringify(queue))
       setPendingCount(Object.keys(queue).length)
     }
-  }
-
-  const saveOrQueue = useCallback(async (payload: SavePayload) => {
-    // 1. Always queue locally FIRST (optimistic local save)
-    const queue = getQueue()
-    queue[payload.sessionQuestionId] = payload
-    setQueue(queue)
-
-    // 2. Try to sync immediately if online
-    if (navigator.onLine) {
-      await attemptSync()
-    } else {
-      setIsOffline(true)
-    }
-  }, [sessionId])
+  }, [storageKey])
 
   const attemptSync = useCallback(async (): Promise<boolean> => {
     const queue = getQueue()
@@ -86,7 +72,21 @@ export function useOfflineSync(sessionId: string) {
       setIsOffline(true)
       return false
     }
-  }, [])
+  }, [getQueue, setQueue])
+
+  const saveOrQueue = useCallback(async (payload: SavePayload) => {
+    // 1. Always queue locally FIRST (optimistic local save)
+    const queue = getQueue()
+    queue[payload.sessionQuestionId] = payload
+    setQueue(queue)
+
+    // 2. Try to sync immediately if online
+    if (navigator.onLine) {
+      await attemptSync()
+    } else {
+      setIsOffline(true)
+    }
+  }, [getQueue, setQueue, attemptSync])
 
   // Setup event listeners for online/offline
   useEffect(() => {
@@ -100,7 +100,7 @@ export function useOfflineSync(sessionId: string) {
     window.addEventListener('offline', handleOffline)
 
     // Initial check and sync on mount
-    setIsOffline(!navigator.onLine)
+    setTimeout(() => setIsOffline(!navigator.onLine), 0)
     // Run an initial sync in case they crashed and came back
     attemptSync()
 
