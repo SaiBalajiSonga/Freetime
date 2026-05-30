@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { saveAnswer, submitTest } from '../actions'
+import { saveAnswer, submitTest } from '@/app/(dashboard)/tests/actions'
 import ExamInterface from './exam-interface'
 
 export type SessionQuestion = {
