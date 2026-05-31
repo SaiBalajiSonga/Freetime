@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_OPTIONS=\"--dns-result-order=ipv4first\" next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -19,6 +19,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cross-env": "^10.1.0",
     "framer-motion": "^12.38.0",
     "katex": "^0.16.45",
     "lucide-react": "^1.14.0",
