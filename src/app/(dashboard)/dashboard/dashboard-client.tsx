@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -69,7 +69,10 @@ export default function DashboardClient({
   const searchParams = useSearchParams()
   const analyticsSection = searchParams.get('section')
 
+  const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
+    setMounted(true)
     if (analyticsSection !== 'analytics') return
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     document.getElementById('analytics')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' })
@@ -259,7 +262,7 @@ export default function DashboardClient({
                       <p className="text-sm font-bold text-foreground truncate">{attempt.questions?.chapters?.name || 'Practice session'}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-[11px] font-medium text-muted">
-                          {new Date(attempt.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          {mounted ? new Date(attempt.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '...'}
                         </p>
                         <span className="text-muted-2">•</span>
                         <span className="text-[10px] uppercase font-bold tracking-wider text-muted-2 bg-slate-100 px-1.5 py-0.5 rounded">

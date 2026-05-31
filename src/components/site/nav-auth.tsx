@@ -136,12 +136,12 @@ export function NavAuth({ initialUser, initialProfile }: { initialUser?: any, in
           
           <div className="p-2 space-y-1">
             <Link 
-              href="/dashboard" 
+              href={profile?.is_admin ? "/admin" : "/dashboard"} 
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-700 rounded-xl hover:bg-slate-100 transition-colors"
             >
               <LayoutDashboard className="w-4 h-4 text-slate-400" />
-              Dashboard
+              {profile?.is_admin ? "Admin" : "Dashboard"}
             </Link>
             <Link 
               href="/settings" 
