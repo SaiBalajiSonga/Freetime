@@ -56,11 +56,6 @@ export function SettingsForm({ profile, email }: { profile: any; email: string }
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700">Target JEE Year</Label>
-          <input type="text" value={profile.target_jee_year || 'Not specified'} readOnly className={readOnlyClass} />
-        </div>
-
-        <div className="space-y-2">
           <Label className="text-sm font-bold text-slate-700">Account Role</Label>
           <input type="text" value={profile.is_admin ? 'Administrator' : 'Student'} readOnly className={readOnlyClass} />
         </div>

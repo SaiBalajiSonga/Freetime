@@ -1,13 +1,14 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { signup } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AuthQuotePanel } from '@/components/site/auth-quote-panel'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, ChevronDown } from 'lucide-react'
+import { COUNTRIES } from '@/lib/countries'
 
 const initialState = {
   error: null as string | null,
@@ -20,6 +21,20 @@ export default function SignupPage() {
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
     return await signup(formData)
   }, initialState)
+
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES.find(c => c.code === '+91') || COUNTRIES[0])
+  const countryDropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
+        setIsCountryDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <div className="flex bg-white rounded-3xl shadow-[0_8px_32px_rgba(15,23,42,0.08)] overflow-hidden w-full border border-slate-100">
@@ -62,17 +77,58 @@ export default function SignupPage() {
             </Label>
             <input id="email" name="email" type="email" placeholder="you@example.com" required className={inputClass} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 relative" ref={countryDropdownRef}>
             <Label htmlFor="phone" className="text-sm font-bold text-slate-700">
               Phone Number
             </Label>
-            <input id="phone" name="phone" type="tel" placeholder="+91 XXXXX XXXXX" required className={inputClass} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="target_jee_year" className="text-sm font-bold text-slate-700">
-              Target JEE Year
-            </Label>
-            <input id="target_jee_year" name="target_jee_year" type="number" min="2024" max="2035" placeholder="e.g. 2026" required className={inputClass} />
+            <div className="relative flex items-center h-[52px] w-full rounded-xl border border-slate-200 bg-slate-50 focus-within:bg-white focus-within:ring-4 focus-within:ring-[var(--color-primary)]/10 focus-within:border-[var(--color-primary)] transition-all">
+              
+              <input type="hidden" name="country_code" value={selectedCountry.code} />
+              
+              <div className="relative h-full flex items-center">
+                <button 
+                  type="button" 
+                  onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                  className="flex items-center gap-1.5 w-[75px] justify-center bg-transparent text-[14px] font-[500] text-slate-700 focus:outline-none hover:bg-slate-200/50 rounded-l-xl border-r border-slate-200 transition-colors h-full"
+                >
+                  <span className="text-[15px] font-[600]">{selectedCountry.code}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+
+                {isCountryDropdownOpen && (
+                  <div className="absolute top-[calc(100%+4px)] left-0 w-[240px] max-h-[260px] overflow-y-auto bg-white border border-slate-300 shadow-lg rounded-md z-50 py-1 flex flex-col animate-in fade-in zoom-in-95 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+                    {COUNTRIES.map((country) => (
+                      <button
+                        key={country.code + country.name}
+                        id={`country-${country.code}-${country.name}`}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCountry(country)
+                          setIsCountryDropdownOpen(false)
+                        }}
+                        className={`group flex items-center justify-between w-full px-4 py-1.5 text-left transition-none ${selectedCountry.code === country.code ? 'bg-slate-100' : 'hover:bg-[var(--color-primary)] text-slate-700 hover:text-white'}`}
+                      >
+                        <span className={`text-[13px] truncate max-w-[150px] ${selectedCountry.code === country.code ? 'font-semibold text-slate-900' : 'font-normal group-hover:text-white'}`}>{country.name}</span>
+                        <span className={`text-[13px] shrink-0 ${selectedCountry.code === country.code ? 'font-semibold text-slate-900' : 'text-slate-500 group-hover:text-white/80'}`}>{country.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <input 
+                id="phone" 
+                name="phone"
+                type="tel" 
+                pattern="[0-9]*"
+                onInput={(e) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, '')
+                }}
+                placeholder="Enter Phone Number"
+                required
+                className="flex-1 bg-transparent px-4 text-[14px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-bold text-slate-700">
@@ -88,7 +144,7 @@ export default function SignupPage() {
 
         <p className="text-sm text-center text-slate-500 font-medium mt-8">
           Already have an account?{' '}
-          <Link href="/login" className="text-[var(--color-primary)] hover:underline font-bold">
+          <Link href="/#auth" className="text-[var(--color-primary)] hover:underline font-bold">
             Sign in
           </Link>
         </p>
