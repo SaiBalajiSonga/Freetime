@@ -1,7 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import { createJeeSession } from '../actions'
+import { createJeeSession } from './actions'
 import { Loader2, Zap } from 'lucide-react'
 import { useState } from 'react'
 
@@ -40,7 +40,7 @@ export default function JeeStartButton({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
           {error}
         </div>
       )}
@@ -48,7 +48,7 @@ export default function JeeStartButton({
         type="button"
         onClick={handleStart}
         disabled={disabled || isPending}
-        className={className || "w-full py-4 rounded-2xl font-bold text-base bg-amber-400 hover:bg-amber-300 text-black transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_32px_-8px_rgba(251,191,36,0.5)]"}
+        className={className || "w-full py-3 rounded-xl font-bold text-sm bg-amber-400 hover:bg-amber-500 text-amber-950 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"}
       >
         {isPending ? (
           <>

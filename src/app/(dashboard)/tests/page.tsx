@@ -22,6 +22,24 @@ export type TestSessionItem = {
   config: any
 }
 
+export type SubjectAvail = {
+  name: string
+  mcqCount: number
+  numCount: number
+  mcqOk: boolean
+  numOk: boolean
+}
+
+export type SetupData = {
+  subjects: { id: string; name: string }[]
+  chapters: { id: string; name: string; subject_id: string }[]
+  jeeAvail: SubjectAvail[]
+}
+
+const SUBJECT_NAMES = ['Physics', 'Chemistry', 'Mathematics'] as const
+const MCQ_NEEDED = 20
+const NUM_NEEDED = 10
+
 export default async function TestsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -30,18 +48,64 @@ export default async function TestsPage() {
     redirect('/')
   }
 
-  // Fetch all sessions (you might want to paginate or limit this in a real app, but for now we fetch all recent)
-  const { data: sessions } = await supabase
-    .from('test_sessions')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(50)
+  // Fetch sessions, subjects, and chapters concurrently
+  const [sessionsRes, subjectsRes, chaptersRes] = await Promise.all([
+    supabase
+      .from('test_sessions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    supabase.from('subjects').select('id, name').order('name'),
+    supabase.from('chapters').select('id, name, subject_id').order('name'),
+  ])
+
+  const sessions = sessionsRes.data
+  const allSubjects = subjectsRes.data || []
+  const allChapters = chaptersRes.data || []
+
+  // Check JEE Mock availabilities concurrently
+  const subjectAvail: SubjectAvail[] = await Promise.all(
+    SUBJECT_NAMES.map(async (name) => {
+      const subject = allSubjects.find((s) => s.name === name)
+      if (!subject) return { name, mcqCount: 0, numCount: 0, mcqOk: false, numOk: false }
+
+      const chapterIds = allChapters.filter((c) => c.subject_id === subject.id).map((c) => c.id)
+
+      if (chapterIds.length === 0) {
+        return { name, mcqCount: 0, numCount: 0, mcqOk: false, numOk: false }
+      }
+
+      const [mcqRes, numRes] = await Promise.all([
+        supabase
+          .from('questions')
+          .select('id', { count: 'exact', head: true })
+          .in('chapter_id', chapterIds)
+          .eq('type', 'mcq'),
+        supabase
+          .from('questions')
+          .select('id', { count: 'exact', head: true })
+          .in('chapter_id', chapterIds)
+          .eq('type', 'numerical'),
+      ])
+
+      const mcqCount = mcqRes.count || 0
+      const numCount = numRes.count || 0
+
+      return {
+        name,
+        mcqCount,
+        numCount,
+        mcqOk: mcqCount >= MCQ_NEEDED,
+        numOk: numCount >= NUM_NEEDED,
+      }
+    })
+  )
 
   const now = Date.now()
   const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
-  const sessionItems: TestSessionItem[] = (sessions || []).map(session => {
+  const sessionItems: TestSessionItem[] = (sessions || []).map((session) => {
     const createdAtMs = new Date(session.created_at).getTime()
     const expiresAtMs = createdAtMs + SEVEN_DAYS_MS
     let derivedStatus: 'active' | 'attempted' | 'missed'
@@ -73,5 +137,11 @@ export default async function TestsPage() {
     }
   })
 
-  return <TestsClient sessions={sessionItems} />
+  const setupData: SetupData = {
+    subjects: allSubjects,
+    chapters: allChapters,
+    jeeAvail: subjectAvail,
+  }
+
+  return <TestsClient sessions={sessionItems} setupData={setupData} />
 }

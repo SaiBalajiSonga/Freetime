@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ClipboardList, GraduationCap, Calendar, CheckCircle2, XCircle, MinusCircle, Clock, ChevronRight, Zap, PlayCircle, Plus } from 'lucide-react'
-import { PageHeader } from '@/components/site/dashboard-ui'
+import { ClipboardList, GraduationCap, Calendar, CheckCircle2, XCircle, MinusCircle, Clock, ChevronRight, PlayCircle, Plus } from 'lucide-react'
 import { ResumeTestLink } from './resume-test-link'
-import type { TestSessionItem } from './page'
+import type { TestSessionItem, SetupData } from './page'
+import { Modal } from '@/components/ui/modal'
+import CustomTestModalContent from './custom-test-modal'
+import JeeMockModalContent from './jee-mock-modal'
 
 type Tab = 'active' | 'attempted' | 'missed'
 
@@ -41,8 +43,9 @@ function getExpiresString(iso: string) {
   return `Expires soon`
 }
 
-export default function TestsClient({ sessions }: { sessions: TestSessionItem[] }) {
+export default function TestsClient({ sessions, setupData }: { sessions: TestSessionItem[], setupData?: SetupData }) {
   const [activeTab, setActiveTab] = useState<Tab>('active')
+  const [activeModal, setActiveModal] = useState<'none' | 'custom' | 'jee'>('none')
 
   const counts: Record<Tab, number> = {
     active:   sessions.filter(s => s.status === 'active').length,
@@ -63,8 +66,8 @@ export default function TestsClient({ sessions }: { sessions: TestSessionItem[] 
         
         {/* Create Test Buttons */}
         <div className="flex items-center gap-3">
-          <Link 
-            href="/tests/new" 
+          <button 
+            onClick={() => setActiveModal('custom')}
             className="flex flex-col items-center justify-center p-3 sm:px-4 sm:py-2 rounded-xl border-2 border-dashed border-cyan-200 bg-cyan-50/50 hover:bg-cyan-50 hover:border-cyan-400 transition-colors group relative overflow-hidden"
           >
             <div className="flex items-center gap-2">
@@ -72,10 +75,10 @@ export default function TestsClient({ sessions }: { sessions: TestSessionItem[] 
               <span className="text-sm font-bold text-cyan-800">Custom Mock Test</span>
               <Plus className="h-4 w-4 text-cyan-500 opacity-50 group-hover:opacity-100 transition-opacity" />
             </div>
-          </Link>
+          </button>
           
-          <Link 
-            href="/tests/jee" 
+          <button 
+            onClick={() => setActiveModal('jee')}
             className="flex flex-col items-center justify-center p-3 sm:px-4 sm:py-2 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/50 hover:bg-amber-50 hover:border-amber-400 transition-colors group relative overflow-hidden"
           >
             <div className="flex items-center gap-2">
@@ -83,7 +86,7 @@ export default function TestsClient({ sessions }: { sessions: TestSessionItem[] 
               <span className="text-sm font-bold text-amber-800">JEE Mains Test</span>
               <Plus className="h-4 w-4 text-amber-500 opacity-50 group-hover:opacity-100 transition-opacity" />
             </div>
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -139,6 +142,29 @@ export default function TestsClient({ sessions }: { sessions: TestSessionItem[] 
             <TestSessionCard key={session.id} session={session} />
           ))}
         </div>
+      )}
+
+      {/* Modals */}
+      {setupData && (
+        <>
+          <Modal 
+            isOpen={activeModal === 'custom'} 
+            onClose={() => setActiveModal('none')} 
+            title="Custom Mock Test"
+            maxWidth="max-w-2xl"
+          >
+            <CustomTestModalContent subjects={setupData.subjects} chapters={setupData.chapters} />
+          </Modal>
+
+          <Modal 
+            isOpen={activeModal === 'jee'} 
+            onClose={() => setActiveModal('none')} 
+            title="JEE Mains Mock"
+            maxWidth="max-w-xl"
+          >
+            <JeeMockModalContent jeeAvail={setupData.jeeAvail} />
+          </Modal>
+        </>
       )}
     </div>
   )
