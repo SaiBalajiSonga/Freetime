@@ -132,7 +132,7 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
               >
                 {tab.label}
                 {counts[tab.key] > 0 && (
-                  <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-sm ${
                     isActive ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'bg-slate-100 text-muted'
                   }`}>
                     {counts[tab.key]}
@@ -140,7 +140,7 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
                 )}
                 {/* Active underline */}
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[var(--color-primary)] rounded-t-full" />
+                  <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[var(--color-primary)] rounded-t-sm" />
                 )}
               </button>
             )
@@ -150,8 +150,8 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
 
       {/* ── Content ── */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--color-border)] bg-white py-16 text-center">
-          <div className="size-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4">
+        <div className="rounded-md border border-dashed border-[var(--color-border)] bg-white py-16 text-center">
+          <div className="size-14 rounded-md bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4">
             <ClipboardList className="h-7 w-7 text-slate-300" />
           </div>
           <p className="font-bold text-foreground mb-1">
@@ -246,7 +246,7 @@ function TestSessionCard({ session, index }: { session: TestSessionItem, index?:
   const estimatedMaxMarks = totalQs * 4
 
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.1)] hover:border-slate-300/80">
+    <div className="rounded-md border border-slate-200/80 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.1)] hover:border-slate-300/80">
       <div className="p-4 sm:p-5 flex flex-col gap-4">
         
         {/* Top Header: Icon + Title + Badge */}
@@ -254,7 +254,7 @@ function TestSessionCard({ session, index }: { session: TestSessionItem, index?:
           
           <div className="flex items-start gap-4 flex-1 min-w-0">
             <div className="flex-shrink-0">
-              <div className={`size-16 rounded-lg ${iconBg} flex items-center justify-center shadow-sm`}>
+              <div className={`size-16 rounded-md ${iconBg} flex items-center justify-center shadow-sm`}>
                 <Icon className="h-7 w-7 text-white" />
               </div>
             </div>
@@ -285,33 +285,33 @@ function TestSessionCard({ session, index }: { session: TestSessionItem, index?:
         {/* Date Boxes / Score section */}
         {session.status === 'attempted' ? (
           <div className="flex gap-3 max-w-[500px]">
-            <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+            <div className="flex-1 bg-slate-50/50 rounded-md border border-slate-100 flex flex-col overflow-hidden">
               <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Score</span>
               <span className="text-[13px] text-center text-slate-800 font-bold py-2">{session.score} / {session.max_score}</span>
             </div>
-            <div className="flex-1 bg-green-50/50 rounded-lg border border-green-100 flex flex-col overflow-hidden">
+            <div className="flex-1 bg-green-50/50 rounded-md border border-green-100 flex flex-col overflow-hidden">
               <span className="text-[10px] text-center text-green-600 py-1.5 bg-green-50 border-b border-green-100">Correct</span>
               <span className="text-[13px] text-center text-green-700 font-bold py-2">{session.correct ?? 0}</span>
             </div>
-            <div className="flex-1 bg-red-50/50 rounded-lg border border-red-100 flex flex-col overflow-hidden">
+            <div className="flex-1 bg-red-50/50 rounded-md border border-red-100 flex flex-col overflow-hidden">
               <span className="text-[10px] text-center text-red-500 py-1.5 bg-red-50 border-b border-red-100">Wrong</span>
               <span className="text-[13px] text-center text-red-600 font-bold py-2">{session.incorrect ?? 0}</span>
             </div>
-            <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-200 flex flex-col overflow-hidden">
+            <div className="flex-1 bg-slate-50/50 rounded-md border border-slate-200 flex flex-col overflow-hidden">
               <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-100 border-b border-slate-200">Skipped</span>
               <span className="text-[13px] text-center text-slate-600 font-bold py-2">{session.unattempted ?? 0}</span>
             </div>
           </div>
         ) : (
           <div className="flex gap-3 max-w-[500px]">
-            <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+            <div className="flex-1 bg-slate-50/50 rounded-md border border-slate-100 flex flex-col overflow-hidden">
               <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Created On</span>
               <span className="text-xs text-center text-slate-700 font-medium py-2 flex items-center justify-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5 text-amber-500" /> {formatDate(session.created_at)}
               </span>
             </div>
             {session.expires_at && (
-              <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+              <div className="flex-1 bg-slate-50/50 rounded-md border border-slate-100 flex flex-col overflow-hidden">
                 <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Expires</span>
                 <span className="text-xs text-center text-slate-700 font-medium py-2 flex items-center justify-center gap-1.5">
                   <Clock className="h-3.5 w-3.5 text-amber-500" /> {formatDate(session.expires_at)}
