@@ -12,11 +12,11 @@ export default function DashboardLoading() {
         <div className="skeleton-block-dark skeleton-text w-64 mt-2" />
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── Zone 1: Stat cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="rounded-xl border border-[#1e2536] bg-[#0f1629] p-5 space-y-3">
-            <div className="flex items-center justify-between">
+          <div key={i} className="rounded-lg bg-[#161b27] border border-[#2a3142] p-5 space-y-3">
+            <div className="flex items-start justify-between">
               <div className="skeleton-block-dark skeleton-circle size-9" />
               <div className="skeleton-block-dark skeleton-text w-12" />
             </div>
@@ -26,31 +26,21 @@ export default function DashboardLoading() {
         ))}
       </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-[#1e2536] bg-[#0f1629] p-5 space-y-4">
-          <div className="skeleton-block-dark skeleton-text-lg w-32" />
-          <div className="skeleton-block-dark h-48 rounded-lg" />
+      {/* ── Zone 2: 5-col grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        
+        {/* Left: 3/5 */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
+          <div className="rounded-lg border border-[#2a3142] bg-[#161b27] p-5 h-64 skeleton-block-dark" />
+          <div className="rounded-lg border border-[#2a3142] bg-[#161b27] p-5 h-64 skeleton-block-dark" />
         </div>
-        <div className="rounded-xl border border-[#1e2536] bg-[#0f1629] p-5 space-y-4">
-          <div className="skeleton-block-dark skeleton-text-lg w-28" />
-          <div className="skeleton-block-dark h-48 rounded-lg" />
-        </div>
-      </div>
 
-      {/* Table */}
-      <div className="rounded-xl border border-[#1e2536] bg-[#0f1629] p-5 space-y-4">
-        <div className="skeleton-block-dark skeleton-text-lg w-36" />
-        <div className="space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center gap-4 py-3 border-b border-[#1e2536] last:border-0">
-              <div className="skeleton-block-dark skeleton-circle size-8" />
-              <div className="skeleton-block-dark skeleton-text flex-1" />
-              <div className="skeleton-block-dark skeleton-text w-16" />
-              <div className="skeleton-block-dark skeleton-text w-20" />
-            </div>
-          ))}
+        {/* Right: 2/5 */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="rounded-lg border border-[#2a3142] bg-[#161b27] p-5 h-48 skeleton-block-dark" />
+          <div className="rounded-lg border border-[#2a3142] bg-[#161b27] p-5 h-64 skeleton-block-dark" />
         </div>
+
       </div>
     </div>
   )
