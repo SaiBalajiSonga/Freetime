@@ -29,7 +29,7 @@ export default async function ExamDetailPage({
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/')
 
   const { data: exam } = await supabase
     .from('weekly_exams')

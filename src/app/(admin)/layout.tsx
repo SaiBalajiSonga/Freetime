@@ -16,7 +16,7 @@ export default async function AdminLayout({
 
   const [{ data: { user } }] = await Promise.all([supabase.auth.getUser()])
 
-  if (!user) redirect('/login')
+  if (!user) redirect('/')
 
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
@@ -52,7 +52,7 @@ export default async function AdminLayout({
           <div className="flex items-center gap-4 ml-auto">
             {/* Profile Dropdown */}
             <div className="scale-90 origin-right">
-              <NavAuth initialUser={user} initialProfile={profile} />
+              <NavAuth initialUser={user} initialProfile={profile} theme="dark" />
             </div>
           </div>
         </header>

@@ -11,7 +11,7 @@ export default async function AdminAnnouncementsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/')
   }
 
   // Check admin status

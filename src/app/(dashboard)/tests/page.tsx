@@ -27,7 +27,7 @@ export default async function TestsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/')
   }
 
   // Fetch all sessions (you might want to paginate or limit this in a real app, but for now we fetch all recent)

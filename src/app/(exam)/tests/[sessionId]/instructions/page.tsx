@@ -8,7 +8,7 @@ export default async function InstructionsPage(props: { params: Promise<{ sessio
   
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return redirect('/login')
+  if (!user) return redirect('/')
 
   const { data: session, error } = await supabase
     .from('test_sessions')

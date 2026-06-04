@@ -19,7 +19,7 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/')
   }
 
   // Fetch profile to get real name and last_read_announcement

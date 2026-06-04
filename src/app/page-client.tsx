@@ -99,6 +99,28 @@ export default function LandingPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loginMethod, setLoginMethod] = useState<'id' | 'email' | 'phone'>('id')
   
+  const [rememberMe, setRememberMe] = useState(false)
+  const [identifier, setIdentifier] = useState('')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('freetime_remembered_identifier')
+    if (saved) {
+      setIdentifier(saved)
+      setRememberMe(true)
+      if (saved.includes('@')) setLoginMethod('email')
+      else if (/^\d+$/.test(saved)) setLoginMethod('phone')
+      else setLoginMethod('id')
+    }
+  }, [])
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (rememberMe) {
+      localStorage.setItem('freetime_remembered_identifier', identifier)
+    } else {
+      localStorage.removeItem('freetime_remembered_identifier')
+    }
+  }
+  
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState(COUNTRIES.find(c => c.code === '+91') || COUNTRIES[0])
   const countryDropdownRef = useRef<HTMLDivElement>(null)
@@ -196,13 +218,13 @@ export default function LandingPage() {
               </h1>
 
               {/* Description */}
-              <p className="animate-hero-d2 text-[17px] text-slate-600 leading-relaxed font-[400] max-w-[500px] mt-6">
+              <p className="animate-hero-d2 text-[17px] text-slate-700 leading-relaxed font-[400] max-w-[500px] mt-6">
                 A focused workspace for physics, chemistry, and mathematics — with analytics that surface what to drill next.
               </p>
 
               {/* Social Proof / Avatars */}
               <div className="animate-hero-d2 flex items-center justify-start gap-3.5 mt-8">
-                <div className="flex items-center gap-4 text-[14px] text-slate-500 font-[500]">
+                <div className="flex items-center gap-4 text-[14px] text-slate-600 font-[500]">
                   <div className="flex -space-x-2">
                     <div className="size-8 rounded-full border-2 border-slate-50 bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600 z-30">AS</div>
                     <div className="size-8 rounded-full border-2 border-slate-50 bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-600 z-20">RP</div>
@@ -214,21 +236,21 @@ export default function LandingPage() {
 
               {/* Trust signals */}
               <div className="animate-hero-d3 flex flex-wrap items-center justify-start gap-5 mt-10 text-[13px] font-[450]">
-                <div className="flex items-center gap-2 text-slate-600">
+                <div className="flex items-center gap-2 text-slate-700">
                   <div className="size-5 rounded-md bg-blue-50 flex items-center justify-center border border-blue-100">
                     <Zap className="w-3 h-3 text-blue-500" />
                   </div>
                   High-yield sets
                 </div>
                 <div className="w-px h-3.5 bg-slate-200 hidden sm:block" />
-                <div className="flex items-center gap-2 text-slate-600">
+                <div className="flex items-center gap-2 text-slate-700">
                   <div className="size-5 rounded-md bg-blue-50 flex items-center justify-center border border-blue-100">
                     <Sparkles className="w-3 h-3 text-blue-500" />
                   </div>
                   Real-time analytics
                 </div>
                 <div className="w-px h-3.5 bg-slate-200 hidden sm:block" />
-                <div className="flex items-center gap-2 text-slate-600">
+                <div className="flex items-center gap-2 text-slate-700">
                   <div className="size-5 rounded-md bg-blue-50 flex items-center justify-center border border-blue-100">
                     <Target className="w-3 h-3 text-blue-500" />
                   </div>
@@ -252,14 +274,14 @@ export default function LandingPage() {
                     {authState.error}
                   </div>
                 )}
-                <form action={formAction} className="space-y-6">
+                <form action={formAction} onSubmit={handleFormSubmit} className="space-y-6">
                   <input type="hidden" name="login_method" value={loginMethod} />
                   
                   {/* Method Toggle */}
                   <div className="flex p-1 bg-slate-100/70 rounded-lg border border-slate-200/60">
-                    <button type="button" onClick={() => setLoginMethod('id')} className={`flex-1 py-2 text-[13px] font-[600] rounded-md transition-all ${loginMethod === 'id' ? 'bg-white text-blue-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Unique ID</button>
-                    <button type="button" onClick={() => setLoginMethod('email')} className={`flex-1 py-2 text-[13px] font-[600] rounded-md transition-all ${loginMethod === 'email' ? 'bg-white text-blue-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Email</button>
-                    <button type="button" onClick={() => setLoginMethod('phone')} className={`flex-1 py-2 text-[13px] font-[600] rounded-md transition-all ${loginMethod === 'phone' ? 'bg-white text-blue-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Phone</button>
+                    <button type="button" onClick={() => setLoginMethod('id')} className={`flex-1 py-2 text-[13px] font-[600] rounded-md transition-all ${loginMethod === 'id' ? 'bg-white text-blue-600 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-700'}`}>Unique ID</button>
+                    <button type="button" onClick={() => setLoginMethod('email')} className={`flex-1 py-2 text-[13px] font-[600] rounded-md transition-all ${loginMethod === 'email' ? 'bg-white text-blue-600 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-700'}`}>Email</button>
+                    <button type="button" onClick={() => setLoginMethod('phone')} className={`flex-1 py-2 text-[13px] font-[600] rounded-md transition-all ${loginMethod === 'phone' ? 'bg-white text-blue-600 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-700'}`}>Phone</button>
                   </div>
 
                   <div className="space-y-2">
@@ -276,7 +298,7 @@ export default function LandingPage() {
                           className="flex items-center gap-1.5 w-[75px] justify-center bg-transparent text-[14px] font-[500] text-slate-700 focus:outline-none hover:bg-slate-100/50 border-r border-slate-200 transition-colors"
                         >
                           <span className="text-[15px] font-[600]">{selectedCountry.code}</span>
-                          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
                         </button>
 
                         {isCountryDropdownOpen && (
@@ -293,7 +315,7 @@ export default function LandingPage() {
                                 className={`group flex items-center justify-between w-full px-4 py-1.5 text-left transition-none ${selectedCountry.code === country.code ? 'bg-slate-100' : 'hover:bg-blue-600 text-slate-700 hover:text-white'}`}
                               >
                                 <span className={`text-[13px] truncate max-w-[150px] ${selectedCountry.code === country.code ? 'font-semibold text-slate-900' : 'font-normal group-hover:text-white'}`}>{country.name}</span>
-                                <span className={`text-[13px] shrink-0 ${selectedCountry.code === country.code ? 'font-semibold text-slate-900' : 'text-slate-500 group-hover:text-blue-100'}`}>{country.code}</span>
+                                <span className={`text-[13px] shrink-0 ${selectedCountry.code === country.code ? 'font-semibold text-slate-900' : 'text-slate-600 group-hover:text-blue-100'}`}>{country.code}</span>
                               </button>
                             ))}
                           </div>
@@ -304,12 +326,11 @@ export default function LandingPage() {
                           name="identifier"
                           type="tel" 
                           pattern="[0-9]*"
-                          onInput={(e) => {
-                            e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, '')
-                          }}
+                          value={identifier}
+                          onChange={(e) => setIdentifier(e.target.value.replace(/[^0-9]/g, ''))}
                           placeholder="Enter Phone Number"
                           required
-                          className="flex-1 bg-transparent px-4 text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                          className="flex-1 bg-transparent px-4 text-[15px] text-slate-900 placeholder:text-slate-500 focus:outline-none"
                         />
                       </div>
                     ) : (
@@ -317,9 +338,11 @@ export default function LandingPage() {
                         id="identifier" 
                         name="identifier"
                         type={loginMethod === 'email' ? 'email' : 'text'} 
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
                         placeholder={`Enter ${loginMethod === 'id' ? 'Unique ID' : 'Email Address'}`}
                         required
-                        className="w-full h-[52px] px-5 rounded-lg border border-slate-200 bg-slate-50/50 text-[15px] text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm"
+                        className="w-full h-[52px] px-5 rounded-lg border border-slate-200 bg-slate-50/50 text-[15px] text-slate-900 placeholder:text-slate-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm"
                       />
                     )}
                   </div>
@@ -333,12 +356,12 @@ export default function LandingPage() {
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Enter Password"
                         required
-                        className={`w-full h-[52px] py-0 leading-[52px] pl-5 pr-12 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm placeholder:text-[15px] placeholder:tracking-normal placeholder:font-normal ${!showPassword ? 'text-[20px] tracking-[0.15em] font-medium' : 'text-[15px]'}`}
+                        className={`w-full h-[52px] py-0 leading-[52px] pl-5 pr-12 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-900 placeholder:text-slate-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all shadow-sm placeholder:text-[15px] placeholder:tracking-normal placeholder:font-normal ${!showPassword ? 'text-[20px] tracking-[0.15em] font-medium' : 'text-[15px]'}`}
                       />
                       <button 
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 transition-colors focus:outline-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 transition-colors focus:outline-none"
                         title={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? <EyeOff className="w-[22px] h-[22px]" strokeWidth={1.25} /> : <Eye className="w-[22px] h-[22px]" strokeWidth={1.25} />}
@@ -346,18 +369,35 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <p className="text-[13px] text-slate-500 font-[400] leading-relaxed">
+                  <p className="text-[13px] text-slate-600 font-[400] leading-relaxed">
                     By Proceeding you are automatically accepting to <Link href="#" className="underline hover:text-slate-700 transition-colors underline-offset-2">T&C</Link> and <Link href="#" className="underline hover:text-slate-700 transition-colors underline-offset-2">Privacy policy</Link>.
                   </p>
 
-                  <div className="flex items-center justify-between pt-2">
-                    <Link href="#" className="text-[14px] font-[500] text-slate-500 hover:text-slate-900 transition-colors">
+                  <div className="flex items-center justify-between pt-1 pb-2">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className="relative flex items-center justify-center">
+                        <input 
+                          type="checkbox" 
+                          name="remember_me"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          className="peer appearance-none w-4 h-4 rounded-[4px] border border-slate-300 bg-slate-50 checked:bg-blue-600 checked:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all cursor-pointer" 
+                        />
+                        <svg className="absolute w-2.5 h-2.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 10" fill="none">
+                          <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <span className="text-[13px] font-[500] text-slate-600 group-hover:text-slate-800 transition-colors select-none">Remember me</span>
+                    </label>
+
+                    <Link href="#" className="text-[13px] font-[500] text-blue-600 hover:text-blue-700 transition-colors">
                       Forgot password?
                     </Link>
-                    <button type="submit" disabled={isPending} className="h-[48px] px-8 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-[600] text-[15px] shadow-lg shadow-blue-600/25 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed">
-                      {isPending ? 'Logging in...' : 'Login'}
-                    </button>
                   </div>
+
+                  <button type="submit" disabled={isPending} className="h-[48px] w-full rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-[600] text-[15px] shadow-lg shadow-blue-600/25 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed">
+                    {isPending ? 'Logging in...' : 'Login'}
+                  </button>
 
                 </form>
               </div>
@@ -374,19 +414,19 @@ export default function LandingPage() {
                 <span className="px-2.5 py-1 text-[11px] font-[600] rounded-full bg-blue-50 text-blue-600 border border-blue-100">Physics</span>
                 <span className="text-[10px] font-[600] uppercase px-2 py-0.5 rounded-md bg-red-50 text-red-500 border border-red-100">Hard</span>
               </div>
-              <p className="text-[12px] font-[500] text-slate-500 mb-1.5">Rotational Dynamics</p>
+              <p className="text-[12px] font-[500] text-slate-600 mb-1.5">Rotational Dynamics</p>
               <p className="text-[14px] font-[450] text-slate-700 leading-relaxed line-clamp-3">
                 A uniform solid cylinder of mass M and radius R rolls without slipping down a plane inclined at angle θ. Determine its linear acceleration.
               </p>
               <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between">
-                <span className="text-[11px] text-slate-500">JEE Advanced</span>
+                <span className="text-[11px] text-slate-600">JEE Advanced</span>
                 <span className="text-[12px] font-[500] text-blue-600">View Solution →</span>
               </div>
             </div>
 
             {/* Card 2 — Accuracy Stat */}
             <div className="animate-float-d1 bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow duration-300">
-              <p className="text-[12px] font-[600] text-slate-500 tracking-wide uppercase">Accuracy Rate</p>
+              <p className="text-[12px] font-[600] text-slate-600 tracking-wide uppercase">Accuracy Rate</p>
               <h3 className="text-[40px] font-[700] font-mono text-slate-900 tracking-tight mt-1 leading-none">98%</h3>
               <div className="flex items-end justify-between mt-4">
                 <span className="text-[12px] font-[500] flex items-center gap-1 text-emerald-600">
@@ -403,7 +443,7 @@ export default function LandingPage() {
             {/* Card 3 — Streak */}
             <div className="animate-float-d2 bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-[600] text-slate-500 uppercase tracking-widest">Consistency</span>
+                <span className="text-[11px] font-[600] text-slate-600 uppercase tracking-widest">Consistency</span>
                 <span className="text-[11px] font-[500] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Active</span>
               </div>
               <div className="flex items-center gap-2.5 mt-1">
@@ -412,7 +452,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-[22px] font-[600] text-slate-900 leading-tight font-editorial">47 day streak</h3>
               </div>
-              <p className="text-[12px] text-slate-500 mt-1.5">Excellent mock consistency this month.</p>
+              <p className="text-[12px] text-slate-600 mt-1.5">Excellent mock consistency this month.</p>
               <div className="mt-3 pt-3 border-t border-slate-200">
                 <div className="grid grid-flow-col grid-rows-4 gap-1 justify-start">
                   {[0,1,0,2,3,0,1,2,0,1,0,2,2,3,1,1,0,3,0,2,1,2,3,2,3,2,3,3].map((a, i) => (
@@ -436,28 +476,28 @@ export default function LandingPage() {
             <h3 className="text-[32px] font-[700] font-mono text-slate-900 leading-none">
               <CountUp end="12,400+" />
             </h3>
-            <p className="text-[13px] font-[400] text-slate-500 mt-2">Active aspirants</p>
+            <p className="text-[13px] font-[400] text-slate-600 mt-2">Active aspirants</p>
           </div>
 
           <div className="reveal reveal-d1">
             <h3 className="text-[32px] font-[700] font-mono text-slate-900 leading-none">
               <CountUp end="1,200+" />
             </h3>
-            <p className="text-[13px] font-[400] text-slate-500 mt-2">Practice questions</p>
+            <p className="text-[13px] font-[400] text-slate-600 mt-2">Practice questions</p>
           </div>
 
           <div className="reveal reveal-d2">
             <h3 className="text-[32px] font-[700] font-mono text-slate-900 leading-none">
               <CountUp end="3" />
             </h3>
-            <p className="text-[13px] font-[400] text-slate-500 mt-2">Subjects covered</p>
+            <p className="text-[13px] font-[400] text-slate-600 mt-2">Subjects covered</p>
           </div>
 
           <div className="reveal reveal-d3">
             <h3 className="text-[32px] font-[700] font-mono text-slate-900 leading-none">
               <CountUp end="98%" />
             </h3>
-            <p className="text-[13px] font-[400] text-slate-500 mt-2">Mock accuracy claimed</p>
+            <p className="text-[13px] font-[400] text-slate-600 mt-2">Mock accuracy claimed</p>
           </div>
 
         </div>
@@ -475,7 +515,7 @@ export default function LandingPage() {
           <h2 className="text-[2.5rem] md:text-[3rem] font-[700] font-sans mt-3 mb-4 text-slate-900 tracking-tight leading-[1.1]">
             Built for serious prep
           </h2>
-          <p className="text-slate-600 text-[17px] font-[400] leading-relaxed">
+          <p className="text-slate-700 text-[17px] font-[400] leading-relaxed">
             Move away from gamified quiz interfaces. Train in a high-density, focus-first study workspace.
           </p>
         </div>
@@ -489,14 +529,14 @@ export default function LandingPage() {
                 <Brain className="w-5 h-5 text-blue-600" />
               </div>
               <h3 className="text-[24px] font-[600] text-slate-900 mb-3 tracking-tight">Difficulty that scales</h3>
-              <p className="text-slate-600 text-[15px] font-[400] leading-relaxed max-w-md">
+              <p className="text-slate-700 text-[15px] font-[400] leading-relaxed max-w-md">
                 Move from fundamentals to exam tempo without jumping into chaos. Our adaptive engine keeps you in the stretch zone — where real growth happens.
               </p>
             </div>
             <div className="mt-10">
-              <div className="text-[11px] font-mono text-slate-500 uppercase tracking-wider mb-3">Stretch Zone Scale</div>
+              <div className="text-[11px] font-mono text-slate-600 uppercase tracking-wider mb-3">Stretch Zone Scale</div>
               <div className="h-2 rounded-full w-full bg-gradient-to-r from-emerald-400 via-blue-400 to-violet-500 shadow-sm" />
-              <div className="flex justify-between text-[10px] text-slate-500 mt-1.5 font-mono">
+              <div className="flex justify-between text-[10px] text-slate-600 mt-1.5 font-mono">
                 <span>Fundamentals</span>
                 <span>Exam Level</span>
               </div>
@@ -509,11 +549,11 @@ export default function LandingPage() {
               <Activity className="w-4 h-4 text-blue-600" />
             </div>
             <h3 className="text-[20px] font-[600] text-slate-900 mb-2 tracking-tight">Analytics you can act on</h3>
-            <p className="text-slate-600 text-[14px] font-[400] leading-relaxed">
+            <p className="text-slate-700 text-[14px] font-[400] leading-relaxed">
               See streaks, accuracy, and topic load — so your next session is a decision, not a guess.
             </p>
             <div className="mt-5 flex items-center justify-between">
-              <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">Velocity</span>
+              <span className="text-[11px] font-mono text-slate-600 uppercase tracking-wider">Velocity</span>
               <svg className="w-24 h-6 text-emerald-500" viewBox="0 0 100 20" fill="none">
                 <path d="M0 15 L20 18 L40 10 L60 12 L80 4 L100 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
@@ -526,11 +566,11 @@ export default function LandingPage() {
               <Trophy className="w-4 h-4 text-emerald-600" />
             </div>
             <h3 className="text-[20px] font-[600] text-slate-900 mb-2 tracking-tight">Motivation without noise</h3>
-            <p className="text-slate-600 text-[14px] font-[400] leading-relaxed">
+            <p className="text-slate-700 text-[14px] font-[400] leading-relaxed">
               Leaderboards and streaks that reward consistency — tuned to feel premium, not arcade-y.
             </p>
             <div className="mt-5 flex items-center justify-between">
-              <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">Consistency</span>
+              <span className="text-[11px] font-mono text-slate-600 uppercase tracking-wider">Consistency</span>
               <div className="flex gap-1">
                 {[20, 50, 100, 100, 80].map((opacity, i) => (
                   <div key={i} className="size-3 rounded-[3px]" style={{ backgroundColor: `rgba(16, 185, 129, ${opacity / 100})` }} />
@@ -554,7 +594,7 @@ export default function LandingPage() {
             <h2 className="text-[2.5rem] md:text-[3rem] font-[700] font-sans mt-3 mb-4 text-slate-900 tracking-tight leading-[1.1]">
               Your prep feed, curated by performance
             </h2>
-            <p className="text-slate-600 text-[17px] font-[400] leading-relaxed">
+            <p className="text-slate-700 text-[17px] font-[400] leading-relaxed">
               Every mock rank, missed reaction, or study habit aggregated into a single editorial feed.
             </p>
           </div>
@@ -567,19 +607,19 @@ export default function LandingPage() {
                 <span className="px-2.5 py-1 text-[11px] font-[600] rounded-full bg-blue-50 text-blue-600 border border-blue-100">Physics</span>
                 <span className="text-[10px] font-[600] uppercase px-2 py-0.5 rounded-md bg-red-50 text-red-500 border border-red-100">Hard</span>
               </div>
-              <p className="text-[12px] font-[500] text-slate-500 mb-1">JEE Advanced 2023 · Mechanics</p>
+              <p className="text-[12px] font-[500] text-slate-600 mb-1">JEE Advanced 2023 · Mechanics</p>
               <p className="text-[14px] font-[450] text-slate-700 leading-relaxed line-clamp-3">
                 A particle is projected from the ground with velocity u at angle α. If its horizontal range is maximum, find the time of flight.
               </p>
               <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between">
-                <span className="text-[11px] text-slate-500">JEE Advanced Syllabus</span>
+                <span className="text-[11px] text-slate-600">JEE Advanced Syllabus</span>
                 <span className="text-[12px] font-[500] text-blue-600 cursor-pointer">View Solution →</span>
               </div>
             </div>
 
             {/* Showcase 2 — Weekly Stat */}
             <div className="reveal reveal-d1 bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <p className="text-[12px] font-[600] text-slate-500 tracking-wide uppercase">Accuracy This Week</p>
+              <p className="text-[12px] font-[600] text-slate-600 tracking-wide uppercase">Accuracy This Week</p>
               <h3 className="text-[36px] font-[700] font-mono text-slate-900 tracking-tight mt-1 leading-none">94.2%</h3>
               <div className="flex items-end justify-between mt-3">
                 <span className="text-[12px] font-[500] flex items-center gap-1 text-emerald-600">
@@ -601,9 +641,9 @@ export default function LandingPage() {
                     <FlaskConical className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-[500] text-slate-500 tracking-wider uppercase">Chemistry</span>
+                    <span className="text-[11px] font-[500] text-slate-600 tracking-wider uppercase">Chemistry</span>
                     <h4 className="text-[15px] font-[600] text-slate-900 leading-tight mt-0.5">Electrochemistry</h4>
-                    <p className="text-[12px] text-slate-500 mt-0.5">16 problems left</p>
+                    <p className="text-[12px] text-slate-600 mt-0.5">16 problems left</p>
                   </div>
                 </div>
                 <div className="relative size-11 shrink-0">
@@ -614,7 +654,7 @@ export default function LandingPage() {
                       strokeDashoffset={2 * Math.PI * 16 * (1 - 34 / 50)}
                       strokeLinecap="round" />
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono text-slate-600">68%</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono text-slate-700">68%</span>
                 </div>
               </div>
             </div>
@@ -626,7 +666,7 @@ export default function LandingPage() {
                   <Trophy className="w-4 h-4 text-blue-500" />
                   JEE Mains Mock · Week 22
                 </h4>
-                <span className="text-[10px] text-slate-500 tracking-widest uppercase">Live</span>
+                <span className="text-[10px] text-slate-600 tracking-widest uppercase">Live</span>
               </div>
               <div className="space-y-1.5">
                 {[
@@ -637,16 +677,16 @@ export default function LandingPage() {
                 ].map((u) => (
                   <div key={u.rank} className={`flex items-center justify-between p-2 rounded-xl border transition-all ${u.highlight ? 'bg-blue-50 border-blue-200' : 'bg-slate-50/50 border-slate-200 hover:border-slate-200'}`}>
                     <div className="flex items-center gap-2.5">
-                      <span className={`text-[11px] font-mono shrink-0 w-4 text-center ${u.rank === 1 ? 'text-blue-600 font-bold' : 'text-slate-500'}`}>#{u.rank}</span>
+                      <span className={`text-[11px] font-mono shrink-0 w-4 text-center ${u.rank === 1 ? 'text-blue-600 font-bold' : 'text-slate-600'}`}>#{u.rank}</span>
                       <div className={`size-6 rounded-full ${u.color} flex items-center justify-center text-[9px] font-[600] text-white shrink-0`}>{u.initials}</div>
                       <span className={`text-[13px] font-[450] text-slate-700 ${u.highlight ? 'font-[600]' : ''}`}>{u.name}</span>
                     </div>
-                    <span className="text-[12px] font-mono text-slate-600">{u.score}</span>
+                    <span className="text-[12px] font-mono text-slate-700">{u.score}</span>
                   </div>
                 ))}
               </div>
               <div className="mt-3 pt-3 border-t border-slate-200 text-center">
-                <p className="text-[11px] text-slate-600">You&apos;re <strong className="text-blue-600">#4</strong> — 2 spots from podium</p>
+                <p className="text-[11px] text-slate-700">You&apos;re <strong className="text-blue-600">#4</strong> — 2 spots from podium</p>
               </div>
             </div>
 
@@ -658,11 +698,11 @@ export default function LandingPage() {
               <h4 className="text-[17px] font-[600] text-slate-900 leading-tight mt-3">
                 Organic Chemistry — Named Reactions
               </h4>
-              <p className="text-[12px] text-slate-600 mt-1.5 leading-relaxed">
+              <p className="text-[12px] text-slate-700 mt-1.5 leading-relaxed">
                 You missed 4 of your last 5 questions covering nucleophilic substitution reactions here.
               </p>
               <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between">
-                <span className="text-[11px] text-slate-500">High Yield Chapter</span>
+                <span className="text-[11px] text-slate-600">High Yield Chapter</span>
                 <Link href="/#auth" className="text-[12px] font-[500] text-blue-600 hover:text-blue-700 transition-colors">
                   Start Drill →
                 </Link>
@@ -672,8 +712,8 @@ export default function LandingPage() {
             {/* Showcase 6 — Time Breakdown */}
             <div className="reveal reveal-d3 bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] font-[600] text-slate-500 tracking-wider uppercase">Time Breakdown</span>
-                <span className="text-[10px] font-mono text-slate-500">Session Split</span>
+                <span className="text-[11px] font-[600] text-slate-600 tracking-wider uppercase">Time Breakdown</span>
+                <span className="text-[10px] font-mono text-slate-600">Session Split</span>
               </div>
               <div className="space-y-3">
                 {[
@@ -683,8 +723,8 @@ export default function LandingPage() {
                 ].map((s) => (
                   <div key={s.label}>
                     <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-slate-600 font-[500]">{s.label}</span>
-                      <span className="text-slate-500 font-mono">{s.pct}%</span>
+                      <span className="text-slate-700 font-[500]">{s.label}</span>
+                      <span className="text-slate-600 font-mono">{s.pct}%</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-slate-100">
                       <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.pct}%` }} />
@@ -692,7 +732,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-200 text-center text-[11px] text-slate-500">
+              <div className="mt-4 pt-3 border-t border-slate-200 text-center text-[11px] text-slate-600">
                 Aggregated sessions · May 2026
               </div>
             </div>
@@ -712,7 +752,7 @@ export default function LandingPage() {
           <h2 className="text-[2.5rem] md:text-[3rem] font-[700] font-sans mt-3 mb-4 text-slate-900 tracking-tight leading-[1.1]">
             Every pillar of JEE, covered in depth
           </h2>
-          <p className="text-slate-600 text-[17px] font-[400] leading-relaxed">
+          <p className="text-slate-700 text-[17px] font-[400] leading-relaxed">
             From basic particle motion equations to advanced stereochemistry structures.
           </p>
         </div>
@@ -738,11 +778,11 @@ export default function LandingPage() {
             <div className="p-6">
               <div className="flex flex-wrap gap-1.5">
                 {['Mechanics', 'Electrostatics', 'Optics', 'Modern Physics', 'Thermodynamics'].map((ch, i) => (
-                  <span key={i} className="text-[11px] font-[500] text-slate-600 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200">{ch}</span>
+                  <span key={i} className="text-[11px] font-[500] text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200">{ch}</span>
                 ))}
               </div>
               <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-200">
-                <span className="text-[12px] text-slate-500">Curated syllabus</span>
+                <span className="text-[12px] text-slate-600">Curated syllabus</span>
                 <Link href="/#auth" className="text-[13px] font-[500] text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors">
                   Explore <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -768,11 +808,11 @@ export default function LandingPage() {
             <div className="p-6">
               <div className="flex flex-wrap gap-1.5">
                 {['Organic', 'Inorganic', 'Physical', 'Electrochemistry', 'Equilibrium'].map((ch, i) => (
-                  <span key={i} className="text-[11px] font-[500] text-slate-600 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200">{ch}</span>
+                  <span key={i} className="text-[11px] font-[500] text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200">{ch}</span>
                 ))}
               </div>
               <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-200">
-                <span className="text-[12px] text-slate-500">Curated syllabus</span>
+                <span className="text-[12px] text-slate-600">Curated syllabus</span>
                 <Link href="/#auth" className="text-[13px] font-[500] text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
                   Explore <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -799,11 +839,11 @@ export default function LandingPage() {
             <div className="p-6">
               <div className="flex flex-wrap gap-1.5">
                 {['Calculus', 'Algebra', 'Coordinate Geometry', 'Vectors', 'Probability'].map((ch, i) => (
-                  <span key={i} className="text-[11px] font-[500] text-slate-600 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200">{ch}</span>
+                  <span key={i} className="text-[11px] font-[500] text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200">{ch}</span>
                 ))}
               </div>
               <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-200">
-                <span className="text-[12px] text-slate-500">Curated syllabus</span>
+                <span className="text-[12px] text-slate-600">Curated syllabus</span>
                 <Link href="/#auth" className="text-[13px] font-[500] text-violet-600 hover:text-violet-700 flex items-center gap-1 transition-colors">
                   Explore <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -826,7 +866,7 @@ export default function LandingPage() {
             <h2 className="text-[2.5rem] md:text-[3rem] font-[700] font-sans mt-3 mb-4 text-slate-900 tracking-tight leading-[1.1]">
               Approved by India&apos;s top achievers
             </h2>
-            <p className="text-slate-600 text-[17px] font-[400] leading-relaxed">
+            <p className="text-slate-700 text-[17px] font-[400] leading-relaxed">
               Read how serious JEE aspirants use JEEsociety Plus to elevate their preparation.
             </p>
           </div>
@@ -876,7 +916,7 @@ export default function LandingPage() {
                     <Star key={j} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
-                <p className="text-[15px] font-[400] text-slate-600 leading-relaxed mb-5 italic">
+                <p className="text-[15px] font-[400] text-slate-700 leading-relaxed mb-5 italic">
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
@@ -885,7 +925,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <h5 className="text-[14px] font-[600] text-slate-900">{t.name}</h5>
-                    <p className="text-[12px] text-slate-500 mt-0.5">{t.rank}</p>
+                    <p className="text-[12px] text-slate-600 mt-0.5">{t.rank}</p>
                   </div>
                 </div>
               </div>
@@ -910,39 +950,39 @@ export default function LandingPage() {
               <span className="text-[17px] font-[600] text-slate-900 tracking-tight">JEEsociety</span>
               <span className="text-[11px] font-[600] bg-blue-600/10 text-blue-600 px-2 py-0.5 rounded-full border border-blue-200/60">Plus</span>
             </div>
-            <p className="text-[13px] font-[400] text-slate-500 leading-relaxed max-w-[240px]">
+            <p className="text-[13px] font-[400] text-slate-600 leading-relaxed max-w-[240px]">
               Curating depth-first practice grids for India&apos;s most serious JEE Advanced candidates.
             </p>
           </div>
 
           {/* Product */}
           <div className="flex flex-col gap-2.5 text-[14px]">
-            <h5 className="font-[600] text-slate-500 tracking-wider uppercase text-[11px] mb-1">Product</h5>
-            <Link href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">Features</Link>
-            <Link href="#subjects" className="text-slate-600 hover:text-slate-900 transition-colors">Subjects</Link>
-            <Link href="/#auth" className="text-slate-600 hover:text-slate-900 transition-colors">Leaderboard</Link>
-            <Link href="/#auth" className="text-slate-600 hover:text-slate-900 transition-colors">Mock Tests</Link>
+            <h5 className="font-[600] text-slate-600 tracking-wider uppercase text-[11px] mb-1">Product</h5>
+            <Link href="#features" className="text-slate-700 hover:text-slate-900 transition-colors">Features</Link>
+            <Link href="#subjects" className="text-slate-700 hover:text-slate-900 transition-colors">Subjects</Link>
+            <Link href="/#auth" className="text-slate-700 hover:text-slate-900 transition-colors">Leaderboard</Link>
+            <Link href="/#auth" className="text-slate-700 hover:text-slate-900 transition-colors">Mock Tests</Link>
           </div>
 
           {/* Community */}
           <div className="flex flex-col gap-2.5 text-[14px]">
-            <h5 className="font-[600] text-slate-500 tracking-wider uppercase text-[11px] mb-1">Community</h5>
-            <Link href="#" className="text-slate-600 hover:text-slate-900 transition-colors">WhatsApp Group</Link>
-            <Link href="#" className="text-slate-600 hover:text-slate-900 transition-colors">Discord</Link>
+            <h5 className="font-[600] text-slate-600 tracking-wider uppercase text-[11px] mb-1">Community</h5>
+            <Link href="#" className="text-slate-700 hover:text-slate-900 transition-colors">WhatsApp Group</Link>
+            <Link href="#" className="text-slate-700 hover:text-slate-900 transition-colors">Discord</Link>
           </div>
 
           {/* Legal */}
           <div className="flex flex-col gap-2.5 text-[14px]">
-            <h5 className="font-[600] text-slate-500 tracking-wider uppercase text-[11px] mb-1">Legal</h5>
-            <Link href="#" className="text-slate-600 hover:text-slate-900 transition-colors">Privacy Policy</Link>
-            <Link href="#" className="text-slate-600 hover:text-slate-900 transition-colors">Terms of Service</Link>
+            <h5 className="font-[600] text-slate-600 tracking-wider uppercase text-[11px] mb-1">Legal</h5>
+            <Link href="#" className="text-slate-700 hover:text-slate-900 transition-colors">Privacy Policy</Link>
+            <Link href="#" className="text-slate-700 hover:text-slate-900 transition-colors">Terms of Service</Link>
           </div>
 
         </div>
 
         <div className="max-w-[1400px] mx-auto px-6 lg:px-16 border-t border-slate-200 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[12px] text-slate-500">&copy; 2026 JEEsociety Plus. All rights reserved.</p>
-          <span className="text-[12px] text-slate-500">Made for JEE aspirants, by JEE aspirants</span>
+          <p className="text-[12px] text-slate-600">&copy; 2026 JEEsociety Plus. All rights reserved.</p>
+          <span className="text-[12px] text-slate-600">Made for JEE aspirants, by JEE aspirants</span>
         </div>
       </footer>
 

@@ -10,7 +10,7 @@ export const metadata = {
 export default async function ExamsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/')
 
   const { data: exams } = await supabase
     .from('weekly_exams')
