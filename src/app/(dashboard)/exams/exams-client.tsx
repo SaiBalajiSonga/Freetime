@@ -181,146 +181,85 @@ function ExamCard({ exam }: { exam: ExamItem }) {
   const maxMarks = qCount * 4
 
   return (
-    <div className="rounded-2xl border border-[var(--color-border)] bg-white shadow-sm overflow-hidden">
-      {/* Top section */}
-      <div className="p-4 flex items-start gap-4">
-        {/* Icon */}
-        <div className="flex-shrink-0 relative">
-          <div className="size-14 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-[0_4px_12px_rgba(139,92,246,0.35)]">
-            <ClipboardList className="h-7 w-7 text-white" />
+    <div className="rounded-xl border border-slate-200/80 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.1)] hover:border-slate-300/80">
+      <div className="p-4 sm:p-5 flex flex-col gap-4">
+        
+        {/* Top Header: Icon + Title + Badge */}
+        <div className="flex items-start justify-between gap-4">
+          
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            <div className="flex-shrink-0">
+              <div className="size-16 rounded-lg bg-[#B09EFF] flex items-center justify-center shadow-sm">
+                <ClipboardList className="h-7 w-7 text-white" />
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0 pt-1">
+              <h3 className="font-bold text-slate-800 text-[16px] leading-tight mb-1.5 truncate">{exam.title}</h3>
+              <div className="flex items-center flex-wrap gap-x-1.5 gap-y-1 text-[12px] text-slate-500">
+                <span className="font-medium text-slate-600">{qCount} Qs</span>
+                <span className="text-slate-300">•</span>
+                <span className="font-medium text-slate-600">{exam.duration_minutes} Mins</span>
+                <span className="text-slate-300">•</span>
+                <span className="font-medium text-slate-600">{maxMarks} Marks</span>
+                
+                {exam.status === 'attempted' && exam.session && (
+                  <>
+                    <span className="text-slate-300">•</span>
+                    <span className="font-bold text-violet-600">Score: {exam.session.score}/{exam.session.max_score}</span>
+                  </>
+                )}
+                {exam.status === 'upcoming' && (
+                  <>
+                    <span className="text-slate-300">•</span>
+                    <span className="font-bold text-amber-600">{countdown(exam.starts_at)}</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-          {/* Badge */}
-          <span className={`absolute -top-2 -left-1 text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${cls}`}>
+
+          <span className={`flex-shrink-0 text-[11px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-sm leading-none ${cls}`}>
             {label}
           </span>
         </div>
 
-        {/* Title + meta */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-foreground text-base leading-snug mb-1">{exam.title}</h3>
-          <div className="flex items-center gap-3 text-xs text-muted flex-wrap">
-            <span className="flex items-center gap-1">
-              <BookOpen className="h-3 w-3" />
-              {qCount} Qs
-            </span>
-            <span className="text-muted-2">•</span>
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {exam.duration_minutes} Mins
-            </span>
-            <span className="text-muted-2">•</span>
-            <span className="flex items-center gap-1">
-              <Trophy className="h-3 w-3" />
-              {maxMarks} Marks
+        {/* Date Boxes */}
+        <div className="flex gap-3 max-w-[500px]">
+          <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+            <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Scheduled From</span>
+            <span className="text-[11px] text-center text-slate-700 font-medium py-2 flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <Calendar className="h-3.5 w-3.5 text-amber-500" /> {fmtDate(exam.starts_at)} <Clock className="h-3.5 w-3.5 text-amber-500 ml-0.5" /> {fmtTime(exam.starts_at)}
             </span>
           </div>
-
-          {/* Score (if attempted) */}
-          {exam.status === 'attempted' && exam.session && (
-            <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-violet-600 bg-violet-50 border border-violet-200 rounded-full px-2.5 py-1">
-              <Trophy className="h-3 w-3" />
-              Score: {exam.session.score}/{exam.session.max_score}
-            </div>
-          )}
-
-          {/* Countdown (if upcoming) */}
-          {exam.status === 'upcoming' && (
-            <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
-              <Clock className="h-3 w-3" />
-              {countdown(exam.starts_at)}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* From / Till */}
-      <div className="grid grid-cols-2 border-t border-[var(--color-border)]">
-        <div className="px-4 py-3 border-r border-[var(--color-border)]">
-          <p className="text-[10px] text-muted uppercase tracking-wider font-medium mb-1.5">Scheduled From</p>
-          <div className="flex items-center gap-3 text-xs flex-wrap">
-            <span className="flex items-center gap-1.5 font-semibold text-foreground">
-              <Calendar className="h-3.5 w-3.5 text-violet-400" />
-              {fmtDate(exam.starts_at)}
-            </span>
-            <span className="flex items-center gap-1.5 text-muted font-medium">
-              <Clock className="h-3.5 w-3.5 text-violet-400" />
-              {fmtTime(exam.starts_at)}
-            </span>
-          </div>
-        </div>
-        <div className="px-4 py-3">
-          <p className="text-[10px] text-muted uppercase tracking-wider font-medium mb-1.5">Till</p>
-          <div className="flex items-center gap-3 text-xs flex-wrap">
-            <span className="flex items-center gap-1.5 font-semibold text-foreground">
-              <Calendar className="h-3.5 w-3.5 text-violet-400" />
-              {fmtDate(exam.ends_at)}
-            </span>
-            <span className="flex items-center gap-1.5 text-muted font-medium">
-              <Clock className="h-3.5 w-3.5 text-violet-400" />
-              {fmtTime(exam.ends_at)}
+          <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+            <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Till</span>
+            <span className="text-[11px] text-center text-slate-700 font-medium py-2 flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <Calendar className="h-3.5 w-3.5 text-amber-500" /> {fmtDate(exam.ends_at)} <Clock className="h-3.5 w-3.5 text-amber-500 ml-0.5" /> {fmtTime(exam.ends_at)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Action row */}
-      <div className="border-t border-[var(--color-border)] px-4 py-3 flex items-center justify-between bg-slate-50/60">
-        {exam.status === 'active' && (
-          <>
-            <Link
-              href={`/exams/${exam.id}`}
-              className="text-sm font-extrabold uppercase tracking-wide text-[var(--color-primary)] hover:opacity-80 transition-opacity"
-            >
+      {/* Action row (Aligned under the date blocks) */}
+      <div className="border-t border-slate-100 bg-white flex items-center">
+        <div className="max-w-[500px] w-full flex">
+          <div className="flex-1 flex justify-center py-4">
+            {exam.status === 'active' && <CompactStartButton examId={exam.id} />}
+            {exam.status === 'upcoming' && <span className="text-[12px] font-bold text-slate-400 uppercase tracking-widest cursor-not-allowed">Not Started</span>}
+            {exam.status === 'attempted' && exam.session && (
+              <Link href={`/tests/${exam.session.id}/result`} className="text-[12px] font-bold text-[#0066FF] hover:text-blue-700 transition-colors uppercase tracking-widest">
+                View Result
+              </Link>
+            )}
+            {exam.status === 'missed' && <span className="text-[12px] font-bold text-slate-400 uppercase tracking-widest cursor-not-allowed">Test Expired</span>}
+          </div>
+          <div className="flex-1 flex justify-center py-4">
+            <Link href={`/exams/${exam.id}`} className="text-[12px] font-bold text-[#0066FF] hover:text-blue-700 transition-colors uppercase tracking-widest">
               View Details
             </Link>
-            <CompactStartButton examId={exam.id} />
-          </>
-        )}
-
-        {exam.status === 'upcoming' && (
-          <>
-            <Link
-              href={`/exams/${exam.id}`}
-              className="text-sm font-extrabold uppercase tracking-wide text-[var(--color-primary)] hover:opacity-80 transition-opacity"
-            >
-              View Details
-            </Link>
-            <span className="text-sm font-extrabold uppercase tracking-wide text-slate-400 cursor-not-allowed">
-              Not Started
-            </span>
-          </>
-        )}
-
-        {exam.status === 'attempted' && exam.session && (
-          <>
-            <Link
-              href={`/exams/${exam.id}`}
-              className="text-sm font-extrabold uppercase tracking-wide text-[var(--color-primary)] hover:opacity-80 transition-opacity"
-            >
-              View Details
-            </Link>
-            <Link
-              href={`/tests/${exam.session.id}/result`}
-              className="text-sm font-extrabold uppercase tracking-wide text-emerald-600 hover:opacity-80 transition-opacity"
-            >
-              View Result
-            </Link>
-          </>
-        )}
-
-        {exam.status === 'missed' && (
-          <>
-            <Link
-              href={`/exams/${exam.id}`}
-              className="text-sm font-extrabold uppercase tracking-wide text-[var(--color-primary)] hover:opacity-80 transition-opacity"
-            >
-              View Details
-            </Link>
-            <span className="text-sm font-extrabold uppercase tracking-wide text-slate-400">
-              Expired
-            </span>
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   )
