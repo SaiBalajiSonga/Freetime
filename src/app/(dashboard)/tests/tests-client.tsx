@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ClipboardList, GraduationCap, Calendar, CheckCircle2, XCircle, MinusCircle, Clock, ChevronRight, PlayCircle, Plus } from 'lucide-react'
 import { ResumeTestLink } from './resume-test-link'
 import type { TestSessionItem, SetupData } from './page'
 import { Modal } from '@/components/ui/modal'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import CustomTestModalContent from './custom-test-modal'
 import JeeMockModalContent from './jee-mock-modal'
 
@@ -53,7 +54,24 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
     missed:   sessions.filter(s => s.status === 'missed').length,
   }
 
-  const filtered = sessions.filter(s => s.status === activeTab)
+  const { filtered, sessionIndexes } = useMemo(() => {
+    // Sort oldest first to calculate sequential index
+    const sortedByOldest = [...sessions].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    
+    const modeCounters: Record<string, number> = {}
+    const sessionNumbers: Record<string, number> = {}
+    
+    sortedByOldest.forEach(s => {
+      const mode = s.mode || 'custom'
+      if (!modeCounters[mode]) modeCounters[mode] = 0
+      modeCounters[mode]++
+      sessionNumbers[s.id] = modeCounters[mode]
+    })
+
+    const filteredList = sessions.filter(s => s.status === activeTab)
+
+    return { filtered: filteredList, sessionIndexes: sessionNumbers }
+  }, [sessions, activeTab])
 
   return (
     <div className="space-y-0 animate-in-up">
@@ -66,27 +84,34 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
         
         {/* Create Test Buttons */}
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setActiveModal('custom')}
-            className="flex flex-col items-center justify-center p-3 sm:px-4 sm:py-2 rounded-xl border-2 border-dashed border-cyan-200 bg-cyan-50/50 hover:bg-cyan-50 hover:border-cyan-400 transition-colors group relative overflow-hidden"
-          >
-            <div className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 text-cyan-600" />
-              <span className="text-sm font-bold text-cyan-800">Custom Mock Test</span>
-              <Plus className="h-4 w-4 text-cyan-500 opacity-50 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </button>
-          
-          <button 
-            onClick={() => setActiveModal('jee')}
-            className="flex flex-col items-center justify-center p-3 sm:px-4 sm:py-2 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/50 hover:bg-amber-50 hover:border-amber-400 transition-colors group relative overflow-hidden"
-          >
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-amber-600" />
-              <span className="text-sm font-bold text-amber-800">JEE Mains Test</span>
-              <Plus className="h-4 w-4 text-amber-500 opacity-50 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center justify-center px-4 py-2.5 rounded-md font-semibold text-sm text-white bg-[var(--color-primary)] border-none outline-none focus:ring-0 transition-all hover:opacity-90 shadow-sm gap-2">
+                <Plus className="h-4 w-4" />
+                <span>New Mock Test</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 border border-slate-200 shadow-xl rounded-md p-1.5 bg-white ring-0">
+              <DropdownMenuItem onClick={() => setActiveModal('custom')} className="cursor-pointer p-3 rounded-sm transition-colors hover:bg-slate-100 focus:bg-slate-100 outline-none flex items-start gap-3">
+                <div className="p-2 bg-cyan-50 rounded-md shrink-0">
+                  <ClipboardList className="h-5 w-5 text-cyan-600" />
+                </div>
+                <div className="flex flex-col mt-0.5">
+                  <span className="font-semibold text-sm text-slate-900">Custom Model</span>
+                  <span className="text-xs text-slate-500 mt-0.5">Select chapters and topics</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveModal('jee')} className="cursor-pointer p-3 rounded-sm transition-colors hover:bg-slate-100 focus:bg-slate-100 outline-none flex items-start gap-3 mt-1">
+                <div className="p-2 bg-amber-50 rounded-md shrink-0">
+                  <GraduationCap className="h-5 w-5 text-amber-600" />
+                </div>
+                <div className="flex flex-col mt-0.5">
+                  <span className="font-semibold text-sm text-slate-900">JEE Model</span>
+                  <span className="text-xs text-slate-500 mt-0.5">Official NTA pattern simulator</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -137,9 +162,9 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
           <p className="text-sm text-muted">Check back later or switch tabs.</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filtered.map(session => (
-            <TestSessionCard key={session.id} session={session} />
+        <div className="space-y-5">
+          {filtered.map((session: TestSessionItem) => (
+            <TestSessionCard key={session.id} session={session} index={sessionIndexes[session.id]} />
           ))}
         </div>
       )}
@@ -150,7 +175,7 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
           <Modal 
             isOpen={activeModal === 'custom'} 
             onClose={() => setActiveModal('none')} 
-            title="Custom Mock Test"
+            title="Custom Model"
             maxWidth="max-w-2xl"
           >
             <CustomTestModalContent subjects={setupData.subjects} chapters={setupData.chapters} />
@@ -159,7 +184,7 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
           <Modal 
             isOpen={activeModal === 'jee'} 
             onClose={() => setActiveModal('none')} 
-            title="JEE Mains Mock"
+            title="JEE Model"
             maxWidth="max-w-xl"
           >
             <JeeMockModalContent jeeAvail={setupData.jeeAvail} />
@@ -171,120 +196,164 @@ export default function TestsClient({ sessions, setupData }: { sessions: TestSes
 }
 
 // ── Test Session Card ────────────────────────────────────────────────────────
-function TestSessionCard({ session }: { session: TestSessionItem }) {
+function TestSessionCard({ session, index }: { session: TestSessionItem, index?: number }) {
   const isCustom = session.mode === 'custom'
   const isJee = session.mode === 'jee_mains'
   const isWeekly = session.mode === 'weekly_exam'
 
-  const title = isJee ? 'JEE Mains Mock' : isWeekly ? (session.config?.exam_title || 'Weekly Exam') : 'Custom Practice'
+  const shortId = session.id.split('-')[0].substring(0, 4).toUpperCase()
   
-  const iconBg = isJee ? 'from-amber-500 to-amber-600' : isWeekly ? 'from-violet-500 to-violet-600' : 'from-cyan-500 to-cyan-600'
-  const iconShadow = isJee ? 'shadow-[0_4px_12px_rgba(245,158,11,0.35)]' : isWeekly ? 'shadow-[0_4px_12px_rgba(139,92,246,0.35)]' : 'shadow-[0_4px_12px_rgba(6,182,212,0.35)]'
+  const defaultTitle = isJee 
+    ? `JEE Model ${index || `#${shortId}`}` 
+    : isWeekly 
+      ? (session.config?.exam_title || `Weekly Exam ${index || `#${shortId}`}`) 
+      : `Custom Practice ${index || `#${shortId}`}`
+      
+  const title = session.config?.test_name || defaultTitle
+
+  const subjects = (session.config as any)?.subjects
+  const subjectTags = subjects && Array.isArray(subjects) 
+    ? subjects.map((s: any) => (s.subject_name || '').substring(0, 4).toUpperCase()).filter(Boolean).join(' • ') 
+    : null
+  
+  const badgeCls = session.status === 'active' ? 'bg-[#00B4D8] text-white' : session.status === 'attempted' ? 'bg-gray-500 text-white' : 'bg-red-500 text-white'
+  const badgeLabel = session.status === 'active' ? 'UPCOMING' : session.status === 'attempted' ? 'COMPLETED' : 'MISSED'
+
+  const iconBg = isJee ? 'bg-[#FF9E80]' : isWeekly ? 'bg-[#B09EFF]' : 'bg-[#B09EFF]'
   const Icon = isJee ? GraduationCap : isWeekly ? Calendar : ClipboardList
-
-  const badgeCls = session.status === 'active' ? 'bg-green-500 text-white' : session.status === 'attempted' ? 'bg-gray-500 text-white' : 'bg-red-500 text-white'
-  const badgeLabel = session.status === 'active' ? 'LIVE NOW' : session.status === 'attempted' ? 'COMPLETED' : 'MISSED'
-
+  
   const pct = session.max_score ? Math.round(((session.score || 0) / session.max_score) * 100) : null
-  const scoreColor = pct === null ? 'text-muted' : pct >= 75 ? 'text-green-600' : pct >= 50 ? 'text-amber-500' : 'text-red-500'
+
+  let totalMcq = 0
+  let totalNum = 0
+  let timeLimit = session.config?.time_limit_minutes || 0
+
+  if (subjects && Array.isArray(subjects)) {
+    subjects.forEach((s: any) => {
+      totalMcq += (s.mcq_count || 0)
+      totalNum += (s.numerical_count || 0)
+    })
+  }
+
+  // Fallback for JEE or generic mock tests
+  if (totalMcq === 0 && totalNum === 0) {
+    totalMcq = isJee ? 60 : 20
+    totalNum = isJee ? 30 : 5
+    if (!timeLimit) timeLimit = isJee ? 180 : 60
+  }
+  
+  const totalQs = totalMcq + totalNum
+  const estimatedMaxMarks = totalQs * 4
 
   return (
-    <div className="rounded-2xl border border-[var(--color-border)] bg-white shadow-sm overflow-hidden flex flex-col group transition-colors hover:border-slate-300">
-      {/* Top section */}
-      <div className="p-4 flex items-start gap-4">
-        {/* Icon */}
-        <div className="flex-shrink-0 relative">
-          <div className={`size-14 rounded-xl bg-gradient-to-br ${iconBg} flex items-center justify-center ${iconShadow}`}>
-            <Icon className="h-7 w-7 text-white" />
+    <div className="rounded-xl border border-slate-200/80 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.1)] hover:border-slate-300/80">
+      <div className="p-4 sm:p-5 flex flex-col gap-4">
+        
+        {/* Top Header: Icon + Title + Badge */}
+        <div className="flex items-start justify-between gap-4">
+          
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            <div className="flex-shrink-0">
+              <div className={`size-16 rounded-lg ${iconBg} flex items-center justify-center shadow-sm`}>
+                <Icon className="h-7 w-7 text-white" />
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0 pt-1">
+              <h3 className="font-bold text-slate-800 text-[16px] leading-tight mb-1.5 truncate">{title}</h3>
+              <div className="flex items-center flex-wrap gap-x-1.5 gap-y-1 text-[12px] text-slate-500">
+                <span className="font-medium text-slate-600">{totalQs} Qs</span>
+                <span className="text-slate-300">•</span>
+                <span className="font-medium text-slate-600">{timeLimit} Mins</span>
+                <span className="text-slate-300">•</span>
+                <span className="font-medium text-slate-600">{estimatedMaxMarks} Marks</span>
+                {subjectTags && (
+                  <>
+                    <span className="text-slate-300">•</span>
+                    <span className="tracking-wide text-[10px] uppercase font-bold text-slate-400">{subjectTags}</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-          {/* Badge */}
-          <span className={`absolute -top-2 -left-1 text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${badgeCls}`}>
+
+          <span className={`flex-shrink-0 text-[11px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-sm leading-none ${badgeCls}`}>
             {badgeLabel}
           </span>
         </div>
 
-        {/* Title + meta */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-foreground text-base leading-snug mb-1 truncate">{title}</h3>
-          
-          <div className="flex items-center gap-3 text-xs text-muted flex-wrap">
-            <span className="flex items-center gap-1 font-medium text-foreground">
-              <Calendar className="h-3.5 w-3.5 text-slate-400" />
-              {formatDate(session.created_at)}
-            </span>
-            
-            {session.status === 'active' && session.expires_at && (
-              <>
-                <span className="text-muted-2">•</span>
-                <span className="flex items-center gap-1 text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                  <Clock className="h-3 w-3" />
-                  {getExpiresString(session.expires_at)}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Grid section for stats (if attempted) or info (if active/missed) */}
-      <div className="border-t border-[var(--color-border)] bg-slate-50/30">
+        {/* Date Boxes / Score section */}
         {session.status === 'attempted' ? (
-          <div className="grid grid-cols-4 divide-x divide-[var(--color-border)]">
-            <div className="px-4 py-3 flex flex-col justify-center">
-              <span className={`font-black text-lg leading-none ${scoreColor}`}>{session.score}/{session.max_score}</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-muted mt-1">Score ({pct}%)</span>
+          <div className="flex gap-3 max-w-[500px]">
+            <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+              <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Score</span>
+              <span className="text-[13px] text-center text-slate-800 font-bold py-2">{session.score} / {session.max_score}</span>
             </div>
-            <div className="px-4 py-3 flex flex-col justify-center">
-              <span className="font-bold text-lg leading-none text-green-600 flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4" /> {session.correct ?? 0}</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-muted mt-1">Correct</span>
+            <div className="flex-1 bg-green-50/50 rounded-lg border border-green-100 flex flex-col overflow-hidden">
+              <span className="text-[10px] text-center text-green-600 py-1.5 bg-green-50 border-b border-green-100">Correct</span>
+              <span className="text-[13px] text-center text-green-700 font-bold py-2">{session.correct ?? 0}</span>
             </div>
-            <div className="px-4 py-3 flex flex-col justify-center">
-              <span className="font-bold text-lg leading-none text-red-500 flex items-center gap-1.5"><XCircle className="h-4 w-4" /> {session.incorrect ?? 0}</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-muted mt-1">Incorrect</span>
+            <div className="flex-1 bg-red-50/50 rounded-lg border border-red-100 flex flex-col overflow-hidden">
+              <span className="text-[10px] text-center text-red-500 py-1.5 bg-red-50 border-b border-red-100">Wrong</span>
+              <span className="text-[13px] text-center text-red-600 font-bold py-2">{session.incorrect ?? 0}</span>
             </div>
-            <div className="px-4 py-3 flex flex-col justify-center">
-              <span className="font-bold text-lg leading-none text-slate-500 flex items-center gap-1.5"><MinusCircle className="h-4 w-4" /> {session.unattempted ?? 0}</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-muted mt-1">Skipped</span>
+            <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-200 flex flex-col overflow-hidden">
+              <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-100 border-b border-slate-200">Skipped</span>
+              <span className="text-[13px] text-center text-slate-600 font-bold py-2">{session.unattempted ?? 0}</span>
             </div>
           </div>
         ) : (
-          <div className="px-4 py-3">
-             <p className="text-xs text-muted-2">
-               {session.status === 'active' 
-                 ? "You have started this test but haven't submitted it yet. Resume before it expires."
-                 : "This test was started but not submitted within the 7-day window and has expired."}
-             </p>
+          <div className="flex gap-3 max-w-[500px]">
+            <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+              <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Created On</span>
+              <span className="text-xs text-center text-slate-700 font-medium py-2 flex items-center justify-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-amber-500" /> {formatDate(session.created_at)}
+              </span>
+            </div>
+            {session.expires_at && (
+              <div className="flex-1 bg-slate-50/50 rounded-lg border border-slate-100 flex flex-col overflow-hidden">
+                <span className="text-[10px] text-center text-slate-500 py-1.5 bg-slate-50 border-b border-slate-100">Expires</span>
+                <span className="text-xs text-center text-slate-700 font-medium py-2 flex items-center justify-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-amber-500" /> {formatDate(session.expires_at)}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Action row */}
-      <div className="border-t border-[var(--color-border)] px-4 py-3 flex items-center justify-between bg-slate-50/60">
-        {session.status === 'active' && (
-          <ResumeTestLink
-            sessionId={session.id}
-            className="text-sm font-extrabold uppercase tracking-wide text-green-600 hover:opacity-80 transition-opacity flex items-center gap-1.5 w-full justify-between"
-          >
-            <span className="flex items-center gap-1.5"><PlayCircle className="h-4 w-4" /> Resume Test</span>
-            <ChevronRight className="h-4 w-4 opacity-50" />
-          </ResumeTestLink>
-        )}
+      {/* Action row (Aligned under the date blocks) */}
+      <div className="border-t border-slate-100 bg-white flex items-center">
+        <div className="max-w-[500px] w-full flex">
+          <div className="flex-1 flex justify-center py-4">
+            {session.status === 'active' && (
+              <ResumeTestLink
+                sessionId={session.id}
+                className="text-[12px] font-bold text-[#0066FF] hover:text-blue-700 transition-colors uppercase tracking-widest"
+              >
+                Resume Test
+              </ResumeTestLink>
+            )}
 
-        {session.status === 'attempted' && (
-          <Link
-            href={`/tests/${session.id}/result`}
-            className="text-sm font-extrabold uppercase tracking-wide text-[var(--color-primary)] hover:opacity-80 transition-opacity flex items-center gap-1.5 w-full justify-between"
-          >
-            <span>View Result</span>
-            <ChevronRight className="h-4 w-4 opacity-50" />
-          </Link>
-        )}
+            {session.status === 'attempted' && (
+              <Link
+                href={`/tests/${session.id}/result`}
+                className="text-[12px] font-bold text-[#0066FF] hover:text-blue-700 transition-colors uppercase tracking-widest"
+              >
+                View Result
+              </Link>
+            )}
 
-        {session.status === 'missed' && (
-          <span className="text-sm font-extrabold uppercase tracking-wide text-slate-400 cursor-not-allowed">
-            Test Expired
-          </span>
-        )}
+            {session.status === 'missed' && (
+              <span className="text-[12px] font-bold text-slate-400 uppercase tracking-widest cursor-not-allowed">
+                Test Expired
+              </span>
+            )}
+          </div>
+          <div className="flex-1 flex justify-center py-4">
+            {/* Empty secondary action slot (matches 'NOTIFY ME' space) */}
+          </div>
+        </div>
       </div>
     </div>
   )
