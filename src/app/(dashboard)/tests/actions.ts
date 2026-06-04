@@ -8,11 +8,18 @@ import { revalidatePath } from 'next/cache'
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type CustomTestConfig = {
-  subject_ids: string[]
+export type SubjectConfig = {
+  subject_id: string
+  subject_name: string
   chapter_ids: string[]
   difficulty: 'all' | 'easy' | 'medium' | 'hard'
-  question_count: number
+  mcq_count: number
+  numerical_count: number
+}
+
+export type CustomTestConfig = {
+  test_name?: string
+  subjects: SubjectConfig[]
   time_limit_minutes: number
 }
 
@@ -37,24 +44,67 @@ export async function createCustomSession(config: CustomTestConfig) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  // Build question query
-  let query = supabase
-    .from('questions')
-    .select('id, type')
-    .in('chapter_id', config.chapter_ids)
-
-  if (config.difficulty !== 'all') {
-    query = query.eq('difficulty', config.difficulty)
+  if (!config.subjects || config.subjects.length === 0) {
+    return { error: 'No subjects configured.' }
   }
 
-  const { data: questions, error: qErr } = await query
-  if (qErr) return { error: qErr.message }
-  if (!questions || questions.length === 0) {
-    return { error: 'No questions found for the selected filters. Try different chapters or difficulty.' }
+  const pickedAll: { question_id: string; order_index: number }[] = []
+  let globalOrder = 0
+
+  for (const sub of config.subjects) {
+    if (sub.chapter_ids.length === 0 || (sub.mcq_count === 0 && sub.numerical_count === 0)) continue
+    
+    // Fetch MCQs
+    let mcqQuery = supabase
+      .from('questions')
+      .select('id')
+      .in('chapter_id', sub.chapter_ids)
+      .eq('type', 'mcq')
+
+    if (sub.difficulty !== 'all') {
+      mcqQuery = mcqQuery.eq('difficulty', sub.difficulty)
+    }
+
+    const { data: mcqs, error: mErr } = await mcqQuery
+    if (mErr) return { error: `Database error while fetching MCQs for ${sub.subject_name}` }
+    
+    if (sub.mcq_count > 0 && (!mcqs || mcqs.length < sub.mcq_count)) {
+      return { 
+        error: `Not enough MCQs found for ${sub.subject_name}. Requested ${sub.mcq_count}, but only ${mcqs?.length || 0} match your selected chapters and difficulty.` 
+      }
+    }
+
+    // Fetch Numericals
+    let numQuery = supabase
+      .from('questions')
+      .select('id')
+      .in('chapter_id', sub.chapter_ids)
+      .eq('type', 'numerical')
+
+    if (sub.difficulty !== 'all') {
+      numQuery = numQuery.eq('difficulty', sub.difficulty)
+    }
+
+    const { data: nums, error: nErr } = await numQuery
+    if (nErr) return { error: `Database error while fetching Numerical questions for ${sub.subject_name}` }
+    
+    if (sub.numerical_count > 0 && (!nums || nums.length < sub.numerical_count)) {
+      return { 
+        error: `Not enough Numerical questions found for ${sub.subject_name}. Requested ${sub.numerical_count}, but only ${nums?.length || 0} match your selected chapters and difficulty.` 
+      }
+    }
+
+    const pickedMcqs = shuffle(mcqs || []).slice(0, sub.mcq_count)
+    const pickedNums = shuffle(nums || []).slice(0, sub.numerical_count)
+
+    for (const q of [...pickedMcqs, ...pickedNums]) {
+      pickedAll.push({ question_id: q.id, order_index: globalOrder++ })
+    }
   }
 
-  // Shuffle and pick
-  const picked = shuffle(questions).slice(0, config.question_count)
+  if (pickedAll.length === 0) {
+    return { error: 'No questions generated. Please check your configuration.' }
+  }
 
   // Insert session
   const { data: session, error: sErr } = await supabase
@@ -64,9 +114,9 @@ export async function createCustomSession(config: CustomTestConfig) {
       mode: 'custom',
       config,
       status: 'in_progress',
-      total_questions: picked.length,
+      total_questions: pickedAll.length,
       time_limit_minutes: config.time_limit_minutes,
-      max_score: picked.length * 4,
+      max_score: pickedAll.length * 4,
     })
     .select('id')
     .single()
@@ -74,10 +124,10 @@ export async function createCustomSession(config: CustomTestConfig) {
   if (sErr || !session) return { error: sErr?.message ?? 'Failed to create session' }
 
   // Insert session questions
-  const rows = picked.map((q, i) => ({
+  const rows = pickedAll.map((q) => ({
     session_id: session.id,
-    question_id: q.id,
-    order_index: i,
+    question_id: q.question_id,
+    order_index: q.order_index,
   }))
 
   const { error: sqErr } = await supabase
@@ -92,7 +142,7 @@ export async function createCustomSession(config: CustomTestConfig) {
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. createJeeSession
 // ─────────────────────────────────────────────────────────────────────────────
-export async function createJeeSession() {
+export async function createJeeSession(testName?: string) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -166,7 +216,7 @@ export async function createJeeSession() {
     .insert({
       user_id: user.id,
       mode: 'jee_mains',
-      config: { subject_names: subjectNames, mcq_per_subject: MCQ_COUNT, num_per_subject: NUM_COUNT },
+      config: { test_name: testName, subject_names: subjectNames, mcq_per_subject: MCQ_COUNT, num_per_subject: NUM_COUNT },
       status: 'in_progress',
       total_questions: 90,
       time_limit_minutes: 180,

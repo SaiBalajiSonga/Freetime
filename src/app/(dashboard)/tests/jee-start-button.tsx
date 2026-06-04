@@ -2,19 +2,19 @@
 
 import { useTransition } from 'react'
 import { createJeeSession } from './actions'
-import { Loader2, Zap } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
 export default function JeeStartButton({ 
   disabled, 
   className,
   label = "Start JEE Mains Mock",
-  icon = <Zap className="h-5 w-5" />
+  testName
 }: { 
   disabled?: boolean
   className?: string
   label?: React.ReactNode
-  icon?: React.ReactNode
+  testName?: string
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +30,7 @@ export default function JeeStartButton({
     }
 
     startTransition(async () => {
-      const result = await createJeeSession()
+      const result = await createJeeSession(testName)
       if (result?.error) {
         setError(result.error)
       }
@@ -38,9 +38,9 @@ export default function JeeStartButton({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 mt-2">
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+        <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-100 p-3 text-sm text-red-600">
           {error}
         </div>
       )}
@@ -48,18 +48,15 @@ export default function JeeStartButton({
         type="button"
         onClick={handleStart}
         disabled={disabled || isPending}
-        className={className || "w-full py-3 rounded-xl font-bold text-sm bg-amber-400 hover:bg-amber-500 text-amber-950 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"}
+        className={className || "w-full py-2.5 rounded-md font-semibold text-sm text-white bg-[var(--color-primary)] transition-all hover:opacity-90 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"}
       >
         {isPending ? (
           <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Generating Paper…
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Generating Paper...
           </>
         ) : (
-          <>
-            {icon}
-            {label}
-          </>
+          label
         )}
       </button>
     </div>
