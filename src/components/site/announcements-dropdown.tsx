@@ -82,12 +82,12 @@ export function AnnouncementsDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[var(--color-border)] rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[var(--color-border)] rounded-xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
           <div className="p-4 border-b border-[var(--color-border)] flex items-center justify-between bg-slate-50/50">
             <h3 className="font-bold text-foreground">Announcements</h3>
             {!hasUnread && (
               <span className="text-[10px] uppercase font-bold text-muted flex items-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5" /> All caught up
+                <CheckCircle2 className="h-3.5 w-3.5" /> Up to date
               </span>
             )}
           </div>
@@ -110,9 +110,9 @@ export function AnnouncementsDropdown({
                 <div className="size-20 rounded-full bg-slate-50 flex items-center justify-center mb-4 ring-1 ring-slate-100/50 shadow-inner">
                   <Bell className="h-10 w-10 text-slate-300" strokeWidth={1.5} />
                 </div>
-                <h4 className="text-[15px] font-bold text-slate-800 mb-1 tracking-tight">You're all caught up</h4>
-                <p className="text-[13px] text-slate-500 max-w-[220px] leading-relaxed">
-                  When there are new updates or announcements, they'll appear right here.
+                <h4 className="text-[15px] font-bold text-slate-800 mb-1 tracking-tight">You're completely up to date</h4>
+                <p className="text-[13px] text-slate-500 max-w-[240px] leading-relaxed">
+                  Important announcements, platform updates, and new features will be delivered here.
                 </p>
               </div>
             ) : (
