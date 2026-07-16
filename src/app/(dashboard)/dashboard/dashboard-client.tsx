@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Atom, Sigma, FlaskConical, Target, Timer, TrendingUp, CheckCircle2, ChevronRight, BookOpen, Flame, CheckSquare, Hourglass } from 'lucide-react'
+import { Atom, Sigma, FlaskConical, Timer, TrendingUp, CheckCircle2, ChevronRight, BookOpen, Gauge, Flame, CheckSquare, Hourglass } from 'lucide-react'
 import { Card, DifficultyBadge, SectionHeader, PageHeader } from '@/components/site/dashboard-ui'
 import { HeroBanner } from '@/components/site/hero-banner'
 import { SubjectTile, SubjectTileRow } from '@/components/site/subject-tile'
@@ -78,6 +78,62 @@ export default function DashboardClient({
     document.getElementById('analytics')?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' })
   }, [analyticsSection])
 
+  // --- Smart Logic for Stat Cards ---
+  let solvedSub = ''
+  let solvedTrend: 'positive' | 'negative' | 'neutral' | 'warning' = 'neutral'
+  if (thisWeekSolved === 0) {
+    solvedSub = 'Sleeping on the job'
+    solvedTrend = 'warning'
+  } else if (thisWeekSolved < 5) {
+    solvedSub = `Warming up (${thisWeekSolved} Qs)`
+    solvedTrend = 'neutral'
+  } else {
+    solvedSub = `Crushing it (${thisWeekSolved} Qs)`
+    solvedTrend = 'positive'
+  }
+
+  let accSub = ''
+  let accTrend: 'positive' | 'negative' | 'neutral' | 'warning' = 'neutral'
+  if (userAttempts.length === 0) {
+    accSub = 'No shots fired'
+    accTrend = 'neutral'
+  } else if (accuracy < 50) {
+    accSub = 'Needs practice'
+    accTrend = 'warning'
+  } else if (accuracy >= 80) {
+    accSub = 'Deadly accurate'
+    accTrend = 'positive'
+  } else {
+    accSub = `Solid (${userAttempts.length} attempts)`
+    accTrend = 'neutral'
+  }
+
+  let streakSub = ''
+  let streakTrend: 'positive' | 'negative' | 'neutral' | 'warning' = 'neutral'
+  if (streak === 0) {
+    streakSub = 'Start a streak'
+    streakTrend = 'neutral'
+  } else if (streak >= bestStreak && streak > 0) {
+    streakSub = 'New best!'
+    streakTrend = 'positive'
+  } else {
+    streakSub = `Chasing best (${bestStreak})`
+    streakTrend = 'neutral'
+  }
+
+  let timeSub = ''
+  let timeTrend: 'positive' | 'negative' | 'neutral' | 'warning' = 'neutral'
+  if (avgMinPerDay === 0) {
+    timeSub = 'Zero mins logged'
+    timeTrend = 'warning'
+  } else if (avgMinPerDay < 10) {
+    timeSub = `Light work: ${avgMinPerDay}m/d`
+    timeTrend = 'neutral'
+  } else {
+    timeSub = `Locked in: ${avgMinPerDay}m/d`
+    timeTrend = 'positive'
+  }
+
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8">
       
@@ -92,30 +148,34 @@ export default function DashboardClient({
         <StatCard 
           tone="blue"
           icon={<CheckSquare fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
-          value={totalSolved}
+          value={`${totalSolved} Qs`}
           label="Questions Solved"
-          sub={`+${thisWeekSolved} this week`}
+          sub={solvedSub}
+          trend={solvedTrend}
         />
         <StatCard 
           tone="green"
-          icon={<Target fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
+          icon={<Gauge className="opacity-20" fill="none" stroke="currentColor" strokeWidth={2.5} />}
           value={`${accuracy}%`}
           label="Avg. Accuracy"
-          sub={`from ${userAttempts.length} attempts`}
+          sub={accSub}
+          trend={accTrend}
         />
         <StatCard 
           tone="orange"
           icon={<Flame fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
           value={`${streak} days`}
           label="Current Streak"
-          sub={`Best: ${bestStreak} days`}
+          sub={streakSub}
+          trend={streakTrend}
         />
         <StatCard 
           tone="purple"
-          icon={<Hourglass fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
-          value={hrs > 0 ? `${hrs}h ${mns}m` : `${mns}m`}
+          icon={<Timer fill="currentColor" fillOpacity={0.2} strokeWidth={2} />}
+          value={hrs > 0 ? `${hrs}h ${mns}min` : `${mns}min`}
           label="Time Spent"
-          sub={`Avg ${avgMinPerDay}m per day`}
+          sub={timeSub}
+          trend={timeTrend}
         />
       </motion.section>
 

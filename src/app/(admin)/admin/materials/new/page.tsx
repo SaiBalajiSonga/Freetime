@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MaterialForm } from './material-form'
 
+
 export default async function NewMaterialPage() {
   const supabase = createAdminClient()
   
