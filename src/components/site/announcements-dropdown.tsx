@@ -92,11 +92,29 @@ export function AnnouncementsDropdown({
             )}
           </div>
           
-          <div className="max-h-[400px] overflow-y-auto overscroll-contain">
+          <div className="max-h-[400px] min-h-[300px] overflow-y-auto overscroll-contain flex flex-col">
             {isLoading && announcements.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted">Loading...</div>
+              <div className="p-5 space-y-6 flex-1">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="animate-pulse space-y-3">
+                    <div className="h-3 bg-slate-100 rounded w-1/2"></div>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-slate-100 rounded w-full"></div>
+                      <div className="h-2 bg-slate-100 rounded w-5/6"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : announcements.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted">No announcements yet.</div>
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <div className="size-20 rounded-full bg-slate-50 flex items-center justify-center mb-4 ring-1 ring-slate-100/50 shadow-inner">
+                  <Bell className="h-10 w-10 text-slate-300" strokeWidth={1.5} />
+                </div>
+                <h4 className="text-[15px] font-bold text-slate-800 mb-1 tracking-tight">You're all caught up</h4>
+                <p className="text-[13px] text-slate-500 max-w-[220px] leading-relaxed">
+                  When there are new updates or announcements, they'll appear right here.
+                </p>
+              </div>
             ) : (
               <div className="divide-y divide-[var(--color-border)]">
                 {announcements.map((announcement) => (
