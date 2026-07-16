@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
-import { Outfit, JetBrains_Mono, DM_Serif_Display, Playfair_Display, Geist } from "next/font/google";
+import { Plus_Jakarta_Sans, Space_Grotesk, JetBrains_Mono, DM_Serif_Display, Playfair_Display, Geist } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
-const fontSans = Outfit({
+const fontSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const fontHeading = Space_Grotesk({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const fontMono = JetBrains_Mono({
@@ -46,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className={`${fontSans.variable} ${fontMono.variable} ${fontEditorial.variable} ${fontDisplay.variable} ${fontGeist.variable} bg-background text-foreground antialiased min-h-screen text-[15px] leading-relaxed`} suppressHydrationWarning>
+      <body className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} ${fontEditorial.variable} ${fontDisplay.variable} ${fontGeist.variable} bg-background text-foreground antialiased min-h-screen text-[15px] leading-relaxed`} suppressHydrationWarning>
         {children}
         <Analytics />
         <SpeedInsights />

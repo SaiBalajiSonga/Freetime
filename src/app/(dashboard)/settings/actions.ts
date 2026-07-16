@@ -14,13 +14,20 @@ export async function updateProfile(prevState: any, formData: FormData) {
   const name = formData.get('name') as string
   const phone = formData.get('phone') as string
 
+  const notification_settings = {
+    tests: formData.get('notify_tests') === 'true',
+    materials: formData.get('notify_materials') === 'true',
+    ranks: formData.get('notify_ranks') === 'true',
+    general: formData.get('notify_general') === 'true',
+  }
+
   if (!name || name.trim() === '') {
     return { error: 'Name is required' }
   }
 
   const { error } = await supabase
     .from('profiles')
-    .update({ name, phone })
+    .update({ name, phone, notification_settings })
     .eq('id', user.id)
 
   if (error) {

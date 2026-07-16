@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Zap,
   Megaphone,
+  BookOpen,
 } from 'lucide-react'
 
 // ── Sidebar collapse context ───────────────────────────────────────
@@ -54,6 +55,13 @@ const NAV_ITEMS = [
     label: 'Weekly Exams',
     icon: CalendarClock,
     activeColor: 'text-amber-400',
+    exact: false,
+  },
+  {
+    href: '/admin/materials',
+    label: 'Study Materials',
+    icon: BookOpen,
+    activeColor: 'text-emerald-400',
     exact: false,
   },
   {

@@ -14,10 +14,12 @@ type Announcement = {
 
 export function AnnouncementsDropdown({ 
   initialUnread, 
-  userId 
+  userId,
+  settings
 }: { 
   initialUnread: boolean
   userId: string
+  settings?: { tests: boolean; materials: boolean; ranks: boolean; general: boolean }
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
@@ -39,9 +41,25 @@ export function AnnouncementsDropdown({
 
   async function fetchAnnouncements() {
     setIsLoading(true)
+    
+    // Determine which types to fetch based on settings
+    const allowedTypes = []
+    if (settings?.general !== false) allowedTypes.push('General Info')
+    if (settings?.tests !== false) allowedTypes.push('Test')
+    if (settings?.materials !== false) allowedTypes.push('Material')
+    if (settings?.ranks !== false) allowedTypes.push('Rank')
+    
+    // Fallback if somehow they disabled everything, but we still need a valid query
+    if (allowedTypes.length === 0) {
+      setAnnouncements([])
+      setIsLoading(false)
+      return
+    }
+
     const { data } = await supabase
       .from('announcements')
       .select('*')
+      .in('type', allowedTypes)
       .order('created_at', { ascending: false })
       .limit(10)
     
@@ -82,21 +100,39 @@ export function AnnouncementsDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[var(--color-border)] rounded-2xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute -right-2 sm:-right-4 mt-2 w-[calc(100vw-2rem)] sm:w-[480px] bg-white border border-[var(--color-border)] rounded-xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
           <div className="p-4 border-b border-[var(--color-border)] flex items-center justify-between bg-slate-50/50">
             <h3 className="font-bold text-foreground">Announcements</h3>
             {!hasUnread && (
               <span className="text-[10px] uppercase font-bold text-muted flex items-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5" /> All caught up
+                <CheckCircle2 className="h-3.5 w-3.5" /> Up to date
               </span>
             )}
           </div>
           
-          <div className="max-h-[400px] overflow-y-auto overscroll-contain">
+          <div className="max-h-[400px] min-h-[300px] overflow-y-auto overscroll-contain flex flex-col">
             {isLoading && announcements.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted">Loading...</div>
+              <div className="p-5 space-y-6 flex-1">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="animate-pulse space-y-3">
+                    <div className="h-3 bg-slate-100 rounded w-1/2"></div>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-slate-100 rounded w-full"></div>
+                      <div className="h-2 bg-slate-100 rounded w-5/6"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : announcements.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted">No announcements yet.</div>
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <div className="size-20 rounded-full bg-slate-50 flex items-center justify-center mb-4 ring-1 ring-slate-100/50 shadow-inner">
+                  <Bell className="h-10 w-10 text-slate-300" strokeWidth={1.5} />
+                </div>
+                <h4 className="text-[15px] font-bold text-slate-800 mb-1 tracking-tight">You're completely up to date</h4>
+                <p className="text-[13px] text-slate-500 max-w-[240px] leading-relaxed">
+                  Important announcements, platform updates, and new features will be delivered here.
+                </p>
+              </div>
             ) : (
               <div className="divide-y divide-[var(--color-border)]">
                 {announcements.map((announcement) => (

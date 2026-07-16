@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Download, Users, TrendingUp, Trophy, ArrowDown } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { Download, Users, TrendingUp, Trophy, ArrowDown, BellRing } from 'lucide-react'
+import { publishRanks } from './actions'
 
 type LeaderboardRow = {
   rank: number
@@ -33,6 +34,8 @@ type Props = {
 
 export default function ResultsClient({ exam, leaderboard, stats }: Props) {
   const [searchTerm, setSearchTerm] = useState('')
+  const [isPending, startTransition] = useTransition()
+  const [published, setPublished] = useState(false)
 
   const filteredLeaderboard = leaderboard.filter(row =>
     row.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -138,6 +141,21 @@ export default function ResultsClient({ exam, leaderboard, stats }: Props) {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="px-4 py-2 bg-[#121827] border border-white/[0.1] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
             />
+            <button
+              onClick={() => {
+                if (confirm('Are you sure you want to publish ranks? This will send a notification to all students.')) {
+                  startTransition(async () => {
+                    const res = await publishRanks(exam.id, exam.title)
+                    if (res?.success) setPublished(true)
+                  })
+                }
+              }}
+              disabled={leaderboard.length === 0 || isPending || published}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+            >
+              <BellRing className="w-4 h-4" />
+              {isPending ? 'Publishing...' : published ? 'Ranks Published!' : 'Notify & Publish Ranks'}
+            </button>
             <button
               onClick={handleExportCSV}
               disabled={leaderboard.length === 0}

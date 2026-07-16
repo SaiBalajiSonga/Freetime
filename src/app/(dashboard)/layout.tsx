@@ -22,19 +22,20 @@ export default async function DashboardLayout({
     redirect('/')
   }
 
-  // Fetch profile to get real name and last_read_announcement
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('name, last_read_announcement')
-    .eq('id', user.id)
-    .single()
-
-  const { data: latestAnnouncement } = await supabase
-    .from('announcements')
-    .select('created_at')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Fetch profile and latest announcement in parallel — no dependency between them
+  const [{ data: profile }, { data: latestAnnouncement }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('name, last_read_announcement, is_admin, display_id, notification_settings')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('announcements')
+      .select('created_at')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
 
   let hasUnreadAnnouncements = false
   if (latestAnnouncement) {
@@ -47,6 +48,8 @@ export default async function DashboardLayout({
 
   const initial = (user.email?.[0] || 'U').toUpperCase()
   const username = profile?.name || user.email?.split('@')[0] || 'student'
+
+  const notificationSettings = profile?.notification_settings || { tests: true, materials: true, ranks: true, general: true }
 
   return (
     <StudentSidebarProvider>
@@ -74,7 +77,11 @@ export default async function DashboardLayout({
           
           {/* Right actions */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <AnnouncementsDropdown initialUnread={hasUnreadAnnouncements} userId={user.id} />
+            <AnnouncementsDropdown 
+              initialUnread={hasUnreadAnnouncements} 
+              userId={user.id} 
+              settings={notificationSettings}
+            />
             <div className="h-6 w-px bg-[var(--color-border)] hidden sm:block" />
             <NavAuth initialUser={user} initialProfile={profile} />
           </div>

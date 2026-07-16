@@ -64,5 +64,14 @@ export async function createWeeklyExam(formData: FormData) {
 
   if (error) return { error: error.message }
 
+  if (is_published) {
+    await adminSupabase.from('announcements').insert({
+      title: 'New Exam Available',
+      message: `The exam "${title}" is now published and available to take!`,
+      type: 'Test',
+      priority: 'High'
+    })
+  }
+
   redirect('/admin/weekly-exams')
 }

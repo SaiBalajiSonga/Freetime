@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { logout } from '@/app/(auth)/actions'
-import { Button } from '@/components/ui/button'
 import { AdminSidebarClient } from '@/components/admin/admin-sidebar-client'
 import { MobileAdminNav } from '@/components/admin/mobile-admin-nav'
 import { AmbientBackdrop } from '@/components/site/ambient-backdrop'
@@ -14,13 +12,21 @@ export default async function AdminLayout({
 }) {
   const supabase = await createClient()
 
-  const [{ data: { user } }] = await Promise.all([supabase.auth.getUser()])
+  // getSession() reads from the cookie — no outbound network call
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) redirect('/')
 
-  if (!user) redirect('/')
+  // Verify JWT + fetch profile in parallel instead of sequentially
+  const [{ data: { user } }, { data: profile }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from('profiles')
+      .select('name, is_admin, display_id')
+      .eq('id', session.user.id)
+      .single(),
+  ])
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-
-  if (!profile?.is_admin) {
+  if (!user || !profile?.is_admin) {
     redirect('/')
   }
 
