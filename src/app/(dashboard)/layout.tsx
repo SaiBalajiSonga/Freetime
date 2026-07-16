@@ -26,7 +26,7 @@ export default async function DashboardLayout({
   const [{ data: profile }, { data: latestAnnouncement }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, last_read_announcement')
+      .select('name, last_read_announcement, is_admin, display_id')
       .eq('id', user.id)
       .single(),
     supabase
