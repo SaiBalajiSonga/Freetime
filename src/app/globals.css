@@ -59,9 +59,9 @@
   --radius-pill: 9999px;
 
   /* ── Typography ── */
-  --font-sans: var(--font-sans), "Outfit", system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: var(--font-mono), "JetBrains Mono", monospace;
-  --font-heading: var(--font-sans), "Outfit", system-ui, sans-serif;
+  --font-heading: var(--font-heading), "Space Grotesk", system-ui, sans-serif;
 
   /* ── Shadows (light-mode) ── */
   --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.04);
