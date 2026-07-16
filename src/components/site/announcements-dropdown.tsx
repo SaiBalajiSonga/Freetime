@@ -14,10 +14,12 @@ type Announcement = {
 
 export function AnnouncementsDropdown({ 
   initialUnread, 
-  userId 
+  userId,
+  settings
 }: { 
   initialUnread: boolean
   userId: string
+  settings?: { tests: boolean; materials: boolean; ranks: boolean; general: boolean }
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
@@ -39,9 +41,25 @@ export function AnnouncementsDropdown({
 
   async function fetchAnnouncements() {
     setIsLoading(true)
+    
+    // Determine which types to fetch based on settings
+    const allowedTypes = []
+    if (settings?.general !== false) allowedTypes.push('General Info')
+    if (settings?.tests !== false) allowedTypes.push('Test')
+    if (settings?.materials !== false) allowedTypes.push('Material')
+    if (settings?.ranks !== false) allowedTypes.push('Rank')
+    
+    // Fallback if somehow they disabled everything, but we still need a valid query
+    if (allowedTypes.length === 0) {
+      setAnnouncements([])
+      setIsLoading(false)
+      return
+    }
+
     const { data } = await supabase
       .from('announcements')
       .select('*')
+      .in('type', allowedTypes)
       .order('created_at', { ascending: false })
       .limit(10)
     
@@ -82,7 +100,7 @@ export function AnnouncementsDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[var(--color-border)] rounded-xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute -right-2 sm:-right-4 mt-2 w-[calc(100vw-2rem)] sm:w-[480px] bg-white border border-[var(--color-border)] rounded-xl shadow-xl z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
           <div className="p-4 border-b border-[var(--color-border)] flex items-center justify-between bg-slate-50/50">
             <h3 className="font-bold text-foreground">Announcements</h3>
             {!hasUnread && (

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Menu, X, Zap,
-  LayoutDashboard, FileQuestion, Archive, CalendarClock, FolderInput
+  LayoutDashboard, FileQuestion, Archive, CalendarClock, FolderInput, BookOpen
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/admin/questions', label: 'PYQ Questions', icon: FileQuestion },
   { href: '/admin/exam-bank', label: 'Exam Bank', icon: Archive },
   { href: '/admin/weekly-exams', label: 'Weekly Exams', icon: CalendarClock },
+  { href: '/admin/materials', label: 'Study Materials', icon: BookOpen },
   { href: '/admin/import', label: 'Import', icon: FolderInput },
 ]
 

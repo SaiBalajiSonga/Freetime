@@ -77,6 +77,31 @@ export function SettingsForm({ profile, email }: { profile: any; email: string }
 
       </div>
 
+      <div className="col-span-1 md:col-span-2 border-t border-slate-100 my-2 pt-6">
+        <h3 className="text-lg font-bold text-slate-900 mb-1">Notification Preferences</h3>
+        <p className="text-sm text-slate-500 mb-6">Choose what updates you want to see in your announcements dropdown.</p>
+        
+        <div className="space-y-4">
+          {[
+            { id: 'notify_tests', label: 'Tests & Exams', description: 'Notify me when a new test or exam is released.', defaultChecked: profile.notification_settings?.tests ?? true },
+            { id: 'notify_materials', label: 'Study Materials', description: 'Notify me when new study materials are posted.', defaultChecked: profile.notification_settings?.materials ?? true },
+            { id: 'notify_ranks', label: 'Rankings & Results', description: 'Notify me when leaderboards or test ranks are updated.', defaultChecked: profile.notification_settings?.ranks ?? true },
+            { id: 'notify_general', label: 'General Updates', description: 'General platform updates, news, and system alerts.', defaultChecked: profile.notification_settings?.general ?? true },
+          ].map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
+              <div>
+                <Label htmlFor={item.id} className="text-sm font-bold text-slate-900 cursor-pointer">{item.label}</Label>
+                <p className="text-[13px] text-slate-500 mt-0.5">{item.description}</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer ml-4">
+                <input type="checkbox" id={item.id} name={item.id} defaultChecked={item.defaultChecked} value="true" className="sr-only peer" />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="pt-4 flex justify-end">
         <Button 
           type="submit" 
