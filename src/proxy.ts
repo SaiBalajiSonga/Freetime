@@ -7,13 +7,16 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Only run auth middleware on protected app routes — NOT on the landing page or public assets.
+    // This prevents a Supabase network call on every single request.
+    '/dashboard/:path*',
+    '/subjects/:path*',
+    '/questions/:path*',
+    '/tests/:path*',
+    '/chapters/:path*',
+    '/learn/:path*',
+    '/exams/:path*',
+    '/settings/:path*',
+    '/admin/:path*',
   ],
 }

@@ -22,19 +22,20 @@ export default async function DashboardLayout({
     redirect('/')
   }
 
-  // Fetch profile to get real name and last_read_announcement
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('name, last_read_announcement')
-    .eq('id', user.id)
-    .single()
-
-  const { data: latestAnnouncement } = await supabase
-    .from('announcements')
-    .select('created_at')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Fetch profile and latest announcement in parallel — no dependency between them
+  const [{ data: profile }, { data: latestAnnouncement }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('name, last_read_announcement')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('announcements')
+      .select('created_at')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
 
   let hasUnreadAnnouncements = false
   if (latestAnnouncement) {
