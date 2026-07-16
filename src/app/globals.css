@@ -23,6 +23,12 @@
   /* ── Semantic (shadcn-style) ── */
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;            /* ← dropdown/tooltip background */
+  --color-popover-foreground: #0f172a; /* ← dropdown/tooltip text */
+  --color-accent: #f1f5f9;             /* ← menu item hover bg (slate-100) */
+  --color-accent-foreground: #0f172a;  /* ← menu item hover text */
+  --color-secondary: #f8fafc;
+  --color-secondary-foreground: #0f172a;
   --color-muted-foreground: #64748b;
   --color-input: rgba(15, 23, 42, 0.07);
   --color-ring: #2563eb;
