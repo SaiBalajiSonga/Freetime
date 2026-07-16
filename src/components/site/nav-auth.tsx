@@ -131,7 +131,7 @@ export function NavAuth({ initialUser, initialProfile, theme = 'light' }: { init
           sideOffset={8}
           className={`w-[270px] rounded-xl border p-1 z-50 backdrop-blur-xl ${
             isDark
-              ? 'bg-[#0a0f1a]/95 border-[#1e2536] shadow-[0_8px_40px_rgb(0,0,0,0.6)]'
+              ? 'bg-[#141b2d] border-[#2a3650] shadow-[0_8px_40px_rgb(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.05)]'
               : 'bg-white/95 border-slate-200/70 shadow-[0_12px_36px_rgb(15,23,42,0.08)]'
           }`}
         >
