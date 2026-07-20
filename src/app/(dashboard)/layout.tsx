@@ -22,34 +22,42 @@ export default async function DashboardLayout({
     redirect('/')
   }
 
-  // Fetch profile and latest announcement in parallel — no dependency between them
-  const [{ data: profile }, { data: latestAnnouncement }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('name, last_read_announcement, is_admin, display_id, notification_settings')
-      .eq('id', user.id)
-      .single(),
-    supabase
-      .from('announcements')
-      .select('created_at')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ])
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, last_read_announcement, is_admin, display_id, notification_settings')
+    .eq('id', user.id)
+    .single()
+
+  const notificationSettings = profile?.notification_settings || { tests: true, materials: true, ranks: true, general: true }
+
+  const allowedTypes = []
+  if (notificationSettings.general !== false) {
+    allowedTypes.push('General Info', 'Platform Update', 'Maintenance', 'Event / Contest', 'New Feature')
+  }
+  if (notificationSettings.tests !== false) allowedTypes.push('Test')
+  if (notificationSettings.materials !== false) allowedTypes.push('Material')
+  if (notificationSettings.ranks !== false) allowedTypes.push('Rank')
+
+  const typesToQuery = allowedTypes.length > 0 ? allowedTypes : ['__NONE__']
+
+  const { data: initialAnnouncements } = await supabase
+    .from('announcements')
+    .select('*')
+    .in('type', typesToQuery)
+    .order('created_at', { ascending: false })
+    .limit(10)
 
   let hasUnreadAnnouncements = false
-  if (latestAnnouncement) {
+  if (initialAnnouncements && initialAnnouncements.length > 0) {
     if (!profile?.last_read_announcement) {
       hasUnreadAnnouncements = true
     } else {
-      hasUnreadAnnouncements = new Date(latestAnnouncement.created_at) > new Date(profile.last_read_announcement)
+      hasUnreadAnnouncements = new Date(initialAnnouncements[0].created_at) > new Date(profile.last_read_announcement)
     }
   }
 
   const initial = (user.email?.[0] || 'U').toUpperCase()
   const username = profile?.name || user.email?.split('@')[0] || 'student'
-
-  const notificationSettings = profile?.notification_settings || { tests: true, materials: true, ranks: true, general: true }
 
   return (
     <StudentSidebarProvider>
@@ -79,8 +87,10 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-3 sm:gap-4">
             <AnnouncementsDropdown 
               initialUnread={hasUnreadAnnouncements} 
+              initialAnnouncements={initialAnnouncements || []}
               userId={user.id} 
               settings={notificationSettings}
+              lastReadDate={profile?.last_read_announcement}
             />
             <div className="h-6 w-px bg-[var(--color-border)] hidden sm:block" />
             <NavAuth initialUser={user} initialProfile={profile} />

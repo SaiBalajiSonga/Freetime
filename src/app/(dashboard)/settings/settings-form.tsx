@@ -77,7 +77,7 @@ export function SettingsForm({ profile, email }: { profile: any; email: string }
 
       </div>
 
-      <div className="col-span-1 md:col-span-2 border-t border-slate-100 my-2 pt-6">
+      <div id="notifications" className="col-span-1 md:col-span-2 border-t border-slate-100 my-2 pt-6 scroll-mt-24">
         <h3 className="text-lg font-bold text-slate-900 mb-1">Notification Preferences</h3>
         <p className="text-sm text-slate-500 mb-6">Choose what updates you want to see in your announcements dropdown.</p>
         

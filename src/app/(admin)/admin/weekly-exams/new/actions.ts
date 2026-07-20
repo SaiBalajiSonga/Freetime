@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 export async function createWeeklyExam(formData: FormData) {
   const supabase = await createClient()
@@ -66,12 +67,13 @@ export async function createWeeklyExam(formData: FormData) {
 
   if (is_published) {
     await adminSupabase.from('announcements').insert({
-      title: 'New Exam Available',
-      message: `The exam "${title}" is now published and available to take!`,
+      title: `New Assessment Assigned: ${title}`,
+      message: `Dear Student,\n\nThe assessment "${title}" has been assigned to you and is now live. Please log in to the portal and ensure you complete the test before the scheduled deadline.\n\nBest of luck!`,
       type: 'Test',
       priority: 'High'
     })
   }
 
+  revalidatePath('/', 'layout')
   redirect('/admin/weekly-exams')
 }

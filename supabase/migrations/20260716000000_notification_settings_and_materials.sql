@@ -15,9 +15,11 @@ CREATE TABLE IF NOT EXISTS public.study_materials (
 -- RLS for study_materials
 ALTER TABLE public.study_materials ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public read study_materials" ON public.study_materials;
 CREATE POLICY "Public read study_materials" ON public.study_materials 
 FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Admin write study_materials" ON public.study_materials;
 CREATE POLICY "Admin write study_materials" ON public.study_materials 
 FOR ALL USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true)
