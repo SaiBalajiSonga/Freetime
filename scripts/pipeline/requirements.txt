@@ -1,0 +1,7 @@
+instructor[google-genai]>=1.7.0
+google-genai>=2.0.0
+pydantic>=2.0
+supabase>=2.0.0
+python-dotenv>=1.0.0
+# Optional: for --convert-pdf flag
+# marker-pdf>=1.0.0
