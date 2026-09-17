@@ -46,3 +46,11 @@ next-env.d.ts
 .env*.local
 
 .cursorignore
+
+# PDFs (source data, too large for git)
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
+marker_output/
