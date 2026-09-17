@@ -18,7 +18,13 @@ import os
 
 import instructor
 
-from .config import GEMINI_API_KEY, GEMINI_MODEL, QUESTIONS_PER_CHUNK, MAX_RETRIES
+from .config import (
+    GEMINI_API_KEY,
+    GEMINI_MODEL,
+    QUESTIONS_PER_CHUNK,
+    MAX_RETRIES,
+    RETRY_BACKOFF_BASE,
+)
 from .rate_limiter import RateLimiter
 from .schemas import ChapterQuestions, ExtractedQuestion
 
@@ -103,53 +109,69 @@ async def _extract_chunk(
     chunk_index: int,
     limiter: RateLimiter,
 ) -> list[ExtractedQuestion]:
-    """Extract questions from a single chunk via LLM, with rate limiting."""
-    try:
-        async with limiter:
-            logger.info(
-                "Pass 2: Processing chunk %d of chapter '%s' (%d chars)",
+    """Extract questions from a single chunk via LLM, with rate limiting and retries."""
+    for attempt in range(MAX_RETRIES):
+        try:
+            async with limiter:
+                logger.info(
+                    "Pass 2: Processing chunk %d of chapter '%s' (attempt %d/%d, %d chars)",
+                    chunk_index,
+                    chapter_name,
+                    attempt + 1,
+                    MAX_RETRIES,
+                    len(chunk_text),
+                )
+
+                # instructor's from_provider is sync — run in executor
+                loop = asyncio.get_event_loop()
+                result: ChapterQuestions = await loop.run_in_executor(
+                    None,
+                    lambda: client.create(
+                        response_model=ChapterQuestions,
+                        messages=[
+                            {"role": "system", "content": _SYSTEM_PROMPT},
+                            {
+                                "role": "user",
+                                "content": (
+                                    f"Chapter: {chapter_name}\n\n"
+                                    f"Extract all questions from this chunk:\n\n"
+                                    f"{chunk_text}"
+                                ),
+                            },
+                        ],
+                        max_retries=MAX_RETRIES,
+                    ),
+                )
+
+                logger.info(
+                    "Pass 2: Chunk %d of '%s' → %d questions extracted.",
+                    chunk_index,
+                    chapter_name,
+                    len(result.questions),
+                )
+                return result.questions
+
+        except Exception as e:
+            logger.warning(
+                "Pass 2: Attempt %d/%d failed for chunk %d of '%s': %s",
+                attempt + 1,
+                MAX_RETRIES,
                 chunk_index,
                 chapter_name,
-                len(chunk_text),
+                e,
             )
+            if attempt + 1 < MAX_RETRIES:
+                await asyncio.sleep(RETRY_BACKOFF_BASE ** attempt)
+            else:
+                logger.error(
+                    "Pass 2: FAILED chunk %d of '%s' after %d attempts. Skipping chunk.",
+                    chunk_index,
+                    chapter_name,
+                    MAX_RETRIES,
+                )
+                return []
 
-            # instructor's from_provider is sync — run in executor
-            loop = asyncio.get_event_loop()
-            result: ChapterQuestions = await loop.run_in_executor(
-                None,
-                lambda: client.create(
-                    response_model=ChapterQuestions,
-                    messages=[
-                        {"role": "system", "content": _SYSTEM_PROMPT},
-                        {
-                            "role": "user",
-                            "content": (
-                                f"Chapter: {chapter_name}\n\n"
-                                f"Extract all questions from this chunk:\n\n"
-                                f"{chunk_text}"
-                            ),
-                        },
-                    ],
-                    max_retries=MAX_RETRIES,
-                ),
-            )
-
-            logger.info(
-                "Pass 2: Chunk %d of '%s' → %d questions extracted.",
-                chunk_index,
-                chapter_name,
-                len(result.questions),
-            )
-            return result.questions
-
-    except Exception as e:
-        logger.error(
-            "Pass 2: FAILED chunk %d of '%s': %s. Skipping chunk.",
-            chunk_index,
-            chapter_name,
-            e,
-        )
-        return []
+    return []
 
 
 async def extract_questions_for_chapter(
