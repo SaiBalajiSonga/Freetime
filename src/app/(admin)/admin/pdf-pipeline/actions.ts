@@ -26,6 +26,7 @@ export async function convertPipelineToImport(
         type: qType,
         statement: q.statement || q.question_text || '',
         difficulty: (q.difficulty || q.ai_difficulty || 'medium') as 'easy' | 'medium' | 'hard',
+        solution: q.solution || undefined,
         source: q.source || undefined,
         visibility: (q.visibility || 'public') as 'public' | 'exam',
       }

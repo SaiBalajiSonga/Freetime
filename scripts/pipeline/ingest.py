@@ -366,8 +366,6 @@ def format_questions_json(
             "visibility": visibility,
             "chapter": chapter_val,
             "subject": subject,
-            "solution": q.solution or "",
-            "merge_status": q.merge_status,
         }
         if q.question_type == "mcq" and q.options:
             item["options"] = [opt.text for opt in q.options]
@@ -380,6 +378,9 @@ def format_questions_json(
             item["correct_option"] = correct_idx
         elif q.question_type == "numerical":
             item["correct_answer"] = q.correct_answer or ""
+
+        item["solution"] = q.solution or ""
+        item["merge_status"] = q.merge_status
 
         output.append(item)
     return output

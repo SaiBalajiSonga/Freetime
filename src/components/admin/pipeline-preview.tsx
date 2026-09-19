@@ -982,23 +982,33 @@ function DocumentQuestionItem({
         </div>
       )}
 
-      {/* Explanation / Solution — Displayed when Answers are toggled ON and solution exists */}
-      {showAnswers && q.solution && (
+      {/* Explanation / Solution — Rendered directly below the respective question */}
+      {q.solution && (
         <div
-          className="mt-3.5 pl-0 sm:pl-5 rounded-lg p-3 text-xs leading-relaxed"
+          className="mt-3.5 pl-0 sm:pl-5 rounded-lg p-3.5 text-xs leading-relaxed transition-all shadow-sm"
           style={{
-            backgroundColor: isPaper ? '#f8fafc' : 'rgba(15, 23, 42, 0.4)',
-            border: isPaper ? '1px solid #e2e8f0' : '1px solid #1e293b',
-            color: isPaper ? '#334155' : '#cbd5e1',
+            backgroundColor: isPaper ? '#f0fdf4' : 'rgba(15, 23, 42, 0.65)',
+            border: isPaper ? '1.5px solid #86efac' : '1px solid rgba(56, 189, 248, 0.25)',
+            color: isPaper ? '#14532d' : '#e2e8f0',
           }}
         >
           <div
-            className="font-bold text-[11px] uppercase tracking-wider mb-1.5 flex items-center gap-1.5"
-            style={{ color: isPaper ? '#475569' : '#94a3b8' }}
+            className="font-bold text-[11px] uppercase tracking-wider mb-2 flex items-center gap-2"
+            style={{ color: isPaper ? '#166534' : '#38bdf8' }}
           >
-            <span>Explanation / Solution:</span>
+            <span
+              className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider"
+              style={{
+                backgroundColor: isPaper ? '#dcfce7' : 'rgba(56, 189, 248, 0.15)',
+                border: isPaper ? '1px solid #bbf7d0' : '1px solid rgba(56, 189, 248, 0.3)',
+                color: isPaper ? '#15803d' : '#38bdf8',
+              }}
+            >
+              SOLUTION
+            </span>
+            <span>Step-by-Step Explanation</span>
           </div>
-          <div className="text-[13.5px] leading-relaxed">
+          <div className="text-[13.5px] leading-relaxed pt-0.5">
             <Latex>{q.solution}</Latex>
           </div>
         </div>

@@ -118,6 +118,15 @@ export async function insertQuestions(questions: ImportQuestion[]) {
     const batchHashes = questionsToInsert.map(q => q.hash)
     const { data: dupData } = await supabase.from('questions').select('hash').in('hash', batchHashes)
     const dupSet = new Set(dupData?.map(d => d.hash) || [])
+
+    // For any existing questions that currently have no solution, update them with the new solution
+    const dupesWithSolution = questionsToInsert.filter(q => dupSet.has(q.hash) && q.solution)
+    for (const d of dupesWithSolution) {
+      await supabase
+        .from('questions')
+        .update({ solution: d.solution })
+        .eq('hash', d.hash)
+    }
     
     const validQuestionsToInsert = questionsToInsert.filter(q => !dupSet.has(q.hash))
     skippedCount += (questionsToInsert.length - validQuestionsToInsert.length)
