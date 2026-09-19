@@ -12,7 +12,7 @@ load_dotenv(_pipeline_dir.parent.parent / ".env")
 
 # ── Gemini ────────────────────────────────────────────────────────────────────
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 # ── Supabase ──────────────────────────────────────────────────────────────────
 SUPABASE_URL: str = os.getenv("SUPABASE_URL", os.getenv("NEXT_PUBLIC_SUPABASE_URL", ""))
@@ -32,7 +32,7 @@ DEFAULT_CONCURRENCY: int = int(os.getenv("PIPELINE_CONCURRENCY", "3"))
 QUESTIONS_PER_CHUNK: int = int(os.getenv("PIPELINE_CHUNK_SIZE", "12"))
 
 # ── Retry ─────────────────────────────────────────────────────────────────────
-MAX_RETRIES: int = 3
+MAX_RETRIES: int = 6
 RETRY_BACKOFF_BASE: float = 2.0  # exponential backoff: 2^attempt seconds
 
 # ── Supabase Batch ────────────────────────────────────────────────────────────

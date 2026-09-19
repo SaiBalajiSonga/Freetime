@@ -54,3 +54,5 @@ next-env.d.ts
 __pycache__/
 *.pyc
 marker_output/
+converted_output/
+tmp/

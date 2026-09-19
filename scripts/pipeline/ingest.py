@@ -123,6 +123,7 @@ class SupabaseIngestor:
         self,
         questions: list[MergedQuestion],
         subject: str,
+        visibility: str = "public",
     ) -> dict:
         """Ingest merged questions into Supabase.
 
@@ -132,6 +133,8 @@ class SupabaseIngestor:
             Fully merged questions from Pass 3.
         subject : str
             The subject name (Physics / Chemistry / Mathematics).
+        visibility : str
+            Visibility setting: 'public' or 'private'.
 
         Returns
         -------
@@ -158,7 +161,7 @@ class SupabaseIngestor:
         # Process in batches
         for batch_start in range(0, len(questions), SUPABASE_BATCH_SIZE):
             batch = questions[batch_start : batch_start + SUPABASE_BATCH_SIZE]
-            self._ingest_batch(batch, subject, stats)
+            self._ingest_batch(batch, subject, stats, visibility=visibility)
             logger.info(
                 "Progress: %d/%d processed (%d inserted, %d errors)",
                 min(batch_start + SUPABASE_BATCH_SIZE, len(questions)),
@@ -182,6 +185,7 @@ class SupabaseIngestor:
         batch: list[MergedQuestion],
         subject: str,
         stats: dict,
+        visibility: str = "public",
     ) -> None:
         """Insert a single batch of questions."""
         questions_to_insert = []
@@ -218,7 +222,7 @@ class SupabaseIngestor:
                 "hash": content_hash,
                 "hint": None,
                 "solution": None,  # Phase 2
-                "visibility": "public",
+                "visibility": visibility,
             }
 
             # For numerical questions, set correct_answer directly
@@ -333,9 +337,61 @@ class SupabaseIngestor:
         stats["inserted"] += len(insert_result.data)
 
 
-def dump_dry_run_json(questions: list[MergedQuestion], output_path: str | None) -> None:
-    """Write merged questions as JSON for dry-run inspection."""
-    data = [q.model_dump(mode="json") for q in questions]
+def format_questions_json(
+    questions: list[MergedQuestion],
+    subject: str = "Mathematics",
+    visibility: str = "public",
+) -> list[dict]:
+    """Format merged questions to match the platform standard JSON schema:
+    [
+      {
+        "statement": "...",
+        "type": "mcq",
+        "difficulty": "easy",
+        "visibility": "public",
+        "chapter": "...",
+        "subject": "...",
+        "options": ["...", "...", "...", "..."],
+        "correct_option": 0
+      }
+    ]
+    """
+    output = []
+    for q in questions:
+        chapter_val = q.chapter_name if q.chapter_name != "_single" else (subject or "General")
+        item: dict = {
+            "statement": q.question_text,
+            "type": q.question_type,
+            "difficulty": q.ai_difficulty,
+            "visibility": visibility,
+            "chapter": chapter_val,
+            "subject": subject,
+            "merge_status": q.merge_status,
+        }
+        if q.question_type == "mcq" and q.options:
+            item["options"] = [opt.text for opt in q.options]
+            # Find 0-indexed correct option (0, 1, 2, 3)
+            correct_idx = 0
+            for idx, opt in enumerate(q.options):
+                if opt.is_correct:
+                    correct_idx = idx
+                    break
+            item["correct_option"] = correct_idx
+        elif q.question_type == "numerical":
+            item["correct_answer"] = q.correct_answer or ""
+
+        output.append(item)
+    return output
+
+
+def dump_dry_run_json(
+    questions: list[MergedQuestion],
+    output_path: str | None,
+    subject: str = "Mathematics",
+    visibility: str = "public",
+) -> None:
+    """Write merged questions as JSON matching the standard platform schema."""
+    data = format_questions_json(questions, subject=subject, visibility=visibility)
 
     if output_path:
         with open(output_path, "w", encoding="utf-8") as f:

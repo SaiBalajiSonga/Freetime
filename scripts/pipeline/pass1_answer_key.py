@@ -35,7 +35,7 @@ import os
 
 import instructor
 
-from .config import GEMINI_API_KEY, GEMINI_MODEL
+from .config import GEMINI_API_KEY, GEMINI_MODEL, KNOWN_CHAPTERS
 from .schemas import FullAnswerKey, ChapterAnswerKey, AnswerKeyEntry
 
 logger = logging.getLogger(__name__)
@@ -79,11 +79,14 @@ Return the data as a JSON object matching the provided schema.
 
 # ── Regex-based extraction (preferred for clean inputs) ───────────────────────
 
-# Format A: "N. (answer)" under chapter headings
-_FORMAT_A_ANSWER_RE = re.compile(r"^\s*(\d+)\.\s*\(([^)]+)\)", re.MULTILINE)
+# Format A: "N. (answer)" or "N. answer" under chapter headings
+_FORMAT_A_ANSWER_RE = re.compile(r"^\s*(\d+)\.\s*(?:\(([^)]+)\)|(\d+))\s*$", re.MULTILINE)
 
-# Format B: "QN (answer)"
-_FORMAT_B_ANSWER_RE = re.compile(r"^\s*Q(\d+)\s*\(([^)]+)\)", re.MULTILINE)
+# Format B: "QN (answer)", "Q.N (answer)", or table entries like "| Q.1 | 2 |" or "| Q.2 | Option (3) |"
+_FORMAT_B_ANSWER_RE = re.compile(
+    r"(?:\|\s*)?Q\.?(\d+)[\s*|:\-]*(?:Option\s*\(?)?\(?([0-9a-zA-Z.]+)\)?",
+    re.IGNORECASE,
+)
 
 # Solutions fallback: "QN.\n(answer)"
 _SOLUTION_ANSWER_RE = re.compile(r"Q(\d+)\.\s*\n\s*\((\d+)\)", re.MULTILINE)
@@ -94,22 +97,27 @@ def _try_regex_extraction(text: str) -> FullAnswerKey | None:
 
     Returns None if the format is too messy for reliable regex parsing.
     """
-    lines = text.strip().split("\n")
-    if not lines:
-        return None
+    # Preprocess text to fix table split across columns like |**3**|**.**(3)
+    norm_text = re.sub(r"(\d+)\*{0,2}\s*\|\s*\*{0,2}\.", r"\1.", text)
+    clean_text = norm_text.replace("<br>", "\n").replace("|", "\n").replace("*", "")
 
     # Detect format
-    has_format_b = bool(_FORMAT_B_ANSWER_RE.search(text))
-    has_format_a = bool(_FORMAT_A_ANSWER_RE.search(text))
+    b_matches = list(_FORMAT_B_ANSWER_RE.finditer(text))
+    has_format_a = bool(_FORMAT_A_ANSWER_RE.search(clean_text))
 
-    if has_format_b and not has_format_a:
-        # Format B: flat Q1 (answer) list
+    if b_matches and not has_format_a:
+        # Format B: flat Q1 (answer) list or table
         answers: list[AnswerKeyEntry] = []
-        for match in _FORMAT_B_ANSWER_RE.finditer(text):
-            answers.append(AnswerKeyEntry(
-                question_number=int(match.group(1)),
-                answer=match.group(2).strip(),
-            ))
+        seen: set[int] = set()
+        for match in b_matches:
+            q_num = int(match.group(1))
+            if q_num not in seen:
+                seen.add(q_num)
+                answers.append(AnswerKeyEntry(
+                    question_number=q_num,
+                    answer=match.group(2).strip(),
+                ))
+        answers.sort(key=lambda a: a.question_number)
         if answers:
             return FullAnswerKey(chapters=[
                 ChapterAnswerKey(chapter_name="_single", answers=answers)
@@ -118,9 +126,11 @@ def _try_regex_extraction(text: str) -> FullAnswerKey | None:
 
     if has_format_a:
         # Format A: chapter-grouped "N. (answer)"
+        lines = clean_text.strip().split("\n")
         chapters: list[ChapterAnswerKey] = []
         current_chapter: str | None = None
         current_answers: list[AnswerKeyEntry] = []
+        known_set = {ch.lower(): ch for ch in KNOWN_CHAPTERS}
 
         for line in lines:
             line_stripped = line.strip()
@@ -130,30 +140,36 @@ def _try_regex_extraction(text: str) -> FullAnswerKey | None:
             # Check if this line is an answer entry
             answer_match = _FORMAT_A_ANSWER_RE.match(line_stripped)
             if answer_match:
+                ans_val = answer_match.group(2) or answer_match.group(3)
                 current_answers.append(AnswerKeyEntry(
                     question_number=int(answer_match.group(1)),
-                    answer=answer_match.group(2).strip(),
+                    answer=ans_val.strip(),
                 ))
                 continue
 
-            # Check if it's a chapter heading (non-numeric, non-empty line
-            # that doesn't look like an answer or page artifact).
-            # Must not match Format B answers like "Q1 (2)" — but we DO
-            # want to allow chapter names starting with Q like "Quadratic".
+            norm_ch = line_stripped.lower()
+            is_known = norm_ch in known_set
             is_format_b_answer = bool(re.match(r"^Q\d+\s*\(", line_stripped))
-            if (
+            is_generic_ch = (
                 not line_stripped[0].isdigit()
                 and len(line_stripped) > 2
                 and not is_format_b_answer
                 and not line_stripped.startswith("(")
-            ):
+                and not line_stripped.startswith("#")
+                and "chapter" not in norm_ch
+                and "mathongo" not in norm_ch
+                and "jee main" not in norm_ch
+                and "answer key" not in norm_ch
+            )
+
+            if is_known or is_generic_ch:
                 # Save previous chapter
                 if current_chapter and current_answers:
                     chapters.append(ChapterAnswerKey(
                         chapter_name=current_chapter,
                         answers=current_answers,
                     ))
-                current_chapter = line_stripped
+                current_chapter = known_set.get(norm_ch, line_stripped)
                 current_answers = []
 
         # Save final chapter

@@ -125,6 +125,12 @@ def merge(
 
         if matched_ak_name:
             chapter_answers = answer_key_dict[matched_ak_name]
+        elif "_single" in answer_key_dict and len(questions_by_chapter) == 1:
+            # Single-chapter document: match _single directly
+            chapter_answers = answer_key_dict["_single"]
+        elif len(answer_key_dict) == 1 and len(questions_by_chapter) == 1:
+            # Only one chapter in both sides: direct match
+            chapter_answers = list(answer_key_dict.values())[0]
         else:
             logger.warning(
                 "Pass 3: No answer-key match for chapter '%s'. "

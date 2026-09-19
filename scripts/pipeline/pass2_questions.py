@@ -31,11 +31,19 @@ from .schemas import ChapterQuestions, ExtractedQuestion
 logger = logging.getLogger(__name__)
 
 
-def _build_client() -> instructor.Instructor:
+FALLBACK_MODELS = [
+    os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+]
+
+
+def _build_client(model_name: str | None = None) -> instructor.Instructor:
     """Create an instructor-wrapped Gemini client via the google-genai SDK."""
-    os.environ.setdefault("GOOGLE_API_KEY", GEMINI_API_KEY)
+    os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
+    model = model_name or GEMINI_MODEL
     client = instructor.from_provider(
-        f"google/{GEMINI_MODEL}",
+        f"google/{model}",
     )
     return client
 
@@ -55,6 +63,7 @@ Your task:
 3. For MCQ questions (those with numbered options (1), (2), (3), (4)):
    - Set question_type = "mcq"
    - Extract all 4 options with their numbers and text.
+   - If an option contains mathematical formulas, intervals, roots, or fractions, ALWAYS wrap the math in $...$ or \(...\) delimiters so it compiles as LaTeX.
 4. For numerical/integer-answer questions (no options listed, or the question
    asks for a numerical value to fill in):
    - Set question_type = "numerical"
@@ -79,8 +88,12 @@ def _chunk_questions_text(
 
     Uses question markers (Q1., Q2., etc.) to find boundaries.
     """
-    # Find all question start positions
-    question_starts = list(re.finditer(r"(?:^|\n)\s*Q(\d+)\.", chapter_text))
+    # Find all question start positions (supports "Q1.", "Q1 - 2024 ...", "|**Q1.**", "- **Q1.**", inline "**Q1.**")
+    question_starts = list(re.finditer(
+        r"(?:^|\n|\s)(?:[-*#|]\s*)*(?:\*\*)?Q(\d+)(?:\.|\s*[-–—])",
+        chapter_text,
+        re.IGNORECASE,
+    ))
 
     if not question_starts:
         # No question markers found — return the whole text as one chunk
@@ -109,16 +122,19 @@ async def _extract_chunk(
     chunk_index: int,
     limiter: RateLimiter,
 ) -> list[ExtractedQuestion]:
-    """Extract questions from a single chunk via LLM, with rate limiting and retries."""
-    for attempt in range(MAX_RETRIES):
+    """Extract questions from a single chunk via LLM, with rate limiting, model fallbacks and retries."""
+    models_to_try = (FALLBACK_MODELS * 2)[:MAX_RETRIES]
+    for attempt, model_name in enumerate(models_to_try):
         try:
+            curr_client = _build_client(model_name)
             async with limiter:
                 logger.info(
-                    "Pass 2: Processing chunk %d of chapter '%s' (attempt %d/%d, %d chars)",
+                    "Pass 2: Processing chunk %d of chapter '%s' (attempt %d/%d, model: %s, %d chars)",
                     chunk_index,
                     chapter_name,
                     attempt + 1,
                     MAX_RETRIES,
+                    model_name,
                     len(chunk_text),
                 )
 
@@ -126,7 +142,7 @@ async def _extract_chunk(
                 loop = asyncio.get_event_loop()
                 result: ChapterQuestions = await loop.run_in_executor(
                     None,
-                    lambda: client.create(
+                    lambda: curr_client.create(
                         response_model=ChapterQuestions,
                         messages=[
                             {"role": "system", "content": _SYSTEM_PROMPT},
@@ -139,7 +155,7 @@ async def _extract_chunk(
                                 ),
                             },
                         ],
-                        max_retries=MAX_RETRIES,
+                        max_retries=1,
                     ),
                 )
 
@@ -149,15 +165,24 @@ async def _extract_chunk(
                     chapter_name,
                     len(result.questions),
                 )
+                for q in result.questions:
+                    if q.options:
+                        for opt in q.options:
+                            t = opt.text.strip()
+                            has_delimiters = bool(re.search(r"\$|\\\(|\\\[", t))
+                            has_latex = bool(re.search(r"\\[a-zA-Z]+|[\^_]\{?", t))
+                            if not has_delimiters and has_latex:
+                                opt.text = f"${t}$"
                 return result.questions
 
         except Exception as e:
             logger.warning(
-                "Pass 2: Attempt %d/%d failed for chunk %d of '%s': %s",
+                "Pass 2: Attempt %d/%d failed for chunk %d of '%s' (model: %s): %s",
                 attempt + 1,
                 MAX_RETRIES,
                 chunk_index,
                 chapter_name,
+                model_name,
                 e,
             )
             if attempt + 1 < MAX_RETRIES:

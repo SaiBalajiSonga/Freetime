@@ -22,10 +22,18 @@ export default function Latex({ children, className }: LatexProps) {
     if (!children) return ''
 
     try {
+      let remaining = children.trim()
+
+      // If the string contains LaTeX math commands (\frac, \sqrt, \left, \cup, \infty, etc.)
+      // but contains NO math delimiters ($ or \(), auto-wrap in \(...\) so KaTeX compiles it
+      const hasDelimiters = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\$)[\s\S]*?\$|\\\([\s\S]*?\\\))/.test(remaining)
+      if (!hasDelimiters && /\\[a-zA-Z]+|[\^_]\{?/.test(remaining)) {
+        remaining = `\\(${remaining}\\)`
+      }
+
       // Split on display math ($$...$$) and inline math ($...$)
       // Process display math first, then inline
       const parts: { type: 'text' | 'inline' | 'display'; content: string }[] = []
-      let remaining = children
 
       // Regex: match $$...$$, \[...\], $...$ (inline), or \(...\)
       const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$(?!\$)[\s\S]*?\$|\\\([\s\S]*?\\\))/g

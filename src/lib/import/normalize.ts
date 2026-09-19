@@ -36,9 +36,16 @@ export function normalizeImportData(data: RawImportData[]): ImportQuestion[] {
       if (item.options.length > 0 && typeof item.options[0] === 'string') {
         // Map string array to object array using the correct answer indicator
         options.push(...item.options.map((opt: any, i: number) => {
-          const index = String(i + 1)
+          const index1Based = String(i + 1)
+          const index0Based = String(i)
           const letter = ['a', 'b', 'c', 'd'][i]
-          let is_correct = (correctStr === index || correctStr === letter || correctStr === String(opt).toLowerCase())
+          let is_correct = (
+            item.correct_option === i ||
+            correctStr === index0Based ||
+            correctStr === index1Based ||
+            correctStr === letter ||
+            correctStr === String(opt).toLowerCase()
+          )
           return { text: String(opt), is_correct }
         }))
       } else {

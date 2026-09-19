@@ -40,20 +40,20 @@ _WATERMARK_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
-# Section boundary markers — support both "Answer Keys" and "Answer Key"
+# Section boundary markers — support "Answer Key(s)", "Official Answer Key", "Final Answer Key", etc.
 _ANSWER_KEYS_RE = re.compile(
-    r"^(?:#+\s*)?Answer\s+Keys?\s*$",
+    r"^(?:[#|*\s]*?)(?:(?:Official|Final|Verified)\s+)?Answer\s+Keys?.*$",
     re.IGNORECASE | re.MULTILINE,
 )
 _SOLUTIONS_RE = re.compile(
-    r"^(?:#+\s*)?Solutions?\s*$",
+    r"^(?:[#|*\s]*?)Solutions?(?:\s+Q\d+)?(?:[|*\s]*?)$",
     re.IGNORECASE | re.MULTILINE,
 )
 
 # Build a single regex that matches any known chapter name as a heading.
 _chapter_pattern = "|".join(re.escape(ch) for ch in KNOWN_CHAPTERS)
 _CHAPTER_HEADING_RE = re.compile(
-    rf"^(?:#+\s*)?({_chapter_pattern})\s*$",
+    rf"^(?:[#|*\s]*?)(?:\d+\.\s*)?({_chapter_pattern})(?:[|*\s]*?)$",
     re.IGNORECASE | re.MULTILINE,
 )
 
@@ -135,46 +135,45 @@ def _find_questions_start_multi(text: str) -> int:
     """For Format A: find where the actual questions begin (after TOC).
 
     The TOC pages list chapter names with page numbers. The first actual
-    question starts with Q1. after the TOC.
+    question starts with Q1 after the TOC.
     """
-    # Look for the first Q1. that starts a question
-    first_q = re.search(r"(?:^|\n)\s*Q1\.", text)
+    first_q = re.search(r"(?:^|\n)\s*(?:[-*#|]\s*)*(?:\*\*)?Q1\b", text, re.IGNORECASE)
     if first_q:
-        return first_q.start()
+        q_pos = first_q.start()
+        window_start = max(0, q_pos - 1000)
+        window = text[window_start:q_pos]
+        ch_matches = list(_CHAPTER_HEADING_RE.finditer(window))
+        if ch_matches:
+            return window_start + ch_matches[-1].start()
+        return q_pos
 
     # Fallback: after the Content/TOC section
     content_match = _CONTENT_RE.search(text)
     if content_match:
-        # Skip past the TOC (which typically has chapter names + page numbers)
-        # Find the next section after the Solutions TOC
         sol_toc = _SOLUTIONS_RE.search(text, content_match.end())
         if sol_toc:
-            # Questions start after the Solutions TOC entry in the Content page
-            # Look for the next chapter heading or Q1
-            next_q = re.search(r"(?:^|\n)\s*Q1\.", text[sol_toc.end():])
+            next_q = re.search(r"(?:^|\n)\s*(?:[-*#|]\s*)*(?:\*\*)?Q1\b", text[sol_toc.end():], re.IGNORECASE)
             if next_q:
                 return sol_toc.end() + next_q.start()
 
     return 0  # fallback: start from beginning
 
 
-def _find_last_answer_key(text: str) -> re.Match | None:
-    """Find the last occurrence of 'Answer Key(s)' that's actually a section header.
+def _find_last_answer_key(text: str, after_pos: int = 0) -> re.Match | None:
+    """Find the occurrence of 'Answer Key(s)' that's actually the section header.
 
     In multi-chapter PDFs, 'Answer Keys' appears in the TOC AND as the actual
     section header. We want the one that's followed by actual answer data
-    (lines like '1. (2)' or 'Q1 (2)').
+    (lines like '1. (2)' or 'Q1 (2)' or tables with '**1.**(4)').
     """
-    matches = list(_ANSWER_KEYS_RE.finditer(text))
+    matches = [m for m in _ANSWER_KEYS_RE.finditer(text) if m.start() >= after_pos]
     if not matches:
         return None
 
-    # Return the last match — the TOC mention comes first, the actual section later
-    # But verify it's followed by answer-like content
-    for match in reversed(matches):
-        after = text[match.end() : match.end() + 500]
-        # Check if there's answer-like content nearby
-        if re.search(r"\d+\.\s*\(\d+\)|Q\d+\s*\(\d+\)", after):
+    # Return the first match that is followed by actual answer-like content
+    for match in matches:
+        after = text[match.end() : match.end() + 1000]
+        if re.search(r"(?:\*\*)?\d+\.?(?:\*\*)?\s*\(|\bQ\.?\d+[\s*]*\(|\|\s*Q\.?\d+", after, re.IGNORECASE):
             return match
 
     # Fallback: return the last match
@@ -207,28 +206,52 @@ def split_document(markdown_text: str, chapter_override: str | None = None) -> S
     result.format_type = _detect_format(cleaned)
 
     # 3. Find section boundaries
-    ak_match = _find_last_answer_key(cleaned)
-    sol_match = _SOLUTIONS_RE.search(cleaned, ak_match.end() if ak_match else 0)
+    if result.format_type == "multi_chapter":
+        q_start = _find_questions_start_multi(cleaned)
+        ak_match = _find_last_answer_key(cleaned, after_pos=q_start)
+    else:
+        q_start = 0
+        ak_match = _find_last_answer_key(cleaned)
 
     if not ak_match:
-        raise ValueError(
-            "Could not find 'Answer Key(s)' section boundary in the document. "
-            "Is this a MathonGo-format PDF converted via Marker?"
+        # Fallback for documents without an explicit Answer Key section
+        # Treat entire document as questions, with empty answer keys
+        result.answer_keys_text = ""
+        result.solutions_text = ""
+        if result.format_type == "multi_chapter":
+            q_text = cleaned[q_start:]
+            result.questions_by_chapter = _split_by_chapters(q_text)
+        else:
+            chapter_name = chapter_override or "_single"
+            result.questions_by_chapter = {chapter_name: cleaned.strip()}
+        return result
+
+    sol_match = _SOLUTIONS_RE.search(cleaned, ak_match.end())
+    if not sol_match and result.format_type == "multi_chapter":
+        # In Format A, solutions section starts when questions (Q1) start again after answer keys
+        q1_after_ak = re.search(
+            r"(?:^|\n)\s*(?:[-*#|]\s*)*(?:\*\*)?Q1\b",
+            cleaned[ak_match.end():],
+            re.IGNORECASE,
         )
+        if q1_after_ak:
+            sol_start = ak_match.end() + q1_after_ak.start()
+        else:
+            sol_start = len(cleaned)
+    elif sol_match and sol_match.start() > ak_match.start():
+        sol_start = sol_match.start()
+    else:
+        sol_start = len(cleaned)
 
     # 4. Extract raw sections based on format
     if result.format_type == "multi_chapter":
         # Format A: skip TOC, extract questions until Answer Keys
-        q_start = _find_questions_start_multi(cleaned)
         questions_raw = cleaned[q_start : ak_match.start()]
     else:
         # Format B: everything before Answer Key is questions
         questions_raw = cleaned[: ak_match.start()]
 
-    if sol_match and sol_match.start() > ak_match.start():
-        answer_keys_raw = cleaned[ak_match.end() : sol_match.start()]
-    else:
-        answer_keys_raw = cleaned[ak_match.end() :]
+    answer_keys_raw = cleaned[ak_match.end() : sol_start]
 
     # 5. Split questions by chapter (or use override for single-chapter)
     if result.format_type == "multi_chapter":

@@ -52,16 +52,101 @@ def _setup_logging(verbose: bool) -> None:
 
 
 def _convert_pdf_to_markdown(pdf_path: Path) -> Path:
-    """Run Marker OCR on a PDF and return the path to the output markdown.
+    """Convert a PDF to Markdown.
 
-    Requires `marker-pdf` to be installed: pip install marker-pdf
+    Tries pymupdf4llm first (fast, CPU-native, layout-aware),
+    then falls back to Marker OCR if installed, and finally basic PyMuPDF.
     """
     logger = logging.getLogger(__name__)
-    output_dir = pdf_path.parent / "marker_output"
+    output_dir = pdf_path.parent / "converted_output"
     output_dir.mkdir(exist_ok=True)
 
-    logger.info("Converting PDF → Markdown via Marker: %s", pdf_path.name)
+    # 1. Try Gemini Vision OCR first for high-fidelity LaTeX & formula layout (<= 30 pages)
+    if GEMINI_API_KEY:
+        try:
+            import pymupdf
+            doc = pymupdf.open(str(pdf_path))
+            page_count = len(doc)
+            doc.close()
+        except Exception:
+            page_count = 1
 
+        if page_count <= 30:
+            try:
+                from google import genai
+                from google.genai import types
+                from scripts.pipeline.config import GEMINI_MODEL
+
+                logger.info("Converting PDF (%d pages) → Markdown via Gemini Vision: %s", page_count, pdf_path.name)
+                client = genai.Client(api_key=GEMINI_API_KEY)
+                pdf_bytes = pdf_path.read_bytes()
+
+                prompt = (
+                    "You are an expert document OCR engine for Indian engineering entrance exam (JEE) question banks.\n"
+                    "Convert this PDF into clean, structured Markdown.\n"
+                    "CRITICAL REQUIREMENTS:\n"
+                    "1. PRESERVE ALL LaTeX EXACTLY. Use standard LaTeX: $...$ for inline math, $$...$$ for display math.\n"
+                    "2. For fractions, use \\frac{a}{b}. Never drop fraction bars, root signs, or exponents.\n"
+                    "3. Keep all question markers verbatim: e.g. 'Q1 - 2024 (01 Feb Shift 1)', 'Q1.', etc.\n"
+                    "4. Keep all options numbered (1), (2), (3), (4).\n"
+                    "5. Include the Answer Key section verbatim at the end.\n"
+                    "6. Output ONLY raw Markdown without extra conversational chatter."
+                )
+
+                vision_models = [GEMINI_MODEL, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"]
+                # Deduplicate while preserving order
+                seen = set()
+                unique_vision_models = [m for m in vision_models if not (m in seen or seen.add(m))]
+
+                for v_model in unique_vision_models:
+                    for attempt in range(2):
+                        try:
+                            logger.info("Attempting Gemini Vision with model: %s (attempt %d)", v_model, attempt + 1)
+                            response = client.models.generate_content(
+                                model=v_model,
+                                contents=[
+                                    types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
+                                    prompt,
+                                ],
+                            )
+                            if response.text and len(response.text.strip()) > 100:
+                                md_file = output_dir / f"{pdf_path.stem}.md"
+                                md_file.write_text(response.text, encoding="utf-8")
+                                logger.info(
+                                    "Gemini Vision conversion complete via %s: %s (%d bytes)",
+                                    v_model,
+                                    md_file.name,
+                                    md_file.stat().st_size,
+                                    )
+                                return md_file
+                        except Exception as err:
+                            logger.warning("Vision OCR failed with %s attempt %d: %s", v_model, attempt + 1, err)
+                            import time
+                            time.sleep(2)
+            except Exception as e:
+                logger.warning("Gemini Vision PDF conversion failed (%s), falling back to pymupdf4llm...", e)
+
+    # 2. Try pymupdf4llm (fast, CPU-native, layout-aware)
+    try:
+        import pymupdf4llm
+
+        logger.info("Converting PDF → Markdown via pymupdf4llm: %s", pdf_path.name)
+        md_text = pymupdf4llm.to_markdown(str(pdf_path))
+        md_file = output_dir / f"{pdf_path.stem}.md"
+        md_file.write_text(md_text, encoding="utf-8")
+        logger.info(
+            "pymupdf4llm conversion complete: %s (%d bytes)",
+            md_file.name,
+            md_file.stat().st_size,
+        )
+        return md_file
+    except ImportError:
+        logger.debug("pymupdf4llm not installed, trying Marker...")
+    except Exception as e:
+        logger.warning("pymupdf4llm conversion failed (%s), trying Marker...", e)
+
+    # 2. Try Marker OCR (if installed)
+    logger.info("Converting PDF → Markdown via Marker: %s", pdf_path.name)
     try:
         result = subprocess.run(
             [
@@ -74,31 +159,34 @@ def _convert_pdf_to_markdown(pdf_path: Path) -> Path:
             ],
             capture_output=True,
             text=True,
-            timeout=600,  # 10 min timeout for large PDFs
+            timeout=600,
         )
-    except FileNotFoundError:
-        logger.error(
-            "Marker is not installed. Install it with: pip install marker-pdf"
-        )
-        sys.exit(1)
-    except subprocess.TimeoutExpired:
-        logger.error("Marker OCR timed out after 10 minutes.")
-        sys.exit(1)
+        if result.returncode == 0:
+            md_files = list(output_dir.rglob("*.md"))
+            if md_files:
+                md_file = max(md_files, key=lambda f: f.stat().st_size)
+                logger.info("Marker output: %s (%d bytes)", md_file.name, md_file.stat().st_size)
+                return md_file
+            logger.warning("Marker produced no .md files, falling back to PyMuPDF")
+        else:
+            logger.warning("Marker failed (code %d), falling back to PyMuPDF", result.returncode)
+    except Exception as e:
+        logger.warning("Marker execution error: %s, falling back to PyMuPDF", e)
 
-    if result.returncode != 0:
-        logger.error("Marker failed:\n%s\n%s", result.stdout, result.stderr)
-        sys.exit(1)
+    # 3. Fallback: PyMuPDF basic text extraction
+    try:
+        import pymupdf
 
-    # Find the output markdown file
-    md_files = list(output_dir.rglob("*.md"))
-    if not md_files:
-        logger.error("Marker produced no .md output in %s", output_dir)
+        logger.info("Converting PDF → Text via pymupdf fallback: %s", pdf_path.name)
+        doc = pymupdf.open(str(pdf_path))
+        text = "\n\n".join(page.get_text() for page in doc)
+        md_file = output_dir / f"{pdf_path.stem}.md"
+        md_file.write_text(text, encoding="utf-8")
+        logger.info("PyMuPDF fallback complete: %s (%d bytes)", md_file.name, md_file.stat().st_size)
+        return md_file
+    except Exception as e:
+        logger.error("All PDF conversion strategies failed: %s", e)
         sys.exit(1)
-
-    # Use the largest .md file (main output)
-    md_file = max(md_files, key=lambda f: f.stat().st_size)
-    logger.info("Marker output: %s (%d bytes)", md_file.name, md_file.stat().st_size)
-    return md_file
 
 
 def _parse_args() -> argparse.Namespace:
@@ -144,6 +232,12 @@ def _parse_args() -> argparse.Namespace:
         type=str,
         default=None,
         help="Output JSON file path for dry-run (default: stdout)",
+    )
+    parser.add_argument(
+        "--visibility",
+        choices=["public", "private"],
+        default="public",
+        help="Question visibility: 'public' or 'private' (default: 'public')",
     )
     parser.add_argument(
         "--concurrency",
@@ -229,6 +323,21 @@ async def _run_pipeline(args: argparse.Namespace) -> None:
                 split.questions_by_chapter[inferred] = split.questions_by_chapter.pop("_single")
                 chapters = get_chapter_names(split)
 
+    # For multi-chapter documents with --chapter, filter to the requested chapter
+    if args.chapter and split.format_type == "multi_chapter":
+        from scripts.pipeline.pass3_merge import _fuzzy_match_chapter
+        matched = _fuzzy_match_chapter(args.chapter, list(split.questions_by_chapter.keys()))
+        if matched:
+            split.questions_by_chapter = {matched: split.questions_by_chapter[matched]}
+            chapters = [matched]
+            logger.info("Filtered to requested chapter: '%s'", matched)
+        else:
+            logger.warning(
+                "Requested chapter '%s' not found among document chapters: %s",
+                args.chapter,
+                list(split.questions_by_chapter.keys()),
+            )
+
     # ── Pass 1: Answer Key Extraction ─────────────────────────────────────
     logger.info("─── Pass 1: Answer Key Extraction ───")
 
@@ -268,11 +377,11 @@ async def _run_pipeline(args: argparse.Namespace) -> None:
     # ── Ingestion / Dry Run ───────────────────────────────────────────────
     if args.dry_run:
         logger.info("─── Dry Run: Dumping JSON ───")
-        dump_dry_run_json(merged, args.output)
+        dump_dry_run_json(merged, args.output, subject=args.subject, visibility=args.visibility)
     else:
         logger.info("─── Ingestion: Writing to Supabase ───")
         ingestor = SupabaseIngestor(dry_run=False)
-        stats = ingestor.ingest(merged, subject=args.subject)
+        stats = ingestor.ingest(merged, subject=args.subject, visibility=args.visibility)
         logger.info("Ingestion stats: %s", stats)
 
     # ── Summary ───────────────────────────────────────────────────────────

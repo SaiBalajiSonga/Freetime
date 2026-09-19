@@ -14,6 +14,7 @@ import {
   Zap,
   Megaphone,
   BookOpen,
+  FileUp,
 } from 'lucide-react'
 
 // ── Sidebar collapse context ───────────────────────────────────────
@@ -69,6 +70,13 @@ const NAV_ITEMS = [
     label: 'Import',
     icon: FolderInput,
     activeColor: 'text-sky-400',
+    exact: false,
+  },
+  {
+    href: '/admin/pdf-pipeline',
+    label: 'PDF Pipeline',
+    icon: FileUp,
+    activeColor: 'text-violet-400',
     exact: false,
   },
 ] as const
