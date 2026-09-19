@@ -131,5 +131,6 @@ class MergedQuestion(BaseModel):
     options: list[MergedOption] | None = None
     correct_answer: str | None = None  # For numerical; for MCQ this is the option_id after insert
     ai_difficulty: Literal["easy", "medium", "hard"]
+    solution: str | None = None
     source: str | None = None
     merge_status: Literal["ok", "KEY_NOT_FOUND"] = "ok"

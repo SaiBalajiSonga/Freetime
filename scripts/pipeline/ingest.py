@@ -221,7 +221,7 @@ class SupabaseIngestor:
                 "source": q.source,
                 "hash": content_hash,
                 "hint": None,
-                "solution": None,  # Phase 2
+                "solution": q.solution or None,
                 "visibility": visibility,
             }
 
@@ -366,6 +366,7 @@ def format_questions_json(
             "visibility": visibility,
             "chapter": chapter_val,
             "subject": subject,
+            "solution": q.solution or "",
             "merge_status": q.merge_status,
         }
         if q.question_type == "mcq" and q.options:

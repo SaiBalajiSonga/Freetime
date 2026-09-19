@@ -63,31 +63,70 @@ def _fuzzy_match_chapter(
     return None
 
 
-def _extract_answers_from_solutions(
+def _extract_solutions_and_answers(
     solutions_text: str,
-) -> dict[int, str]:
-    """Fallback: extract answers from solutions section.
+) -> tuple[dict[int, str], dict[int, str]]:
+    """Extract answers and step-by-step explanations from the solutions section.
 
-    Solutions format (from the PDF):
+    Handles formats:
         Q1.
-        (answer)
-        ...solution text...
+        (4)
+        Consider 1/sqrt(x) = alpha...
         Q2.
-        (answer)
+        (3)
+        ...
+    Or:
+        Q1 - 2024 ...
+        ...
+        Ans = '3'
+    Or:
+        **Q1.**
+        ...
 
-    Returns {question_number: answer_string}
+    Returns
+    -------
+    tuple[dict[int, str], dict[int, str]]
+        (answers_dict, solutions_dict)
     """
     answers: dict[int, str] = {}
-    # Match: Q<number>.\n(<answer>)
+    solutions: dict[int, str] = {}
+
     pattern = re.compile(
-        r"Q(\d+)\.\s*\n\s*\((\d+)\)",
-        re.MULTILINE,
+        r"(?:^|\n)\s*(?:[-*#|]\s*)*(?:\*\*)?Q\.?\s*(\d+)(?:\.|\s*[-–—]|\s*\n)",
+        re.IGNORECASE,
     )
-    for match in pattern.finditer(solutions_text):
+    matches = list(pattern.finditer(solutions_text))
+    if not matches:
+        return answers, solutions
+
+    for i, match in enumerate(matches):
         q_num = int(match.group(1))
-        answer = match.group(2)
-        answers[q_num] = answer
-    return answers
+        start = match.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(solutions_text)
+        block = solutions_text[start:end].strip()
+
+        # Check if the block starts with (answer) e.g. (4) or (117)
+        ans_match = re.match(r"^\s*\((\d+)\)\s*(?:\n|$)", block)
+        if ans_match:
+            answers[q_num] = ans_match.group(1)
+            solution_body = block[ans_match.end():].strip()
+        else:
+            # Check for Ans = 'X' or Answer: (X)
+            ans_end_match = re.search(
+                r"(?:Ans|Answer)\s*[:=]\s*['\"(]?\s*(\d+)\s*['\")]?",
+                block,
+                re.IGNORECASE,
+            )
+            if ans_end_match:
+                answers[q_num] = ans_end_match.group(1)
+            solution_body = block
+
+        # Clean trailing watermarks or empty markers from solution_body
+        solution_body = re.sub(r"Click here to download MARKS App.*", "", solution_body, flags=re.IGNORECASE).strip()
+        if solution_body:
+            solutions[q_num] = solution_body
+
+    return answers, solutions
 
 
 def merge(
@@ -139,12 +178,26 @@ def merge(
             )
             chapter_answers = {}
 
-        # Build fallback answers from solutions section if available
+        # Build fallback answers and solutions from solutions section if available
         fallback_answers: dict[int, str] = {}
-        if solutions_text_by_chapter and chapter_name in solutions_text_by_chapter:
-            fallback_answers = _extract_answers_from_solutions(
-                solutions_text_by_chapter[chapter_name]
-            )
+        chapter_solutions: dict[int, str] = {}
+        if solutions_text_by_chapter:
+            sol_text = ""
+            if chapter_name in solutions_text_by_chapter:
+                sol_text = solutions_text_by_chapter[chapter_name]
+            else:
+                matched_sol_name = _fuzzy_match_chapter(
+                    chapter_name, list(solutions_text_by_chapter.keys())
+                )
+                if matched_sol_name:
+                    sol_text = solutions_text_by_chapter[matched_sol_name]
+                elif "_single" in solutions_text_by_chapter and len(questions_by_chapter) == 1:
+                    sol_text = solutions_text_by_chapter["_single"]
+                elif len(solutions_text_by_chapter) == 1 and len(questions_by_chapter) == 1:
+                    sol_text = list(solutions_text_by_chapter.values())[0]
+
+            if sol_text:
+                fallback_answers, chapter_solutions = _extract_solutions_and_answers(sol_text)
 
         for q in questions:
             answer_str = chapter_answers.get(q.question_number)
@@ -207,6 +260,8 @@ def merge(
                 # answer_str IS the numerical answer (e.g., "117", "3", "474")
                 correct_answer = answer_str
 
+            solution = chapter_solutions.get(q.question_number)
+
             merged.append(
                 MergedQuestion(
                     chapter_name=normalize_chapter_name(chapter_name),
@@ -216,6 +271,7 @@ def merge(
                     options=merged_options,
                     correct_answer=correct_answer,
                     ai_difficulty=q.ai_difficulty,
+                    solution=solution,
                     source=source,
                     merge_status=merge_status,
                 )

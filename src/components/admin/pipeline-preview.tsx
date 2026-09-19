@@ -41,6 +41,7 @@ export type PipelineQuestion = {
   options?: string[] | PipelineOption[] | null
   correct_option?: number
   correct_answer?: string | null
+  solution?: string | null
 
   // Pipeline internal / legacy aliases
   chapter_name?: string
@@ -87,6 +88,8 @@ export function generateStandardJson(
     } else if (qType === 'numerical') {
       item.correct_answer = q.correct_answer || ''
     }
+
+    item.solution = q.solution || ''
 
     return item
   })
@@ -976,6 +979,28 @@ function DocumentQuestionItem({
               ⚠ Answer key not found for this question
             </span>
           )}
+        </div>
+      )}
+
+      {/* Explanation / Solution — Displayed when Answers are toggled ON and solution exists */}
+      {showAnswers && q.solution && (
+        <div
+          className="mt-3.5 pl-0 sm:pl-5 rounded-lg p-3 text-xs leading-relaxed"
+          style={{
+            backgroundColor: isPaper ? '#f8fafc' : 'rgba(15, 23, 42, 0.4)',
+            border: isPaper ? '1px solid #e2e8f0' : '1px solid #1e293b',
+            color: isPaper ? '#334155' : '#cbd5e1',
+          }}
+        >
+          <div
+            className="font-bold text-[11px] uppercase tracking-wider mb-1.5 flex items-center gap-1.5"
+            style={{ color: isPaper ? '#475569' : '#94a3b8' }}
+          >
+            <span>Explanation / Solution:</span>
+          </div>
+          <div className="text-[13.5px] leading-relaxed">
+            <Latex>{q.solution}</Latex>
+          </div>
         </div>
       )}
     </div>

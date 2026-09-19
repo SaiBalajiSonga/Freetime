@@ -90,7 +90,8 @@ def _convert_pdf_to_markdown(pdf_path: Path) -> Path:
                     "3. Keep all question markers verbatim: e.g. 'Q1 - 2024 (01 Feb Shift 1)', 'Q1.', etc.\n"
                     "4. Keep all options numbered (1), (2), (3), (4).\n"
                     "5. Include the Answer Key section verbatim at the end.\n"
-                    "6. Output ONLY raw Markdown without extra conversational chatter."
+                    "6. Include the Solutions section verbatim if present in the document.\n"
+                    "7. Output ONLY raw Markdown without extra conversational chatter."
                 )
 
                 vision_models = [GEMINI_MODEL, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"]
@@ -365,6 +366,7 @@ async def _run_pipeline(args: argparse.Namespace) -> None:
         questions_by_chapter=questions_by_chapter,
         answer_key_dict=answer_dict,
         source=source,
+        solutions_text_by_chapter=split.solutions_by_chapter,
     )
 
     ok_count = sum(1 for q in merged if q.merge_status == "ok")

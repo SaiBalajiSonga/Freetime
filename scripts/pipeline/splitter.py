@@ -72,6 +72,7 @@ class SplitResult:
     questions_by_chapter: dict[str, str] = field(default_factory=dict)
     answer_keys_text: str = ""
     solutions_by_chapter: dict[str, str] = field(default_factory=dict)
+    solutions_text: str = ""
 
     # Detected format
     format_type: str = "unknown"  # "multi_chapter" or "single_chapter"
@@ -252,18 +253,27 @@ def split_document(markdown_text: str, chapter_override: str | None = None) -> S
         questions_raw = cleaned[: ak_match.start()]
 
     answer_keys_raw = cleaned[ak_match.end() : sol_start]
+    solutions_raw = cleaned[sol_start:].strip() if sol_start < len(cleaned) else ""
 
-    # 5. Split questions by chapter (or use override for single-chapter)
+    # 5. Split questions and solutions by chapter (or use override for single-chapter)
     if result.format_type == "multi_chapter":
         result.questions_by_chapter = _split_by_chapters(questions_raw)
         # Remove preamble/unknown entries
         result.questions_by_chapter.pop("_preamble", None)
         result.questions_by_chapter.pop("_unknown", None)
+
+        if solutions_raw:
+            result.solutions_by_chapter = _split_by_chapters(solutions_raw)
+            result.solutions_by_chapter.pop("_preamble", None)
+            result.solutions_by_chapter.pop("_unknown", None)
     else:
         chapter_name = chapter_override or "_single"
         result.questions_by_chapter = {chapter_name: questions_raw.strip()}
+        if solutions_raw:
+            result.solutions_by_chapter = {chapter_name: solutions_raw}
 
     result.answer_keys_text = answer_keys_raw.strip()
+    result.solutions_text = solutions_raw
 
     return result
 
